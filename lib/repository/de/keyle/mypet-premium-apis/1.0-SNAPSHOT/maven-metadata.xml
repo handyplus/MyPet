@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+    <groupId>de.keyle</groupId>
+    <artifactId>mypet-premium-apis</artifactId>
+    <versioning>
+        <snapshot>
+            <localCopy>true</localCopy>
+        </snapshot>
+        <lastUpdated>20261126174500</lastUpdated>
+        <snapshotVersions>
+            <snapshotVersion>
+                <extension>jar</extension>
+                <value>1.0-SNAPSHOT</value>
+                <updated>20261126174500</updated>
+            </snapshotVersion>
+            <snapshotVersion>
+                <extension>pom</extension>
+                <value>1.0-SNAPSHOT</value>
+                <updated>20261126174500</updated>
+            </snapshotVersion>
+        </snapshotVersions>
+    </versioning>
+</metadata>

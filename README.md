@@ -1,16 +1,3 @@
-![bStats Servers](https://img.shields.io/bstats/servers/778?color=439741&link=https%3A%2F%2Fbstats.org%2Fplugin%2Fbukkit%2FMyPet%2F778)
-![bStats Players](https://img.shields.io/bstats/players/778?color=439741&link=https%3A%2F%2Fbstats.org%2Fplugin%2Fbukkit%2FMyPet%2F778)
-![Spiget Rating](https://img.shields.io/spiget/rating/12725)
-![GitHub contributors](https://img.shields.io/github/contributors/MyPetORG/MyPet)
-![Discord](https://img.shields.io/discord/145501914795212800)
-![GitHub License](https://img.shields.io/github/license/MyPetORG/MyPet)
-![GitHub Release](https://img.shields.io/github/v/release/MyPetORG/MyPet?label=Download%20Latest%20Release&color=439741&link=https%3A%2F%2Fgithub.com%2FMyPetORG%2FMyPet%2Freleases%2Flatest&link=https%3A%2F%2Fgithub.com%2FMyPetORG%2FMyPet%2Freleases%2Flatest)
-
-> [!WARNING]
-> **MyPet 3.x has reached end of life** and no longer receives substantive updates. Please migrate to [MyPet 4](https://builtbybit.com/mypet).
-> 
-> **For developers (MyPet API):** [Migrating from v3.x](https://wiki.mypet-plugin.de/developer-guide/migrating-from-v3)
-
 ## MyPet - The extensive pet plugin
 MyPet is a highly customizable pet plugin with a lot of features.<br />
 Take them on a lead, train them and make them a very powerful companion!
@@ -27,8 +14,6 @@ Copyright (c) 2011-2025, Keyle<br/>
 MyPet is licensed under the [GNU Lesser General Public License Version 3][License].
 ---
 [License]: http://www.gnu.org/licenses/lgpl.html
-
-[Stats]: https://bstats.org/plugin/bukkit/MyPet
 
 [Wiki]: https://wiki.mypet-plugin.de/
 
