@@ -72,13 +72,13 @@ public class SentryErrorReporter implements ErrorReporter {
 
     public void onEnable() {
         // Don't report errors from self-compiled builds. Only CI builds set a non-"local"
-        // Project-Type in the manifest (release via -PbuildType=release, snapshot via -PbuildType=dev),
-        // so a plain `./gradlew build` stays "local" and never initializes Sentry.
+        // Project-Type in the manifest (release via -DbuildType=release, snapshot via -DbuildType=dev),
+        // so a plain `mvn package` stays "local" and never initializes Sentry.
         if (MyPetVersion.isLocalBuild()) {
             return;
         }
 
-        // The DSN is injected at build time from a CI-only secret (see build.gradle.kts) rather than
+        // The DSN is injected at build time from a CI-only secret (-DsentryDsn, see plugin/pom.xml) rather than
         // hardcoded, so forks that build via our release/snapshot workflows - but don't have our
         // private SENTRY_DSN secret - get an empty DSN here and never report errors to our project.
         String dsn = MyPetVersion.getSentryDsn();

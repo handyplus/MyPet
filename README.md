@@ -6,10 +6,6 @@
 ![GitHub License](https://img.shields.io/github/license/MyPetORG/MyPet)
 ![GitHub Release](https://img.shields.io/github/v/release/MyPetORG/MyPet?label=Download%20Latest%20Release&color=439741&link=https%3A%2F%2Fgithub.com%2FMyPetORG%2FMyPet%2Freleases%2Flatest&link=https%3A%2F%2Fgithub.com%2FMyPetORG%2FMyPet%2Freleases%2Flatest)
 
-<a href="https://mypet-plugin.de/">
-  <img src=".github/readme-images/logo.png" alt="MyPet" width="200">
-</a>
-
 > [!WARNING]
 > **MyPet 3.x has reached end of life** and no longer receives substantive updates. Please migrate to [MyPet 4](https://builtbybit.com/mypet).
 > 
@@ -19,8 +15,7 @@
 MyPet is a highly customizable pet plugin with a lot of features.<br />
 Take them on a lead, train them and make them a very powerful companion!
 
-[![Wiki][WikiImage]][Wiki]
-[![Spigot][SpigotImage]][Spigot] <br/>
+[Wiki][Wiki] | [Spigot][Spigot]
 
 ---
 ## Download
@@ -37,8 +32,5 @@ MyPet is licensed under the [GNU Lesser General Public License Version 3][Licens
 
 [Wiki]: https://wiki.mypet-plugin.de/
 
-[WikiImage]: .github/readme-images/wiki.png
-
 [Spigot]: https://www.spigotmc.org/resources/mypet.12725/
 
-[SpigotImage]: .github/readme-images/spigot.png

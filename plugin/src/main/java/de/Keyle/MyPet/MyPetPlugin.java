@@ -196,7 +196,7 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
     }
 
     /**
-     * Whether the server runs a Minecraft version newer than the last one MyPet 3 supports (26.2).
+     * Whether the server runs a Minecraft version newer than the last one MyPet 3 supports (26.3).
      * No MyPet 3 update will ever support it, so there is nothing to check or download.
      */
     private boolean isNewerThanMyPet3() {
@@ -209,7 +209,7 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
     public void onEnable() {
         this.isReady = false;
 
-        // MyPet 3 ends at Minecraft 26.2. On anything newer, say so and point at MyPet 4, without
+        // MyPet 3 ends at Minecraft 26.3. On anything newer, say so and point at MyPet 4, without
         // the splash screen, the update check or the end-of-life notice: no MyPet 3 update can help.
         if (isNewerThanMyPet3()) {
             String minecraftVersion = compatUtil.getMinecraftVersion();

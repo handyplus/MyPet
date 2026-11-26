@@ -48,7 +48,7 @@ final class ErrorFilter {
     static final String MYPET_PACKAGE = "de.Keyle.MyPet.";
 
     /**
-     * Libraries shaded under MyPet's package (see the relocate() calls in build.gradle.kts). They
+     * Libraries shaded under MyPet's package (see the shade relocations in plugin/pom.xml). They
      * are libraries, not MyPet code. The Sentry SDK's package also holds MyPet's own reporter
      * classes; they never throw anything worth reporting, so the whole package counts as library.
      */
