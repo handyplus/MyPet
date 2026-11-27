@@ -39,17 +39,15 @@ import java.util.*;
 import static de.Keyle.MyPet.api.skill.skills.Behavior.BehaviorMode.*;
 
 /**
- * Implementation of the Behavior skill for a MyPet entity.
+ * 宠物 Behavior（行为）技能的实现。
  * <p>
- * This component manages a set of currently usable behavior modes (activeBehaviors),
- * the currently selected mode (selectedBehavior), and a cyclic iterator (behaviorCycler)
- * to rotate through the active modes. It also reacts to upgrade callbacks which enable
- * or disable specific behavior modes at runtime.
+ * 该组件管理当前可用的一组行为模式（activeBehaviors）、当前选中的模式
+ * （selectedBehavior），以及一个循环迭代器（behaviorCycler），用于在激活的模式之间轮换。
+ * 它还会响应升级回调，在运行时启用或禁用特定行为模式。
  * <p>
- * Robustness: The implementation ensures the selected behavior is always one of the
- * currently active modes and aligns the internal iterator using a bounded algorithm
- * to avoid infinite loops. When an unavailable mode is requested, it falls back to
- * {@link de.Keyle.MyPet.api.skill.skills.Behavior.BehaviorMode#Normal}.
+ * 健壮性：该实现保证选中的行为始终是当前激活的模式之一，并使用有界算法对齐内部迭代器，
+ * 以避免无限循环。当请求一个不可用的模式时，会回退到
+ * {@link de.Keyle.MyPet.api.skill.skills.Behavior.BehaviorMode#Normal}。
  */
 public class BehaviorImpl implements Behavior {
 
@@ -72,9 +70,9 @@ public class BehaviorImpl implements Behavior {
     UpgradeComputer<Boolean> friendlyBehavior = new UpgradeComputer<>(false);
 
     /**
-     * Creates a new Behavior skill instance for the given pet.
+     * 为指定宠物创建一个新的 Behavior 技能实例。
      *
-     * @param myPet the owning pet (must not be null)
+     * @param myPet 所属宠物（不能为 null）
      */
     public BehaviorImpl(@NotNull MyPet myPet) {
         this.myPet = myPet;
@@ -89,19 +87,19 @@ public class BehaviorImpl implements Behavior {
     }
 
     /**
-     * Indicates whether this skill currently has more than the default behavior available.
+     * 指示该技能当前是否拥有除默认行为（Normal）之外的其他行为可用。
      *
-     * @return true if there is at least one additional behavior besides Normal; false otherwise
+     * @return 若除 Normal 外至少还有一种行为则返回 true；否则返回 false
      */
     public boolean isActive() {
         return activeBehaviors.size() > 1;
     }
 
     /**
-     * Resets the Behavior skill to its default state.
+     * 将 Behavior 技能重置为默认状态。
      * <p>
-     * Active behaviors are cleared and only Normal remains, the selected behavior is set
-     * to Normal, and the internal cycler is rebuilt and aligned.
+     * 清空所有激活的行为，只保留 Normal；选中行为设为 Normal，
+     * 并重建、对齐内部循环迭代器。
      */
     @Override
     public void reset() {
@@ -112,18 +110,17 @@ public class BehaviorImpl implements Behavior {
     }
 
     /**
-     * Rebuilds and aligns the internal behavior cycler based on the currently active modes.
+     * 基于当前激活的模式重建并对齐内部行为循环迭代器。
      * <p>
-     * The active modes are copied and sorted for deterministic iteration order. The
-     * selected behavior is validated to ensure it is included; otherwise it falls back to
-     * Normal or, if needed, the first available entry. Finally, the iterator is aligned to
-     * the selected behavior in a bounded fashion to avoid unbounded loops.
+     * 先复制并排序激活的模式，以获得确定性的迭代顺序。然后校验选中的行为
+     * 确保其包含在内；否则回退到 Normal，必要时回退到第一个可用项。
+     * 最后以有界方式将迭代器对齐到选中的行为，避免无界循环。
      */
     protected void updateCycler() {
         List<BehaviorMode> activeBehaviors = new ArrayList<>(this.activeBehaviors);
         Collections.sort(activeBehaviors);
 
-        // Ensure selectedBehavior is valid
+        // 确保 selectedBehavior 有效
         if (!activeBehaviors.contains(selectedBehavior)) {
             selectedBehavior = BehaviorMode.Normal;
             if (!activeBehaviors.contains(selectedBehavior) && !activeBehaviors.isEmpty()) {
@@ -133,7 +130,7 @@ public class BehaviorImpl implements Behavior {
 
         behaviorCycler = Iterables.cycle(activeBehaviors).iterator();
 
-        // Align iterator position to selectedBehavior boundedly
+        // 以有界方式将迭代器位置对齐到 selectedBehavior
         for (int i = 0; i < activeBehaviors.size(); i++) {
             if (behaviorCycler.next() == selectedBehavior) {
                 break;
@@ -142,32 +139,31 @@ public class BehaviorImpl implements Behavior {
     }
 
     /**
-     * Selects the given behavior mode for this pet.
+     * 为该宠物选中给定的行为模式。
      * <p>
-     * Note: The selected mode must be present in the active behaviors set; otherwise the
-     * internal alignment could misbehave. The current implementation of this class ensures
-     * safety by validating and aligning in {@link #updateCycler()}.
+     * 注意：选中的模式必须存在于激活的行为集合中，否则内部对齐可能出现异常。
+     * 本类的当前实现通过在 {@link #updateCycler()} 中校验并对齐来保证安全。
      *
-     * @param mode the behavior mode to select (must not be null)
+     * @param mode 要选中的行为模式（不能为 null）
      */
     @Override
     public void setBehavior(@NotNull BehaviorMode mode) {
-        // If the requested mode isn’t currently usable, fall back to Normal
+        // 若请求的模式当前不可用，则回退到 Normal
         if (!activeBehaviors.contains(mode)) {
             mode = BehaviorMode.Normal;
         }
         selectedBehavior = mode;
-        // Rebuild and safely align the cycler
+        // 重建并安全地对齐循环迭代器
         updateCycler();
     }
 
     /**
-     * Enables or disables a specific behavior mode and updates the cycler accordingly.
+     * 启用或禁用特定行为模式，并相应地更新循环迭代器。
      * <p>
-     * If a mode is disabled while it is currently selected, the selection falls back to Normal.
+     * 若在某个模式被选中时将其禁用，选中项会回退到 Normal。
      *
-     * @param mode  the behavior mode to change
-     * @param value true to enable (make usable); false to disable
+     * @param mode  要更改的行为模式
+     * @param value true 表示启用（使其可用）；false 表示禁用
      */
     protected void setBehaviorMode(@NotNull BehaviorMode mode, boolean value) {
         if (value) {
@@ -182,9 +178,9 @@ public class BehaviorImpl implements Behavior {
     }
 
     /**
-     * Gets the currently selected behavior mode.
+     * 获取当前选中的行为模式。
      *
-     * @return the current behavior mode (never null)
+     * @return 当前的行为模式（永不为 null）
      */
     @Override
     public @NotNull BehaviorMode getBehavior() {
@@ -192,20 +188,20 @@ public class BehaviorImpl implements Behavior {
     }
 
     /**
-     * Checks if the given behavior mode is currently usable (i.e., active) for this pet.
+     * 检查给定的行为模式对该宠物当前是否可用（即已激活）。
      *
-     * @param mode the mode to check (must not be null)
-     * @return true if the mode is contained in the active behavior set; false otherwise
+     * @param mode 要检查的模式（不能为 null）
+     * @return 若该模式存在于激活的行为集合中则返回 true；否则返回 false
      */
     public boolean isModeUsable(@NotNull BehaviorMode mode) {
         return activeBehaviors.contains(mode);
     }
 
     /**
-     * Returns a human-readable list of all currently active behavior modes in the given locale.
+     * 返回给定语言下所有当前激活的行为模式的可读列表。
      *
-     * @param locale the locale key used for translations (must not be null)
-     * @return a formatted String describing the active behavior modes
+     * @param locale 用于翻译的语言键（不能为 null）
+     * @return 描述激活行为模式的格式化字符串
      */
     public @NotNull String toPrettyString(@NotNull String locale) {
         String activeModes = ChatColor.GOLD + Translation.getString("Name.Normal", locale) + ChatColor.RESET;
@@ -240,10 +236,9 @@ public class BehaviorImpl implements Behavior {
     }
 
     /**
-     * Creates the localized upgrade message shown to the pet owner when the Behavior skill
-     * gains or changes the availability of modes.
+     * 生成当 Behavior 技能新增或改变了可用模式时展示给宠物主人的本地化升级消息。
      *
-     * @return a two-line, localized message array (never null)
+     * @return 两行的本地化消息数组（永不为 null）
      */
     @Override
     public @NotNull String[] getUpgradeMessage() {
@@ -254,13 +249,12 @@ public class BehaviorImpl implements Behavior {
     }
 
     /**
-     * Cycles to the next available behavior mode and informs the pet owner.
+     * 循环切换到下一个可用的行为模式，并通知宠物主人。
      * <p>
-     * If additional modes are available, the cycler advances until it finds a mode that is either
-     * Normal or a mode the player has the corresponding permission for. The selection is updated
-     * and a localized chat message is sent to the owner.
+     * 若存在其他可用模式，循环迭代器会前进，直到找到一个 Normal 模式或玩家
+     * 拥有对应权限的模式。随后更新选中项，并向主人发送本地化聊天消息。
      *
-     * @return true if a mode change occurred or could be confirmed; false if the skill has only Normal
+     * @return 若模式发生变化或可被确认则返回 true；若该技能只有 Normal 则返回 false
      */
     public boolean activate() {
         if (isActive()) {
@@ -283,10 +277,10 @@ public class BehaviorImpl implements Behavior {
     }
 
     /**
-     * Periodic tick hook from the Scheduler interface.
+     * Scheduler 接口提供的周期性 tick 钩子。
      * <p>
-     * Emits a cosmetic angry villager particle above the pet’s head occasionally when the
-     * current mode is Aggressive and the pet is present (Here).
+     * 当当前模式为 Aggressive 且宠物在场（Here）时，偶尔在宠物头顶发射
+     * 装饰性的愤怒村民粒子效果。
      */
     @Override
     public void schedule() {
@@ -297,7 +291,7 @@ public class BehaviorImpl implements Behavior {
     }
 
     /**
-     * Debug String containing the set of active behaviors and the currently selected mode.
+     * 包含激活行为集合与当前选中模式的调试字符串。
      */
     @Override
     public String toString() {
@@ -308,11 +302,11 @@ public class BehaviorImpl implements Behavior {
     }
 
     /**
-     * Serializes the current state of this skill to NBT.
+     * 将该技能的当前状态序列化到 NBT。
      * <p>
-     * Currently stores only the name of the selected behavior under the key "selectedBehavior".
+     * 目前仅以 "selectedBehavior" 为键保存所选行为的名称。
      *
-     * @return a compound tag with this skill’s persisted data (never null)
+     * @return 包含该技能持久化数据的复合标签（永不为 null）
      */
     @Override
     public @NotNull TagCompound save() {
@@ -322,11 +316,11 @@ public class BehaviorImpl implements Behavior {
     }
 
     /**
-     * Deserializes the saved state from NBT and restores the selected behavior.
+     * 从 NBT 反序列化保存的状态并恢复所选行为。
      * <p>
-     * Unknown or currently unavailable modes are mapped to Normal to guarantee a valid state.
+     * 未知或当前不可用的模式会映射为 Normal，以保证状态有效。
      *
-     * @param tagCompound the NBT data for this skill (must not be null)
+     * @param tagCompound 该技能的 NBT 数据（不能为 null）
      */
     @Override
     public void load(@NotNull TagCompound tagCompound) {

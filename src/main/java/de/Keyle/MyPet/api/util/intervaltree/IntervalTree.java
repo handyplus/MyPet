@@ -23,61 +23,56 @@ package de.Keyle.MyPet.api.util.intervaltree;
 import java.util.*;
 
 /**
- * An implementation of a Centered Interval Tree for efficient search in a set of intervals. See
- * <a href="https://en.wikipedia.org/wiki/Interval_tree">https://en.wikipedia.org/wiki/Interval_tree</a>.
+ * 居中间隔树（Centered Interval Tree）的实现，用于在区间集合中高效查找。参见
+ * <a href="https://en.wikipedia.org/wiki/Interval_tree">https://en.wikipedia.org/wiki/Interval_tree</a>。
  *
  * <p>
- * The tree functions as a set, meaning that it will not store an interval more than
- * once. More formally, for any two distinct intervals x and y within the tree, it is
- * guaranteed that x.equals(y) will evaluate to false. If you try to add an interval to the tree,
- * which is already in it, the tree will reject it. See the documentation of
- * {@link #add(Interval) the add method} for more information. The tree will also <strong>not</strong> accept
- * {@code null} or empty intervals, meaning intervals whose {@link Interval#isEmpty()}
- * method evaluates to {@code true}.
+ * 该树作为集合使用，这意味着它不会重复存储同一个区间。更正式地说，树中任意两个
+ * 不同的区间 x 和 y，都能保证 x.equals(y) 为 false。如果你尝试向树中添加一个
+ * 已经存在的区间，树会拒绝它。更多信息参见
+ * {@link #add(Interval) the add method} 的文档。该树也<strong>不</strong>接受
+ * {@code null} 或空区间，即 {@link Interval#isEmpty()} 方法计算结果为 {@code true} 的区间。
  * </p>
  * <p>
- * The {@link #iterator()} method of the tree returns a fail-fast iterator, which will
- * throw a {@link ConcurrentModificationException}, if the tree is modified in any form
- * during the iteration, other than by using the iterator's own {@code remove} method. However,
- * this is done in a best-effort manner, since it is generally hard to guarantee this behaviour
- * while using non-atomic and not synchronized methods.
+ * 树的 {@link #iterator()} 方法返回快速失败（fail-fast）迭代器，如果在迭代过程中
+ * 以任何方式修改了树（使用迭代器自身的 {@code remove} 方法除外），它将抛出
+ * {@link ConcurrentModificationException}。不过这只是尽力而为的做法，因为在
+ * 使用非原子且未同步的方法时通常很难保证这一行为。
  * </p>
  * <p>
- * The tree relies on the usage of a subclass of the {@link Interval} class to represent the
- * intervals. The majority of the interval methods are already implemented within the
- * {@code Interval} class and don't have to be implemented by the extending class. Comparisons
- * between the intervals are also pre-implemented in the {@code Interval} class and use the
- * start and endpoints to create a total order of all stored intervals. However, if the tree
- * needs to store intervals that have the same start and end points but represent different
- * logical entities, you need a subclass that overwrites the {@code equals}, {@code hashCode}
- * and {@code compareTo} methods. See the documentation of {@link Interval} for more information.
+ * 该树依赖 {@link Interval} 类的子类来表示区间。大部分区间方法已在
+ * {@code Interval} 类中实现，扩展类无需再实现。区间之间的比较
+ * 也已在 {@code Interval} 类中预实现，它使用起点和终点为所有存储的区间建立
+ * 全序。不过，如果树需要存储起点和终点相同、但代表不同
+ * 逻辑实体的区间，就需要一个覆盖 {@code equals}、{@code hashCode}
+ * 和 {@code compareTo} 方法的子类。更多信息参见 {@link Interval} 的文档。
  * </p>
  *
- * @param <T> The type for the start and end point of the interval
+ * @param <T> 区间起点和终点的类型
  */
 public class IntervalTree<T extends Comparable<? super T>, S> extends AbstractSet<Interval<T, S>> {
 
     /**
-     * The root of the current interval tree. It is {@code null} initially, when the tree is
-     * empty and may change as the result of adding or removing intervals to the tree.
+     * 当前间隔树的根节点。树为空时初始为 {@code null}，并且在向树中添加
+     * 或移除区间时可能发生变化。
      */
     TreeNode<T, S> root;
 
     /**
-     * The size of the interval tree, or the amount of intervals stored in it.
+     * 间隔树的大小，即其中存储的区间数量。
      */
     int size;
 
     /**
-     * Adds an interval to the tree. If the interval is empty, it is rejected and not
-     * stored in the tree. This operation may cause a rebalancing of the tree, which
-     * in turn may cause intervals to be {@link TreeNode#assimilateOverlappingIntervals(TreeNode) assimilated}.
-     * This is why this operation may run in {@code O(n)} worst-case time, even though
-     * on average it should run in {@code O(logn)} due to the nature binary trees.
+     * 向树中添加一个区间。如果区间为空，则会被拒绝，不会
+     * 存储到树中。该操作可能触发树的再平衡，进而
+     * 导致区间被 {@link TreeNode#assimilateOverlappingIntervals(TreeNode) assimilated}。
+     * 因此该操作在最坏情况下可能耗时 {@code O(n)}，尽管
+     * 由于二叉树的性质，平均情况下应为 {@code O(logn)}。
      *
-     * @param interval The interval to be added to the tree.
-     * @return {@code true}, if the tree has been modified as a result of the operation,
-     * or {@code false} otherwise.
+     * @param interval 要添加到树中的区间。
+     * @return 如果树因该操作而被修改则返回 {@code true}，
+     * 否则返回 {@code false}。
      */
     @Override
     public boolean add(Interval<T, S> interval) {
@@ -90,30 +85,26 @@ public class IntervalTree<T extends Comparable<? super T>, S> extends AbstractSe
     }
 
     /**
-     * Searches for and returns all intervals stored in the tree, that contain a given
-     * query point. This operation is guaranteed to run in {@code O(logn + k)}, where
-     * {@code n} is the size of the tree and {@code k} is the size of the returned set,
-     * provided that the time complexity of iterating over the intervals stored in each
-     * visited node is amortized {@code O(1)}. This assumption is met for the current
-     * implementation of {@link TreeNode}, where {@link TreeSet}s are used.
+     * 查找并返回树中存储的所有包含给定查询点的区间。在遍历每个
+     * 已访问节点中存储的区间的时间复杂度为摊还 {@code O(1)} 的前提下，该操作
+     * 保证耗时 {@code O(logn + k)}，其中 {@code n} 为树的大小、{@code k} 为返回集合的大小。
+     * 当前 {@link TreeNode} 的实现使用 {@link TreeSet}，满足这一前提。
      *
-     * @param point The query point.
-     * @return A set containing all intervals from the tree, intersecting the query point.
+     * @param point 查询点。
+     * @return 包含树中所有与查询点相交的区间的集合。
      */
     public Set<Interval<T, S>> query(T point) {
         return TreeNode.query(root, point, new HashSet<>());
     }
 
     /**
-     * Searches for and returns all intervals stored in the tree, that intersect a given
-     * query interval. This operation is guaranteed to run in {@code O(logn + k)}, where
-     * {@code n} is the size of the tree and {@code k} is the size of the returned set,
-     * provided that the time complexity of iterating over the intervals stored in each
-     * visited node is amortized {@code O(1)}. This assumption is met for the current
-     * implementation of {@link TreeNode}, where {@link TreeSet}s are used.
+     * 查找并返回树中存储的所有与给定查询区间相交的区间。在遍历每个
+     * 已访问节点中存储的区间的时间复杂度为摊还 {@code O(1)} 的前提下，该操作
+     * 保证耗时 {@code O(logn + k)}，其中 {@code n} 为树的大小、{@code k} 为返回集合的大小。
+     * 当前 {@link TreeNode} 的实现使用 {@link TreeSet}，满足这一前提。
      *
-     * @param interval The query interval.
-     * @return A set containing all intervals from the tree, intersecting the query interval.
+     * @param interval 查询区间。
+     * @return 包含树中所有与查询区间相交的区间的集合。
      */
     public Set<Interval<T, S>> query(Interval<T, S> interval) {
         Set<Interval<T, S>> result = new HashSet<>();
@@ -151,12 +142,12 @@ public class IntervalTree<T extends Comparable<? super T>, S> extends AbstractSe
     }
 
     /**
-     * Removes an interval from the tree, if it was stored in it. This operation may cause the
-     * {@link TreeNode#deleteNode(TreeNode) deletion of a node}, which in turn may cause
-     * rebalancing of the tree and the {@link TreeNode#assimilateOverlappingIntervals(TreeNode) assimilation}
-     * of intervals from one node to another. This is why this operation may run in {@code O(n)}
-     * worst-case time, even though on average it should run in {@code O(logn)} due to the
-     * nature binary trees.
+     * 如果树中存储了指定区间，则将其从树中移除。该操作可能触发
+     * {@link TreeNode#deleteNode(TreeNode) deletion of a node}，进而
+     * 导致树的再平衡，以及区间从一个节点
+     * {@link TreeNode#assimilateOverlappingIntervals(TreeNode) assimilation} 到另一个节点。
+     * 因此该操作在最坏情况下可能耗时 {@code O(n)}，尽管
+     * 由于二叉树的性质，平均情况下应为 {@code O(logn)}。
      *
      * @param interval
      * @return
@@ -172,7 +163,7 @@ public class IntervalTree<T extends Comparable<? super T>, S> extends AbstractSe
 
 
     // =========================================================================
-    // ============== Iterator over the Intervals in the tree ==================
+    // ============== 树中区间的迭代器 ==================
     // =========================================================================
 
     @Override
@@ -187,18 +178,18 @@ public class IntervalTree<T extends Comparable<? super T>, S> extends AbstractSe
                     if (it.currentNode.increasing.size() == 1) {
                         root = TreeNode.removeInterval(IntervalTree.this, root, it.currentInterval);
 
-                        // Rebuild the whole branch stack in the iterator, because we might have
-                        // moved nodes around and introduced new nodes into the branch. The rule
-                        // is, add all nodes to the branch stack, to which the current node is
-                        // a left descendant.
+                        // 重建迭代器中的整个分支栈，因为我们可能
+                        // 移动了节点并在分支中引入了新节点。规则是：
+                        // 将所有节点都加入分支栈，条件是当前节点是
+                        // 它们的左后代。
                         TreeNode<T, S> node = root;
                         it.stack = new Stack<>();
 
-                        // Continue pushing elements according to the aforementioned rule until
-                        // you reach the subtreeRoot - this is the root of the subtree, which
-                        // the iterator has marked for traversal next. This subtree must not
-                        // become a part of the branch stack, or otherwise you will iterate over
-                        // some intervals twice.
+                        // 根据上述规则继续压入元素，直到
+                        // 到达 subtreeRoot——它是迭代器接下来
+                        // 标记要遍历的子树的根。该子树不得
+                        // 成为分支栈的一部分，否则某些区间会被
+                        // 迭代两次。
                         while (node != it.subtreeRoot) {
                             if (it.currentNode.midpoint.compareTo(node.midpoint) < 0) {
                                 it.stack.push(node);
@@ -227,21 +218,21 @@ public class IntervalTree<T extends Comparable<? super T>, S> extends AbstractSe
 
 
     // =========================================================================
-    // ================== Methods from the Set interface =======================
+    // ================== 来自 Set 接口的方法 =======================
     // =========================================================================
 
     /**
-     * Returns the size of the tree.
+     * 返回树的大小。
      *
-     * @return The amount of intervals, stored in the tree.
+     * @return 树中存储的区间数量。
      */
     public int size() {
         return size;
     }
 
     /**
-     * Removes all intervals from the tree. This is an {@code O(1)} worst-case
-     * time operation.
+     * 移除树中的所有区间。这是最坏情况耗时 {@code O(1)}
+     * 的操作。
      */
     @Override
     public void clear() {
@@ -250,13 +241,13 @@ public class IntervalTree<T extends Comparable<? super T>, S> extends AbstractSe
     }
 
     /**
-     * Checks if a given object is stored in the tree. This method uses binary
-     * search instead of iteration over all intervals, which is why it runs in
-     * guaranteed {@code O(logn)} worst-case time.
+     * 检查给定对象是否存储在树中。该方法使用二分
+     * 查找而非遍历所有区间，因此保证最坏情况耗时
+     * {@code O(logn)}。
      *
-     * @param o The query object.
-     * @return {@code true}, if the object is stored in the tree, or {@code false}
-     * otherwise.
+     * @param o 查询对象。
+     * @return 如果对象存储在树中则返回 {@code true}，否则
+     * 返回 {@code false}。
      */
     @Override
     public boolean contains(Object o) {

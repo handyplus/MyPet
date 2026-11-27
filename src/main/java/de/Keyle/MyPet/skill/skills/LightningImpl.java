@@ -87,8 +87,8 @@ public class LightningImpl implements Lightning {
             }
             target.damage(damage.getValue().doubleValue(), petEntity);
             for (Entity entity : target.getNearbyEntities(1.5, 1.5, 1.5)) {
-                // The bolt also hits what stands next to the target. Those entities were not
-                // attacked by the pet, so they need their own protection check.
+                // 闪电也会击中紧挨着目标的实体。这些实体并非由宠物攻击，
+                // 因此需要单独对它们做保护检查。
                 if (entity instanceof LivingEntity && entity != owner && entity != petEntity
                         && SkillDamageCheck.canDamage(myPet, (LivingEntity) entity)) {
                     ((LivingEntity) entity).damage(damage.getValue().doubleValue(), petEntity);

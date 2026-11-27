@@ -13,12 +13,12 @@ import org.bukkit.entity.Entity;
 
 public final class VillagerNbtIO {
     private static HolderLookup.Provider lookupFor(org.bukkit.World world) {
-        // registry access needed by Value I/O
+        // Value I/O 所需的注册表访问
         RegistryAccess ra = ((CraftWorld) world).getHandle().registryAccess();
-        return (HolderLookup.Provider) ra; // RegistryAccess implements Provider
+        return (HolderLookup.Provider) ra; // RegistryAccess 实现了 Provider
     }
 
-    /** Read/apply NBT into an existing villager or wandering trader */
+    /** 读取 NBT 并应用到已有的村民或流浪商人 */
     public static void readInto(Entity bukkitEntity, CompoundTag tag) {
         try {
             net.minecraft.world.entity.Entity entity = ((CraftEntity) bukkitEntity).getHandle();
@@ -32,7 +32,7 @@ public final class VillagerNbtIO {
         }
     }
 
-    /** Write NBT out of a villager or wandering trader */
+    /** 从村民或流浪商人写出 NBT */
     public static CompoundTag writeFrom(Entity bukkitEntity) {
         try {
             net.minecraft.world.entity.Entity entity = ((CraftEntity) bukkitEntity).getHandle();

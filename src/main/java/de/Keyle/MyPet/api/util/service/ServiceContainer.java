@@ -24,28 +24,28 @@ import de.Keyle.MyPet.api.Util;
 import org.bukkit.event.Listener;
 
 /**
- * Services are a way to register possible functionallity
+ * 服务是一种注册可用功能的方式
  */
 public interface ServiceContainer extends Listener {
     /**
-     * Enables the service and returns if activation was successfull
+     * 启用该服务，并返回激活是否成功
      *
-     * @return if activation was successfull
+     * @return 激活是否成功
      */
     default boolean onEnable() {
         return true;
     }
 
     /**
-     * Disables the service
+     * 禁用该服务
      */
     default void onDisable() {
     }
 
     /**
-     * Returns the name of the service
+     * 返回服务的名称
      *
-     * @return name of the service
+     * @return 服务的名称
      */
     default String getServiceName() {
         ServiceName sn = Util.getClassAnnotation(this.getClass(), ServiceName.class);

@@ -32,22 +32,21 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 
 /**
- * AI goal that makes ground-based Pets wander randomly near their stationary owner.
+ * AI goal：让地面宠物在静止的主人附近随机漫步。
  *
- * <p>This goal activates only when the owner is stationary (not moving) and the Pet
- * is within a close range. It creates natural idle behavior where Pets meander
- * around their owner instead of standing still.
+ * <p>该 goal 仅在主人静止（未移动）且宠物处于近距离范围内时激活。它营造自然的空闲行为，
+ * 让宠物在主人周围徘徊，而不是站着不动。
  *
- * <p>Key behaviors:
+ * <p>主要行为：
  * <ul>
- *   <li>Only activates when owner movement speed is below threshold (0.03 blocks/tick)</li>
- *   <li>Constrains wandering to within 3 blocks of owner when stationary</li>
- *   <li>Uses slow, relaxed movement speed independent of player's walk speed</li>
- *   <li>Attempts up to 5 random positions to find a valid wander target</li>
+ *   <li>仅在主人移动速度低于阈值（0.03 格/tick）时激活</li>
+ *   <li>主人静止时，将漫步范围限制在主人 3 格之内</li>
+ *   <li>使用缓慢、放松的移动速度，与玩家的行走速度无关</li>
+ *   <li>最多尝试 5 个随机位置以寻找有效的漫步目标</li>
  * </ul>
  *
- * <p>This is the base class for {@link MyPetRandomFly} and {@link MyPetRandomSwim}
- * which provide specialized wandering for flying and aquatic Pets.
+ * <p>它是 {@link MyPetRandomFly} 和 {@link MyPetRandomSwim} 的基类，
+ * 后者为飞行和水生宠物提供专门的漫步行为。
  *
  * @see MyPetRandomFly
  * @see MyPetRandomSwim
@@ -56,179 +55,179 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 @Compat("v26_3_R1")
 public class MyPetRandomStroll implements AIGoal, de.Keyle.MyPet.api.entity.ai.movement.MyPetRandomStroll {
 
-    // ==================== TUNABLE CONSTANTS ====================
-    // These values control random stroll behavior and can be adjusted to fine-tune idle wandering.
-    // All distance values are in blocks, speeds are in blocks/tick unless noted.
+    // ==================== 可调常量 ====================
+    // 这些数值控制随机漫步行为，可以调整以微调空闲漫步。
+    // 除非另行说明，所有距离值单位为格，速度单位为格/tick。
 
     // -------------------------------------------------------------------------
-    // DISTANCE THRESHOLDS - Define boundaries for stroll activation
+    // 距离阈值 - 定义漫步激活的边界
     // -------------------------------------------------------------------------
 
     /**
-     * Maximum squared distance (in blocks²) from owner for stroll activation.
-     * Pet must be within sqrt(9) = 3 blocks of a stationary owner to start strolling.
-     * Must match {@link FollowOwner#STATIONARY_MAX_DIST_SQ} to prevent dead zones.
+     * 激活漫步时，距主人的最大距离平方（格²）。
+     * 宠物必须位于静止主人 sqrt(9) = 3 格范围内才能开始漫步。
+     * 必须与 {@link FollowOwner#STATIONARY_MAX_DIST_SQ} 保持一致，以避免出现死区。
      */
     protected static final double STATIONARY_MAX_DIST_SQ = 9.0;
 
     // -------------------------------------------------------------------------
-    // STROLL ACTIVATION - Parameters controlling when strolling starts
+    // 漫步激活 - 控制漫步何时开始的参数
     // -------------------------------------------------------------------------
 
     /**
-     * Base probability (0.0-1.0) of starting a stroll each tick when conditions are met.
-     * Value of 0.02 means 2% chance per tick, approximately one stroll attempt every 2.5 seconds.
-     * Subclasses override: flying Pets use 8%, swimming Pets use 6%.
+     * 条件满足时，每 tick 开始一次漫步的基础概率（0.0-1.0）。
+     * 取 0.02 表示每 tick 有 2% 概率，大约每 2.5 秒尝试一次漫步。
+     * 子类会覆盖该值：飞行宠物使用 8%，游泳宠物使用 6%。
      */
     protected static final float DEFAULT_STROLL_CHANCE = 0.02F;
 
     // -------------------------------------------------------------------------
-    // OWNER MOVEMENT DETECTION - Parameters for stationary detection
+    // 主人移动检测 - 静止状态检测的参数
     // -------------------------------------------------------------------------
 
     /**
-     * Speed threshold (blocks/tick) below which owner is considered stationary.
-     * Normal walking is ~0.1 blocks/tick. Value of 0.03 detects when owner is
-     * standing still or barely moving (e.g., minor position adjustments).
+     * 判定主人静止的速度阈值（格/tick）。
+     * 正常行走约为 0.1 格/tick。取 0.03 可检测出主人是否完全站定
+     * 或几乎未移动（例如轻微的位置调整）。
      */
     private static final double OWNER_STATIONARY_THRESHOLD = 0.03;
 
     /**
-     * Weight for current frame's speed in exponential moving average (EMA).
-     * Formula: newSpeed = RESPONSIVE * current + (1 - RESPONSIVE) * previous
-     * Higher values = more responsive but jittery detection.
+     * 指数移动平均（EMA）中当前帧速度的权重。
+     * 公式：newSpeed = RESPONSIVE * current + (1 - RESPONSIVE) * previous
+     * 取值越大 = 反应越快，但检测越容易抖动。
      */
     private static final double SPEED_SMOOTHING_RESPONSIVE = 0.2;
 
     /**
-     * Maximum ticks between position updates for valid movement calculation.
-     * If more than 2 ticks pass between updates (e.g., goal was inactive),
-     * movement calculation is skipped to avoid false speed readings.
+     * 两次位置更新之间允许的最大 tick 数，超出则视为移动计算无效。
+     * 若两次更新之间超过 2 tick（例如 goal 曾处于未激活状态），
+     * 则跳过移动计算，以避免得到错误的速度读数。
      */
     private static final int MAX_TRACKING_GAP = 2;
 
     // -------------------------------------------------------------------------
-    // WANDER POSITION GENERATION - Parameters for target selection
+    // 漫步位置生成 - 目标选择的参数
     // -------------------------------------------------------------------------
 
     /**
-     * Horizontal wander radius (blocks) when owner is stationary.
-     * Pet will look for random positions within this radius.
-     * Smaller value keeps Pet close to stationary owner.
+     * 主人静止时的水平漫步半径（格）。
+     * 宠物会在该半径内寻找随机位置。
+     * 取值较小可使宠物保持在静止主人附近。
      */
     protected static final int WANDER_RADIUS_STATIONARY = 2;
 
     /**
-     * Horizontal wander radius (blocks) when owner is moving.
-     * Larger radius allows more freedom but rarely used since
-     * strolling typically only activates when owner is stationary.
+     * 主人移动时的水平漫步半径（格）。
+     * 较大半径可提供更多自由，但很少用到，因为
+     * 漫步通常只在主人静止时激活。
      */
     protected static final int WANDER_RADIUS_MOVING = 3;
 
     /**
-     * Maximum squared distance (blocks²) from owner for wander targets when stationary.
-     * Targets beyond this distance from owner are rejected.
+     * 静止时，漫步目标距主人的最大距离平方（格²）。
+     * 距主人超出该距离的目标会被拒绝。
      */
     protected static final double WANDER_MAX_DIST_SQ_STATIONARY = STATIONARY_MAX_DIST_SQ;
 
     /**
-     * Maximum squared distance (blocks²) from Pet's current position for wander targets when stationary.
-     * Value of 4.0 = 2 blocks. Prevents Pet from wandering too far in a single stroll.
+     * 静止时，漫步目标距宠物当前位置的最大距离平方（格²）。
+     * 值 4.0 = 2 格。防止宠物在一次漫步中走得太远。
      */
     protected static final double WANDER_MAX_DIST_SQ_FROM_PET_STATIONARY = 4.0;
 
     /**
-     * Maximum squared distance (blocks²) from Pet's current position when owner is moving.
-     * Value of 9.0 = 3 blocks. Allows slightly longer strolls.
+     * 主人移动时，漫步目标距宠物当前位置的最大距离平方（格²）。
+     * 值 9.0 = 3 格。允许稍长一些的漫步。
      */
     protected static final double WANDER_MAX_DIST_SQ_FROM_PET_MOVING = 9.0;
 
     /**
-     * Maximum attempts to find a valid wander position before giving up.
-     * Higher values increase chance of finding valid position but cost more CPU.
+     * 放弃前寻找有效漫步位置的最大尝试次数。
+     * 提高该值可增加找到有效位置的概率，但会消耗更多 CPU。
      */
     protected static final int WANDER_MAX_ATTEMPTS = 5;
 
     // -------------------------------------------------------------------------
-    // MOVEMENT SPEED - Parameters for stroll movement
+    // 移动速度 - 漫步移动的参数
     // -------------------------------------------------------------------------
 
     /**
-     * Movement speed (blocks/tick) for ground Pet strolling.
-     * Slow, relaxed pace independent of owner's configured walk speed.
-     * Creates natural idle wandering rather than darting movement.
+     * 地面宠物漫步时的移动速度（格/tick）。
+     * 缓慢、放松的步速，与主人配置的行走速度无关。
+     * 营造自然的空闲漫步，而非突然猛冲。
      */
     protected static final double STROLL_SPEED = 0.15;
 
     /**
-     * Minimum time (ticks) for a stroll to complete.
-     * Prevents very short strolls that look unnatural.
+     * 一次漫步完成所需的最短时间（tick）。
+     * 防止出现过短而不自然的漫步。
      */
     protected static final int MIN_STROLL_TIME = 3;
 
     /**
-     * Distance divisor for calculating stroll timeout.
+     * 计算漫步超时所用的距离除数。
      * timeout = max(MIN_STROLL_TIME, distance / TIMEOUT_DIVISOR)
-     * Value of 3 gives approximately 1 tick per 3 blocks of distance.
+     * 取 3 时，大约每 3 格距离对应 1 tick。
      */
     protected static final int STROLL_TIMEOUT_DIVISOR = 3;
 
     /**
-     * Distance threshold (blocks) for considering stroll destination reached.
-     * When Pet is closer than this to target, stroll completes successfully.
+     * 判定已到达漫步目的地的距离阈值（格）。
+     * 当宠物与目标的距离小于该值时，漫步视为成功完成。
      */
     protected static final double DESTINATION_REACHED_THRESHOLD = 0.75;
 
-    // ==================== INSTANCE FIELDS ====================
+    // ==================== 实例字段 ====================
 
-    /** The Pet entity performing the stroll behavior. */
+    /** 执行漫步行为的宠物实体。 */
     protected final EntityMyPet petEntity;
 
-    /** Navigation system for pathfinding. */
+    /** 用于寻路的导航系统。 */
     protected AbstractNavigation nav;
 
-    /** Current destination for the stroll, or null if no active stroll. */
+    /** 当前漫步的目的地；若无进行中的漫步则为 null。 */
     protected Location moveTo = null;
 
-    /** Remaining ticks before the current stroll times out. */
+    /** 当前漫步超时前剩余的 tick 数。 */
     protected int timeToMove = 0;
 
-    /** Maximum squared distance from owner before strolling is allowed. */
+    /** 允许漫步时距主人的最大距离平方。 */
     protected final int startDistance;
 
-    /** Reference to the Control goal for checking manual Pet control. */
+    /** 指向 Control goal 的引用，用于检查宠物是否处于手动控制中。 */
     protected Control controlPathfinderGoal;
 
-    /** The Pet's owner as an NMS Player entity. */
+    /** 宠物的主人，以 NMS Player 实体形式表示。 */
     protected final Player owner;
 
-    /** Probability (0.0-1.0) of starting a stroll each tick. */
+    /** 每 tick 开始一次漫步的概率（0.0-1.0）。 */
     protected float strollChance = DEFAULT_STROLL_CHANCE;
 
-    /** Whether the owner is currently stationary (moving less than threshold). */
+    /** 主人当前是否静止（移动量小于阈值）。 */
     protected boolean ownerStationary = false;
 
-    /** Last tracked X position of owner for movement calculation. */
+    /** 用于移动计算的主人上一次记录的 X 坐标。 */
     private double lastOwnerX = 0;
 
-    /** Last tracked Z position of owner for movement calculation. */
+    /** 用于移动计算的主人上一次记录的 Z 坐标。 */
     private double lastOwnerZ = 0;
 
-    /** Smoothed owner movement speed in blocks per tick. */
+    /** 经过平滑的主人移动速度，单位格/tick。 */
     protected double ownerMovementSpeed = 0;
 
-    /** Last tick when movement tracking was updated. */
+    /** 上一次更新移动跟踪所在的 tick。 */
     private int lastTrackingTick = -1;
 
     /**
-     * Updates owner movement tracking using position-based delta calculation.
+     * 基于位置差值计算来更新主人移动跟踪。
      *
-     * <p>This method must be called each tick for accurate readings. It uses position
-     * tracking instead of {@code getDeltaMovement()} because the latter is unreliable
-     * for player entities (often returns near-zero even when walking).
+     * <p>为获得准确读数，必须每 tick 调用该方法。它使用位置跟踪，
+     * 而不是 {@code getDeltaMovement()}，因为后者对玩家实体并不可靠
+     * （即使正在行走也常常返回接近 0 的值）。
      *
-     * <p>The movement speed is smoothed using exponential moving average (20% current, 80% previous)
-     * to prevent jitter from affecting the stationary detection.
+     * <p>移动速度使用指数移动平均（当前值 20%，历史值 80%）进行平滑，
+     * 以避免抖动影响静止状态的判定。
      */
     protected void updateOwnerMovementTracking() {
         double currentOwnerX = owner.getX();
@@ -237,7 +236,7 @@ public class MyPetRandomStroll implements AIGoal, de.Keyle.MyPet.api.entity.ai.m
         int ticksSinceLastUpdate = currentTick - lastTrackingTick;
         lastTrackingTick = currentTick;
 
-        // Only calculate movement if we have continuous tracking (no gaps)
+        // 仅在跟踪连续（无间隙）时才计算移动量
         if (ticksSinceLastUpdate <= MAX_TRACKING_GAP && ticksSinceLastUpdate > 0) {
             double dx = currentOwnerX - lastOwnerX;
             double dz = currentOwnerZ - lastOwnerZ;
@@ -250,15 +249,15 @@ public class MyPetRandomStroll implements AIGoal, de.Keyle.MyPet.api.entity.ai.m
         lastOwnerX = currentOwnerX;
         lastOwnerZ = currentOwnerZ;
 
-        // Owner is stationary if actual movement is very small
+        // 若实际移动量非常小，则判定主人静止
         ownerStationary = ownerMovementSpeed < OWNER_STATIONARY_THRESHOLD;
     }
 
     /**
-     * Creates a new random stroll AI goal for the specified Pet.
+     * 为指定宠物创建新的随机漫步 AI goal。
      *
-     * @param entityMyPet   the Pet entity that will perform random strolls
-     * @param startDistance maximum distance from owner for strolling (will be squared internally)
+     * @param entityMyPet   将执行随机漫步的宠物实体
+     * @param startDistance 漫步时与主人的最大距离（内部会求平方）
      */
     public MyPetRandomStroll(EntityMyPet entityMyPet, int startDistance) {
         this.petEntity = entityMyPet;
@@ -286,21 +285,21 @@ public class MyPetRandomStroll implements AIGoal, de.Keyle.MyPet.api.entity.ai.m
             return false;
         }
 
-        // Check if owner is stationary using position-based tracking
-        // (getDeltaMovement is unreliable for players - returns near-zero even when walking)
+        // 使用基于位置的跟踪判断主人是否静止
+        // （getDeltaMovement 对玩家并不可靠 - 即使正在行走也返回接近 0 的值）
         updateOwnerMovementTracking();
 
-        // Only allow strolling when owner is truly stationary
-        // If owner is moving, Pet should be following, not strolling
+        // 仅在主人确实静止时才允许漫步
+        // 若主人在移动，宠物应当跟随，而不是漫步
         if (!ownerStationary) {
             return false;
         }
 
         double distSqToOwner = this.petEntity.distanceToSqr(owner);
 
-        // When owner is stationary, use tight constraint
+        // 主人静止时，使用更严格的约束
         if (distSqToOwner <= STATIONARY_MAX_DIST_SQ) {
-            // Only stroll if close enough to owner and not being controlled
+            // 只有在足够靠近主人且未被手动控制时才漫步
             return controlPathfinderGoal == null || controlPathfinderGoal.moveTo == null;
         } else return false;
     }
@@ -313,10 +312,10 @@ public class MyPetRandomStroll implements AIGoal, de.Keyle.MyPet.api.entity.ai.m
             return true;
         }
 
-        // Re-check if owner is stationary using position-based tracking
+        // 使用基于位置的跟踪再次检查主人是否静止
         updateOwnerMovementTracking();
 
-        // Use tighter constraint when owner is stationary
+        // 主人静止时使用更严格的约束
         double maxDistSq = ownerStationary ? STATIONARY_MAX_DIST_SQ : this.startDistance;
         double distSqToOwner = this.petEntity.distanceToSqr(owner);
 
@@ -363,33 +362,33 @@ public class MyPetRandomStroll implements AIGoal, de.Keyle.MyPet.api.entity.ai.m
     }
 
     /**
-     * Generates a random position for the Pet to wander to.
+     * 为宠物生成一个随机漫步目标位置。
      *
-     * <p>The position is constrained to be within range of both the owner and the Pet's
-     * current position. When the owner is stationary, tighter constraints are used
-     * (2-block radius vs 3-block radius).
+     * <p>该位置需同时位于主人与宠物当前位置的可达范围内。
+     * 当主人静止时，使用更严格的约束
+     * （2 格半径 vs 3 格半径）。
      *
-     * <p>The method attempts up to 5 random positions using {@link LandRandomPos} before
-     * giving up and returning null.
+     * <p>该方法使用 {@link LandRandomPos} 最多尝试 5 个随机位置，
+     * 若都不可用则返回 null。
      *
-     * @return a valid wander target position, or {@code null} if no suitable position found
+     * @return 有效的漫步目标位置；若找不到合适位置则返回 {@code null}
      */
     protected Vec3 getPosition() {
-        // When owner is stationary, use a smaller wander radius
+        // 主人静止时，使用更小的漫步半径
         int wanderRadius = ownerStationary ? WANDER_RADIUS_STATIONARY : WANDER_RADIUS_MOVING;
         double maxDistSqFromOwner = ownerStationary ? WANDER_MAX_DIST_SQ_STATIONARY : this.startDistance;
-        // Also limit how far the Pet travels from its current position
+        // 同时限制宠物距其当前位置的行进距离
         double maxDistSqFromPet = ownerStationary ? WANDER_MAX_DIST_SQ_FROM_PET_STATIONARY : WANDER_MAX_DIST_SQ_FROM_PET_MOVING;
 
         Vec3 petPos = petEntity.position();
 
-        // Get a random position, but ensure it stays within range of both owner and Pet
+        // 获取一个随机位置，但确保其同时处于主人和宠物的范围内
         for (int i = 0; i < WANDER_MAX_ATTEMPTS; i++) {
             Vec3 vec = LandRandomPos.getPos(this.petEntity, wanderRadius, 0);
             if (vec != null) {
-                // Check distance from target to owner
+                // 检查目标到主人的距离
                 double distSqToOwner = vec.distanceToSqr(owner.getX(), owner.getY(), owner.getZ());
-                // Check distance from target to Pet's current position
+                // 检查目标到宠物当前位置的距离
                 double distSqToPet = vec.distanceToSqr(petPos);
 
                 if (distSqToOwner < maxDistSqFromOwner && distSqToPet < maxDistSqFromPet) {
@@ -397,25 +396,24 @@ public class MyPetRandomStroll implements AIGoal, de.Keyle.MyPet.api.entity.ai.m
                 }
             }
         }
-        // If no valid position found, stay near current position
+        // 若找不到有效位置，则停留在当前位置附近
         return null;
     }
 
     /**
-     * Applies the movement speed for strolling.
+     * 应用漫步时的移动速度。
      *
-     * <p>Uses a slow, constant speed (0.15) independent of the player's configured walk speed.
-     * This prevents Pets from darting around erratically when the player has high walk speed
-     * but is standing still.
+     * <p>使用缓慢的恒定速度（0.15），与玩家配置的行走速度无关。
+     * 当玩家行走速度较高但仍站在原地时，这可避免宠物到处乱窜。
      *
-     * <p>Subclasses may override this to provide different speeds for flying or swimming Pets.
+     * <p>子类可以覆盖该方法，为飞行或游泳宠物提供不同的速度。
      */
     protected void applySpeed() {
         nav.getParameters().addSpeedModifier("RandomStroll", STROLL_SPEED);
     }
 
     /**
-     * Called each tick while the stroll is active to decrement the timeout counter.
+     * 漫步激活期间每 tick 调用，用于递减超时计数器。
      */
     public void schedule() {
         timeToMove--;

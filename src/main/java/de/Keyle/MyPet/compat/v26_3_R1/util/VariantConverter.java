@@ -20,7 +20,7 @@ import org.bukkit.entity.Frog;
 import org.bukkit.entity.Pig;
 
 /**
- * Converts numerical variants into fancy new variants
+ * 将数字形式的变种转换为新的对象形式变种
  */
 public class VariantConverter {
 

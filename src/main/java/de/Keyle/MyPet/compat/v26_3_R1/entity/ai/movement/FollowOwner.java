@@ -38,28 +38,28 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 
 /**
- * AI goal that makes a Pet follow its owner with intelligent speed matching and movement control.
+ * 让宠物跟随其主人的 AI goal，具备智能速度匹配与移动控制。
  *
- * <p>This goal implements an owner-following behavior that adapts to different scenarios:
+ * <p>该 goal 实现了能适应不同场景的跟随主人行为：
  * <ul>
- *   <li><b>Cruise Mode</b> (distance &lt; 10 blocks): Speed matches owner's movement for natural following</li>
- *   <li><b>FAR Mode</b> (distance &gt;= 10 blocks): Rapid catch-up with boosted speed</li>
- *   <li><b>Teleportation</b>: Automatic teleport when Pet falls too far behind</li>
+ *   <li><b>巡航模式</b>（距离 &lt; 10 格）：速度匹配主人的移动速度，实现自然跟随</li>
+ *   <li><b>远距离模式</b>（距离 &gt;= 10 格）：以加速后的速度快速追上</li>
+ *   <li><b>传送</b>：当宠物落后太远时自动传送</li>
  * </ul>
  *
- * <p>The goal handles three types of Pets differently:
+ * <p>该 goal 对三类宠物采取不同处理方式：
  * <ul>
- *   <li><b>Ground Pets</b>: Use pathfinder-based movement with direct MOVEMENT_SPEED attribute control</li>
- *   <li><b>Flying Pets</b>: Use velocity-based movement with hover height maintenance above owner</li>
- *   <li><b>Swimming Pets</b>: Use velocity-based movement with water resistance compensation</li>
+ *   <li><b>地面宠物</b>：基于寻路器的移动，直接控制 MOVEMENT_SPEED 属性</li>
+ *   <li><b>飞行宠物</b>：基于速度的移动，并在主人上方维持悬停高度</li>
+ *   <li><b>游泳宠物</b>：基于速度的移动，并补偿水的阻力</li>
  * </ul>
  *
- * <p>Key features include:
+ * <p>主要特性包括：
  * <ul>
- *   <li>Owner speed tracking via position delta (not unreliable getDeltaMovement)</li>
- *   <li>Velocity steering to prevent overshooting</li>
- *   <li>Progressive braking when approaching owner</li>
- *   <li>Surface swimming for non-aquatic Pets when owner is in water</li>
+ *   <li>通过位置差值追踪主人速度（而不是不可靠的 getDeltaMovement）</li>
+ *   <li>速度转向以避免冲过头</li>
+ *   <li>接近主人时渐进式减速</li>
+ *   <li>主人处于水中时，非水生宠物在水面游泳</li>
  * </ul>
  *
  * @see MyPetRandomStroll
@@ -68,393 +68,393 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 @Compat("v26_3_R1")
 public class FollowOwner implements AIGoal {
 
-	// ==================== TUNABLE CONSTANTS ====================
-	// These values control owner-following behavior and can be adjusted to fine-tune movement.
-	// All distance values are in blocks, speeds are in blocks/tick unless noted.
+	// ==================== 可调常量 ====================
+	// 这些值控制跟随主人的行为，可调整以微调移动表现。
+	// 除特别注明外，所有距离值单位为格，速度单位为格/tick。
 
 	// -------------------------------------------------------------------------
-	// DISTANCE THRESHOLDS - Define the boundaries between movement modes
+	// 距离阈值 - 定义各移动模式之间的分界
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Maximum distance (in blocks) for CRUISE mode activation.
-	 * Below this distance, Pet speed scales with owner's movement speed.
-	 * Above this distance, FAR mode activates with boosted catch-up speed.
+	 * 巡航模式激活的最大距离（格）。
+	 * 该距离以内，宠物速度随主人的移动速度缩放。
+	 * 超过该距离则启用远距离模式，以加速后的速度追赶。
 	 */
 	private static final double CRUISE_RANGE = 10.0;
 
 	/**
-	 * Distance threshold (in blocks) for "close" speed settings.
-	 * When Pet is closer than this to owner, it uses slower multipliers
-	 * to avoid overshooting and oscillating around the owner.
+	 * "近距离" 速度设置的距离阈值（格）。
+	 * 当宠物与主人的距离小于该值时，使用更慢的倍率，
+	 * 以避免冲过头并在主人周围来回摆动。
 	 */
 	private static final double CLOSE_RANGE = 4.0;
 
 	/**
-	 * Distance threshold (in blocks) where speed transitions from close to catching-up.
-	 * Between CLOSE_RANGE and TRANSITION_RANGE, speed multipliers interpolate.
-	 * Above TRANSITION_RANGE (but below CRUISE_RANGE), full catch-up multipliers apply.
+	 * 速度从近距离过渡到追赶段的距离阈值（格）。
+	 * 在 CLOSE_RANGE 与 TRANSITION_RANGE 之间，速度倍率线性插值。
+	 * 超过 TRANSITION_RANGE（但不超过 CRUISE_RANGE）时，应用完整的追赶倍率。
 	 */
 	private static final double TRANSITION_RANGE = 5.0;
 
 	/**
-	 * Squared distance threshold for full stop behavior.
-	 * When Pet is closer than sqrt(2.0) ≈ 1.4 blocks, navigation stops
-	 * and velocity is zeroed to prevent jittering around the owner.
+	 * 完全停止行为的距离平方阈值。
+	 * 当宠物距离小于 sqrt(2.0) ≈ 1.4 格时停止导航
+	 * 并将速度归零，以避免在主人周围抖动。
 	 */
 	private static final double FULL_STOP_DIST_SQ = 2.0;
 
 	/**
-	 * Horizontal distance (in blocks) at which surface swimming stops.
-	 * When a non-aquatic Pet is surface-swimming toward an owner in water,
-	 * it will stop and float once within this horizontal distance.
+	 * 水面游泳停止时的水平距离（格）。
+	 * 当非水生宠物在水面朝水中的主人游动时，
+	 * 一旦进入该水平距离内就停下并漂浮。
 	 */
 	private static final double SURFACE_SWIM_CLOSE = 3.0;
 
 	// -------------------------------------------------------------------------
-	// OWNER MOVEMENT TRACKING - Parameters for detecting owner speed
+	// 主人移动追踪 - 检测主人速度的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Speed threshold (blocks/tick) below which owner is considered stationary.
-	 * Normal walking is ~0.1 blocks/tick, sprinting ~0.13, speed 2 walking ~0.2.
-	 * Value of 0.03 detects when owner is standing still or barely moving.
+	 * 视为主人静止的速度阈值（格/tick）。
+	 * 正常行走约 0.1 格/tick，疾跑约 0.13，速度 2 行走约 0.2。
+	 * 取 0.03 可检测出主人站在原地或几乎不移动的情况。
 	 */
 	private static final double OWNER_STATIONARY_THRESHOLD = 0.03;
 
 	/**
-	 * Weight for current tick's speed in exponential moving average (EMA).
-	 * Higher values make speed tracking more responsive but jittery.
-	 * Formula: newSpeed = RESPONSIVE * current + STABLE * previous
+	 * 指数移动平均（EMA）中当前 tick 速度的权重。
+	 * 值越高，速度追踪越灵敏但越容易抖动。
+	 * 公式：newSpeed = RESPONSIVE * current + STABLE * previous
 	 */
 	private static final double SPEED_SMOOTHING_RESPONSIVE = 0.2;
 
 	/**
-	 * Weight for previous speed in exponential moving average (EMA).
-	 * Higher values make speed tracking more stable but slower to react.
-	 * Must equal (1.0 - SPEED_SMOOTHING_RESPONSIVE) for proper EMA.
+	 * 指数移动平均（EMA）中上一次速度的权重。
+	 * 值越高，速度追踪越稳定但反应越慢。
+	 * 为满足 EMA 条件，必须等于 (1.0 - SPEED_SMOOTHING_RESPONSIVE)。
 	 */
 	private static final double SPEED_SMOOTHING_STABLE = 0.8;
 
 	/**
-	 * Decay rate per tick for the owner speed peak tracker.
-	 * Peak tracking prevents Pets from slowing down prematurely when owner
-	 * briefly pauses. Value of 0.95 means peak decays ~5% per tick.
+	 * 主人速度峰值追踪器每 tick 的衰减率。
+	 * 峰值追踪可防止主人在短暂停顿时宠物过早减速。
+	 * 取 0.95 表示峰值每 tick 衰减约 5%。
 	 */
 	private static final double SPEED_PEAK_DECAY = 0.95;
 
 	// -------------------------------------------------------------------------
-	// SPEED MULTIPLIER CAPS - Prevent extreme speeds at high player speeds
+	// 速度倍率上限 - 防止玩家速度很高时出现极端速度
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Maximum speed multiplier cap for Pets.
+	 * 宠物的速度倍率上限。
 	 */
 	private static final double MAX_SPEED_MULTIPLIER = 2.5;
 
 	// -------------------------------------------------------------------------
-	// FLYING/SWIMMING CRUISE MULTIPLIERS - Speed scaling for velocity-based Pets
+	// 飞行/游泳宠物的巡航倍率 - 用于基于速度移动的宠物
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Speed multiplier for flying/swimming Pets when close to owner (< CLOSE_RANGE).
-	 * Applied to owner's movement speed to calculate Pet cruise speed.
-	 * Higher than ground Pets because velocity caps limit actual movement.
+	 * 飞行/游泳宠物靠近主人（< CLOSE_RANGE）时的速度倍率。
+	 * 基于主人的移动速度计算宠物的巡航速度。
+	 * 比地面宠物更高，因为速度上限会限制实际移动。
 	 */
 	private static final double FLY_SWIM_CRUISE_CLOSE_MULT = 1.5;
 
 	/**
-	 * Speed multiplier for flying/swimming Pets when catching up (> TRANSITION_RANGE).
-	 * Maximum multiplier used in cruise mode for these Pet types.
+	 * 飞行/游泳宠物追赶时（> TRANSITION_RANGE）的速度倍率。
+	 * 这是该类宠物在巡航模式下使用的最大倍率。
 	 */
 	private static final double FLY_SWIM_CRUISE_FAR_MULT = 2.5;
 
 	/**
-	 * Distance factor for flying/swimming Pets beyond TRANSITION_RANGE.
-	 * For each block beyond transition, distanceFactor increases by this amount.
-	 * Example: At 8 blocks (3 beyond transition), factor = 1.0 + 3 * 0.15 = 1.45
+	 * 飞行/游泳宠物在 TRANSITION_RANGE 之外的倍率距离因子。
+	 * 每超出过渡距离 1 格，distanceFactor 就增加该值。
+	 * 示例：距离 8 格（超出过渡 3 格）时，factor = 1.0 + 3 * 0.15 = 1.45
 	 */
 	private static final double FLY_SWIM_CRUISE_DIST_FACTOR = 0.15;
 
 	// -------------------------------------------------------------------------
-	// GROUND PET CRUISE MULTIPLIERS - Speed scaling for pathfinder-based Pets
+	// 地面宠物的巡航倍率 - 用于基于寻路的宠物
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Speed multiplier for ground Pets when close to owner (< CLOSE_RANGE).
-	 * Lower than flying/swimming because ground pathfinding is more efficient
-	 * and doesn't have velocity cap overhead.
+	 * 地面宠物靠近主人（< CLOSE_RANGE）时的速度倍率。
+	 * 比飞行/游泳宠物更低，因为地面寻路更高效，
+	 * 且没有速度上限的额外开销。
 	 */
 	private static final double GROUND_CRUISE_CLOSE_MULT = 1.2;
 
 	/**
-	 * Speed multiplier for ground Pets when catching up (> TRANSITION_RANGE).
-	 * Maximum multiplier used in cruise mode for ground Pets.
+	 * 地面宠物追赶时（> TRANSITION_RANGE）的速度倍率。
+	 * 这是地面宠物在巡航模式下使用的最大倍率。
 	 */
 	private static final double GROUND_CRUISE_FAR_MULT = 1.8;
 
 	/**
-	 * Interpolation scale for ground Pet speed in transition zone.
-	 * Between CLOSE_RANGE and TRANSITION_RANGE, multiplier interpolates:
+	 * 地面宠物在过渡区间的速度插值系数。
+	 * 在 CLOSE_RANGE 与 TRANSITION_RANGE 之间，倍率按以下方式插值：
 	 * mult = CLOSE_MULT + (distance - CLOSE_RANGE) * TRANSITION_SCALE
 	 */
 	private static final double GROUND_CRUISE_TRANSITION_SCALE = 0.6;
 
 	/**
-	 * Distance factor for ground Pets beyond TRANSITION_RANGE.
-	 * For each block beyond transition, distanceFactor increases by this amount.
-	 * Lower than flying/swimming because ground pathfinding is more direct.
+	 * 地面宠物在 TRANSITION_RANGE 之外的倍率距离因子。
+	 * 每超出过渡距离 1 格，distanceFactor 就增加该值。
+	 * 比飞行/游泳宠物更低，因为地面寻路更直接。
 	 */
 	private static final double GROUND_CRUISE_DIST_FACTOR = 0.1;
 
 	// -------------------------------------------------------------------------
-	// MINIMUM CRUISE SPEEDS - Floor values to prevent sluggish movement
+	// 最低巡航速度 - 防止移动过慢的下限值
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Minimum cruise speed for flying and swimming Pets.
-	 * Ensures Pets keep moving even when owner is stationary or moving slowly.
-	 * Higher than ground Pets due to 3D pathing overhead and medium resistance.
+	 * 飞行与游泳宠物的最低巡航速度。
+	 * 确保主人静止或缓慢移动时宠物仍保持移动。
+	 * 比地面宠物更高，原因是 3D 寻路开销与水的阻力。
 	 */
 	private static final float FLY_SWIM_MIN_CRUISE = 0.5f;
 
 	/**
-	 * Minimum cruise speed for ground Pets.
-	 * Ensures responsive movement even when owner moves slowly.
-	 * Lower than flying/swimming because ground pathing is more efficient.
+	 * 地面宠物的最低巡航速度。
+	 * 确保主人缓慢移动时宠物仍能灵敏响应。
+	 * 比飞行/游泳宠物更低，因为地面寻路更高效。
 	 */
 	private static final float GROUND_MIN_CRUISE = 0.25f;
 
 	// -------------------------------------------------------------------------
-	// FLYING PET SPECIFIC - Parameters for aerial Pet behavior
+	// 飞行宠物专用 - 空中宠物行为的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Target hover height (in blocks) above owner's position.
-	 * Flying Pets maintain this altitude offset to stay visible
-	 * and avoid clipping into the owner's model.
+	 * 在主人位置上方保持的目标悬停高度（格）。
+	 * 飞行宠物维持该高度偏移以保持可见，
+	 * 并避免与主人的模型重叠。
 	 */
 	private static final double HOVER_HEIGHT = 1.5;
 
 	/**
-	 * Bonus speed added to flying Pets when beyond CLOSE_RANGE.
-	 * Helps flying Pets keep up since they have more complex 3D pathing.
+	 * 飞行宠物超出 CLOSE_RANGE 时附加的加速量。
+	 * 由于飞行宠物的 3D 寻路更复杂，这有助于它们跟上主人。
 	 */
 	private static final float FLYING_BONUS_SPEED = 0.1f;
 
 	/**
-	 * Maximum walk speed for flying Pets in FAR mode.
-	 * Caps pathfinder-requested speed to prevent over-acceleration
-	 * that would then be harshly corrected by velocity caps.
+	 * 飞行宠物在远距离模式下的最大行走速度。
+	 * 限制寻路器请求的速度，以防过度加速，
+	 * 否则随后会被速度上限猛烈拉回。
 	 */
 	private static final float FLYING_WALK_SPEED_CAP = 1.0f;
 
 	// -------------------------------------------------------------------------
-	// SWIMMING PET SPECIFIC - Parameters for aquatic Pet behavior
+	// 游泳宠物专用 - 水生宠物行为的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Bonus speed added to swimming Pets to compensate for water resistance.
-	 * Water significantly slows entity movement, so aquatic Pets need
-	 * higher base speeds to keep pace with their owner.
+	 * 为游泳宠物附加的加速量，用于抵消水的阻力。
+	 * 水会显著减慢实体移动，因此水生宠物需要
+	 * 更高的基础速度才能跟上主人。
 	 */
 	private static final float SWIMMING_BONUS_SPEED = 0.6f;
 
 	/**
-	 * Additional speed bonus when owner has Dolphin's Grace effect.
-	 * Allows Pet to keep up when owner swims faster with the effect.
+	 * 主人拥有海豚的恩惠效果时的额外加速量。
+	 * 使宠物在主人因该效果游得更快时仍能跟上。
 	 */
 	private static final float DOLPHINS_GRACE_BONUS = 0.08f;
 
 	/**
-	 * Maximum speed for surface swimming (non-aquatic Pets following owner in water).
-	 * Caps horizontal velocity to prevent unrealistic surface skating.
+	 * 水面游泳的最高速度（非水生宠物在水中跟随主人时）。
+	 * 限制水平速度，防止出现不切实际的水面滑行。
 	 */
 	private static final double SURFACE_SWIM_MAX_SPEED = 0.3;
 
 	/**
-	 * Base speed for surface swimming before distance scaling.
-	 * Combined with distance factor: speed = min(MAX, BASE + distance * 0.01)
+	 * 水面游泳在进行距离缩放之前的基础速度。
+	 * 与距离因子组合：speed = min(MAX, BASE + distance * 0.01)
 	 */
 	private static final double SURFACE_SWIM_BASE_SPEED = 0.1;
 
 	/**
-	 * Velocity blending factor for surface swimming.
-	 * Controls how much of current velocity vs target velocity is used.
-	 * Value of 0.5 means 50% current + 50% target for smooth transitions.
+	 * 水面游泳的速度混合系数。
+	 * 控制当前速度与目标速度各占多少。
+	 * 取 0.5 表示 50% 当前速度 + 50% 目标速度，以实现平滑过渡。
 	 */
 	private static final double SURFACE_SWIM_BLEND = 0.5;
 
 	// -------------------------------------------------------------------------
-	// VELOCITY CAP MARGINS - Control maximum velocity relative to owner speed
+	// 速度上限余量 - 控制相对主人速度的最大速度
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Velocity cap margin when Pet is close to owner (< CLOSE_RANGE).
-	 * Pet's max velocity = ownerSpeed * margin. Value < 1.0 means Pet
-	 * moves slower than owner to prevent catch-up oscillation.
+	 * 宠物靠近主人（< CLOSE_RANGE）时的速度上限余量。
+	 * 宠物的最大速度 = ownerSpeed * margin。值 < 1.0 表示宠物
+	 * 比主人移动得慢，以防止追赶时的来回摆动。
 	 */
 	private static final double VEL_CAP_CLOSE_MARGIN = 0.75;
 
 	/**
-	 * Velocity cap margin for flying/swimming Pets when catching up.
-	 * Value > 1.0 allows Pet to move faster than owner to close distance.
-	 * Higher than ground Pets due to 3D path inefficiency.
+	 * 飞行/游泳宠物追赶时的速度上限余量。
+	 * 值 > 1.0 允许宠物比主人移动得更快，以缩短距离。
+	 * 由于 3D 寻路效率较低，该值高于地面宠物。
 	 */
 	private static final double VEL_CAP_FAR_MARGIN_HIGH = 1.1;
 
 	/**
-	 * Velocity cap margin for ground Pets when catching up.
-	 * Value < 1.0 keeps ground Pets from overshooting since their
-	 * pathfinding is more direct and efficient than flying/swimming.
+	 * 地面宠物追赶时的速度上限余量。
+	 * 值 < 1.0 可防止地面宠物冲过头，因为其
+	 * 寻路比飞行/游泳宠物更直接高效。
 	 */
 	private static final double VEL_CAP_FAR_MARGIN_LOW = 0.80;
 
 	/**
-	 * Minimum velocity cap for flying/swimming Pets (blocks/tick).
-	 * Ensures Pets can still move when owner is stationary.
-	 * Higher than ground Pets due to medium resistance overhead.
+	 * 飞行/游泳宠物的最低速度上限（格/tick）。
+	 * 确保主人静止时宠物仍能移动。
+	 * 由于水的阻力开销，该值高于地面宠物。
 	 */
 	private static final double VEL_CAP_MIN_HIGH = 0.25;
 
 	/**
-	 * Minimum velocity cap for ground Pets (blocks/tick).
-	 * Ensures Pets can still move when owner is stationary.
+	 * 地面宠物的最低速度上限（格/tick）。
+	 * 确保主人静止时宠物仍能移动。
 	 */
 	private static final double VEL_CAP_MIN_LOW = 0.15;
 
 	// -------------------------------------------------------------------------
-	// STEERING - Parameters for course correction toward owner
+	// 转向 - 朝主人修正方向的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Base alignment threshold for steering activation (cosine of angle).
-	 * Value of 0.5 ≈ cos(60°), so steering activates when Pet is
-	 * more than 60° off-course from direct path to owner.
+	 * 转向激活的基础对齐阈值（夹角的余弦值）。
+	 * 取 0.5 ≈ cos(60°)，即宠物偏离直线路径超过
+	 * 60° 时才会激活转向。
 	 */
 	private static final double STEER_BASE_THRESHOLD = 0.5;
 
 	/**
-	 * Maximum alignment threshold at high speeds (cosine of angle).
-	 * Value of 0.7 ≈ cos(45°). At higher speeds, steering activates
-	 * earlier to prevent overshooting due to momentum.
+	 * 高速时的最大对齐阈值（夹角的余弦值）。
+	 * 取 0.7 ≈ cos(45°)。速度越高，转向越早激活，
+	 * 以防止因惯性冲过头。
 	 */
 	private static final double STEER_MAX_THRESHOLD = 0.7;
 
 	/**
-	 * Base steering strength factor.
-	 * Determines how aggressively velocity is redirected toward owner.
-	 * Higher values = sharper turns, lower values = smoother curves.
+	 * 基础转向强度系数。
+	 * 决定速度朝主人方向偏转的激进程度。
+	 * 值越高 = 转弯越急，值越低 = 曲线越平滑。
 	 */
 	private static final double STEER_BASE_FACTOR = 0.3;
 
 	/**
-	 * Maximum steering strength factor.
-	 * Caps how aggressively the Pet can turn, preventing jarring
-	 * instant direction changes. Applied when severely off-course.
+	 * 最大转向强度系数。
+	 * 限制宠物的转向激进程度，防止出现生硬的
+	 * 瞬间变向。在严重偏离航线时应用。
 	 */
 	private static final double STEER_MAX_FACTOR = 0.85;
 
 	/**
-	 * Minimum horizontal speed (blocks/tick) required for steering.
-	 * Below this speed, steering is skipped to avoid jitter when nearly stopped.
+	 * 执行转向所需的最低水平速度（格/tick）。
+	 * 低于该速度时跳过转向，避免几乎静止时的抖动。
 	 */
 	private static final double STEER_MIN_SPEED = 0.1;
 
 	/**
-	 * Minimum distance to owner (blocks) required for steering.
-	 * Below this distance, steering is skipped since direction matters less.
+	 * 执行转向所需的最小主人距离（格）。
+	 * 低于该距离时跳过转向，因为此时方向不太重要。
 	 */
 	private static final double STEER_MIN_DIST = 0.5;
 
 	// -------------------------------------------------------------------------
-	// BRAKING - Parameters for slowing down when approaching owner
+	// 减速 - 接近主人时减速的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Minimum braking distance (blocks) for flying/swimming Pets.
-	 * Within this distance, braking logic activates to prevent overshooting.
-	 * Actual brake distance may be larger based on speed multiplier.
+	 * 飞行/游泳宠物的最小减速距离（格）。
+	 * 在该距离内激活减速逻辑，以防止冲过头。
+	 * 实际减速距离可能更大，取决于速度倍率。
 	 */
 	private static final double BRAKE_MIN_DISTANCE = 3.0;
 
 	/**
-	 * Minimum speed (blocks/tick) before braking is applied.
-	 * If Pet is already moving slowly, braking is skipped.
+	 * 执行减速前的最低速度（格/tick）。
+	 * 如果宠物已经在缓慢移动，则跳过减速。
 	 */
 	private static final double BRAKE_SPEED_THRESHOLD = 0.25;
 
 	/**
-	 * Brake factor at distance = 0 (right at owner).
-	 * Speed is multiplied by this factor, so 0.3 means reduce to 30% speed.
-	 * Lower values = harder braking when very close.
+	 * 距离为 0（正好在主人处）时的减速系数。
+	 * 速度会乘以该系数，因此 0.3 表示降至 30% 速度。
+	 * 值越低 = 距离很近时减速越强。
 	 */
 	private static final double BRAKE_FACTOR_MIN = 0.3;
 
 	/**
-	 * Brake factor at brake distance boundary.
-	 * Interpolates from MIN to MAX based on distance within brake zone.
-	 * Higher values = gentler braking at edge of brake zone.
+	 * 减速距离边界处的减速系数。
+	 * 在减速区间内根据距离从 MIN 插值到 MAX。
+	 * 值越高 = 减速区间边缘的减速越平缓。
 	 */
 	private static final double BRAKE_FACTOR_MAX = 0.7;
 
 	// -------------------------------------------------------------------------
-	// FAR MODE - Parameters for catch-up when beyond CRUISE_RANGE
+	// 远距离模式 - 超出 CRUISE_RANGE 后追赶的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Maximum speed boost in FAR mode (added to base walk speed).
-	 * Applied when Pet is far behind owner and needs to catch up quickly.
+	 * 远距离模式下的最大加速量（叠加到基础行走速度上）。
+	 * 当宠物远远落后于主人并需要快速追上时应用。
 	 */
 	private static final float FAR_SPEED_BOOST_MAX = 0.07f;
 
 	/**
-	 * Speed boost scaling factor per block beyond TRANSITION_RANGE.
+	 * 超出 TRANSITION_RANGE 后每格距离的加速缩放系数。
 	 * boost = min(MAX, (distance - TRANSITION_RANGE) * SCALE)
-	 * Provides gradual speed increase as Pet falls further behind.
+	 * 随着宠物落后越多，逐步增大速度。
 	 */
 	private static final double FAR_SPEED_BOOST_SCALE = 0.014;
 
 	/**
-	 * Maximum speed multiplier in FAR mode.
-	 * Caps the effective multiplier to prevent unrealistic speeds
-	 * even when owner has high /speed settings.
+	 * 远距离模式下的最大速度倍率。
+	 * 限制实际生效的倍率以避免不切实际的速度，
+	 * 即使主人使用了较高的 /speed 设置。
 	 */
 	private static final float FAR_MAX_MULTIPLIER = 1.5f;
 
 	// -------------------------------------------------------------------------
-	// BASE VALUES - Fundamental constants used in calculations
+	// 基础值 - 计算中用到的基本常量
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Base speed multiplier applied to calculated walk speeds for ground Pets.
-	 * Flying Pets use 1.0 instead since they need higher base speeds.
+	 * 地面宠物计算行走速度时应用的基础倍率。
+	 * 飞行宠物改用 1.0，因为它们需要更高的基础速度。
 	 */
 	private static final float BASE_SPEED_MULTIPLIER = 0.3f;
 
 	/**
-	 * Normal player walking speed (blocks/tick).
-	 * Used as reference for calculating speed ratios when player has
-	 * modified walk speed (via /speed command or effects).
+	 * 玩家的正常行走速度（格/tick）。
+	 * 当玩家通过 /speed 指令或效果修改了行走速度时，
+	 * 用作计算速度比值的参考值。
 	 */
 	private static final float NORMAL_WALK_SPEED = 0.1f;
 
 	/**
-	 * Interval (in ticks) between look-at-owner updates.
-	 * Controls how often the Pet turns its head toward the owner.
-	 * Lower values = more responsive head tracking, higher CPU usage.
+	 * 两次看向主人更新之间的间隔（tick）。
+	 * 控制宠物转头看向主人的频率。
+	 * 值越低 = 头部追踪越灵敏，但 CPU 开销越高。
 	 */
 	private static final int LOOKAT_INTERVAL = 5;
 
 	/**
-	 * Squared distance constraint when owner is stationary.
-	 * Must match {@link MyPetRandomStroll#STATIONARY_MAX_DIST_SQ} to prevent
-	 * dead zones where neither FollowOwner nor RandomStroll activates.
-	 * Value of 9.0 = 3 blocks squared.
+	 * 主人静止时的距离平方约束。
+	 * 必须与 {@link MyPetRandomStroll#STATIONARY_MAX_DIST_SQ} 一致，以防止出现
+	 * FollowOwner 与 RandomStroll 都不激活的死区。
+	 * 取 9.0 = 3 格的平方。
 	 */
 	private static final double STATIONARY_MAX_DIST_SQ = 9.0;
 
-	// ==================== INSTANCE FIELDS ====================
+	// ==================== 实例字段 ====================
 
 	private final EntityMyPet petEntity;
 	private final AbstractNavigation nav;
@@ -470,7 +470,7 @@ public class FollowOwner implements AIGoal {
 	protected int setPathTimer = 0;
 	private boolean hasPathToOwner = false;
 
-	// Track owner position to calculate actual movement (getDeltaMovement is unreliable for players)
+	// 追踪主人位置以计算实际移动量（对玩家而言 getDeltaMovement 不可靠）
 	private double lastOwnerX = 0;
 	private double lastOwnerZ = 0;
 	private double ownerMovementSpeed = 0; // Smoothed actual movement per tick
@@ -478,12 +478,12 @@ public class FollowOwner implements AIGoal {
 	private int lastTrackingTick = -1; // Detect gaps when FollowOwner wasn't active
 
 	/**
-	 * Creates a new FollowOwner AI goal for the specified Pet entity.
+	 * 为指定的宠物实体创建新的 FollowOwner AI goal。
 	 *
-	 * @param entityMyPet       the Pet entity that will follow its owner
-	 * @param startDistance     minimum distance before Pet starts following (will be squared internally)
-	 * @param stopDistance      distance at which Pet stops following (will be squared internally)
-	 * @param teleportDistance  distance at which Pet teleports to owner (will be squared internally)
+	 * @param entityMyPet       将跟随其主人的宠物实体
+	 * @param startDistance     宠物开始跟随的最小距离（内部会平方处理）
+	 * @param stopDistance      宠物停止跟随的距离（内部会平方处理）
+	 * @param teleportDistance  宠物传送至主人的距离（内部会平方处理）
 	 */
 	public FollowOwner(EntityMyPet entityMyPet, double startDistance, float stopDistance, float teleportDistance) {
 		this.petEntity = entityMyPet;
@@ -496,12 +496,12 @@ public class FollowOwner implements AIGoal {
     }
 
     /**
-     * Checks if the Pet is currently swimming (in water and uses aquatic navigation).
+     * 检查宠物当前是否在游泳（在水中且使用水生导航）。
      *
-     * <p>Unlike {@link #flyingPet}, this is evaluated dynamically since aquatic Pets
-     * can transition between water and land.
+     * <p>与 {@link #flyingPet} 不同，这里进行动态判断，因为水生宠物
+     * 可以在水中与陆地之间切换。
      *
-     * @return {@code true} if the Pet is in water and has aquatic navigation
+     * @return 宠物在水中且使用水生导航时返回 {@code true}
      */
     private boolean isSwimmingPet() {
         return (this.petEntity.isInWater() || this.petEntity.getInBlockState().is(Blocks.BUBBLE_COLUMN))
@@ -509,29 +509,29 @@ public class FollowOwner implements AIGoal {
     }
 
     /**
-     * Checks if the Pet has aquatic navigation capabilities.
+     * 检查宠物是否具备水生导航能力。
      *
-     * @return {@code true} if the Pet can navigate underwater
+     * @return 宠物可在水下寻路时返回 {@code true}
      */
     private boolean canPetSwim() {
         return this.petEntity.getNavigation() instanceof MyAquaticPetPathNavigation;
     }
 
     /**
-     * Checks if the owner is in water while the Pet cannot swim.
+     * 检查主人是否在水中而宠物无法游泳。
      *
-     * <p>When this condition is true, the Pet will use surface swimming behavior
-     * to follow the owner horizontally rather than attempting underwater pathfinding.
+     * <p>当该条件成立时，宠物将使用水面游泳行为
+     * 在水平方向上跟随主人，而不是尝试水下寻路。
      *
-     * @return {@code true} if owner is in water and Pet lacks aquatic navigation
+     * @return 主人在水中且宠物不具备水生导航时返回 {@code true}
      */
     private boolean isOwnerInWaterAndPetCantSwim() {
         return owner.isInWater() && !canPetSwim() && !flyingPet;
     }
 
-    // Some Paper builds remap Abilities#getWalkingSpeed to a narrower access level than the
-    // compile-time API declares, so the call throws IllegalAccessError at runtime. Fall back to
-    // the vanilla default speed rather than crashing the AI goal.
+    // 某些 Paper 构建把 Abilities#getWalkingSpeed 的重映射为比编译期 API 声明的更窄的可访问级别，
+    // 因此该调用会在运行时抛出 IllegalAccessError。回退到
+    // 原版默认速度，而不是让 AI goal 崩溃。
     private float getWalkingSpeed(Player player) {
         try {
             return player.getAbilities().getWalkingSpeed();
@@ -540,7 +540,7 @@ public class FollowOwner implements AIGoal {
         }
     }
 
-    /** Tracks whether the Pet is currently performing surface swimming toward the owner. */
+    /** 追踪宠物当前是否正在朝主人进行水面游泳。 */
     private boolean surfaceSwimmingToOwner = false;
 
 	@Override
@@ -558,12 +558,12 @@ public class FollowOwner implements AIGoal {
             return false;
         }
 
-        // Use tighter constraint when owner is stationary to eliminate dead zone with RandomStroll
-        // ownerMovementSpeed might not be initialized yet on first tick, so also check position delta
+        // 主人静止时使用更严格的约束，以消除与 RandomStroll 之间的死区
+        // ownerMovementSpeed 在第一个 tick 可能还未初始化，因此也检查位置差值
         double distSqToOwner = this.petEntity.distanceToSqr(owner);
         double effectiveStartDistance = this.startDistance;
         if (ownerMovementSpeed < OWNER_STATIONARY_THRESHOLD) {
-            // Owner is stationary - use same tight constraint as RandomStroll
+            // 主人静止 - 使用与 RandomStroll 相同的严格约束
             effectiveStartDistance = STATIONARY_MAX_DIST_SQ;
         }
 
@@ -581,7 +581,7 @@ public class FollowOwner implements AIGoal {
             return true;
         }
 
-        // Use tighter stop distance when owner is stationary
+        // 主人静止时使用更紧的停止距离
         double effectiveStopDistance = this.stopDistance;
         if (ownerMovementSpeed < OWNER_STATIONARY_THRESHOLD) {
             effectiveStopDistance = STATIONARY_MAX_DIST_SQ;
@@ -610,101 +610,101 @@ public class FollowOwner implements AIGoal {
 
 	@Override
     public void tick() {
-        // Use NMS level check to avoid Location object allocations
+        // 使用 NMS 层级的检测以避免 Location 对象分配
         if (this.petEntity.level() != owner.level()) {
             return;
         }
 
-        // Calculate actual owner movement by tracking position changes
-        // This must happen early in tick() so ownerMovementSpeed is available for velocity logic
+        // 通过追踪位置变化计算主人的实际移动量
+        // 必须在 tick() 早期完成，以便速度逻辑能用上 ownerMovementSpeed
         double currentOwnerX = owner.getX();
         double currentOwnerZ = owner.getZ();
         int currentTick = petEntity.tickCount;
         int ticksSinceLastUpdate = currentTick - lastTrackingTick;
         lastTrackingTick = currentTick;
 
-        // Only calculate movement if we have continuous tracking (no gaps)
-        // Gaps occur when FollowOwner wasn't active (e.g., during RandomStroll)
+        // 只有在追踪连续（无间隔）时才计算移动量
+        // 当 FollowOwner 未激活（例如处于 RandomStroll 期间）时会出现间隔
         if (ticksSinceLastUpdate <= 2 && ticksSinceLastUpdate > 0) {
             double dx = currentOwnerX - lastOwnerX;
             double dz = currentOwnerZ - lastOwnerZ;
             double currentMovement = Math.sqrt(dx * dx + dz * dz);
-            // Normalize to per-tick if multiple ticks passed
+            // 如果跨过了多个 tick，则归一化为每 tick 的值
             if (ticksSinceLastUpdate > 1) {
                 currentMovement /= ticksSinceLastUpdate;
             }
-            // Use aggressive smoothing for stability (responsive vs smooth)
+            // 使用较强的平滑以获得稳定性（灵敏 vs 平滑）
             ownerMovementSpeed = SPEED_SMOOTHING_RESPONSIVE * currentMovement + SPEED_SMOOTHING_STABLE * ownerMovementSpeed;
-            // Peak tracking: slowly decay but jump up if current exceeds peak
+            // 峰值追踪：缓慢衰减，但如果当前值超过峰值则直接上跳
             ownerSpeedPeak = ownerSpeedPeak * SPEED_PEAK_DECAY;
             if (ownerMovementSpeed > ownerSpeedPeak) {
                 ownerSpeedPeak = ownerMovementSpeed;
             }
         }
-        // Always update tracked position (even after gap, to prepare for next tick)
+        // 始终更新所追踪的位置（即使有间隔，也为下一个 tick 做准备）
         lastOwnerX = currentOwnerX;
         lastOwnerZ = currentOwnerZ;
 
         double distanceSqr = this.petEntity.distanceToSqr(owner);
         double distance = Math.sqrt(distanceSqr);
 
-		// Look at owner only every LOOKAT_INTERVAL ticks
+		// 每 LOOKAT_INTERVAL 个 tick 才看向主人
 		if (--lookAtTimer <= 0) {
 			this.petEntity.getLookControl().setLookAt(owner, this.petEntity.getMaxHeadXRot(), this.petEntity.getMaxHeadXRot());
 			lookAtTimer = LOOKAT_INTERVAL;
         }
 
-        // Check if owner is in water (swimming/bobbing) and Pet cannot swim
-        // Non-swimming Pets (zombies, etc.) should swim on the surface toward owner's
-        // horizontal position instead of trying to dive down or teleporting repeatedly
+        // 检查主人是否在水中（游泳/浮沉）且宠物无法游泳
+        // 不会游泳的宠物（僵尸等）应在水面朝主人的
+        // 水平位置游动，而不是尝试下潜或频繁传送
         if (isOwnerInWaterAndPetCantSwim()) {
             if (!surfaceSwimmingToOwner) {
                 surfaceSwimmingToOwner = true;
             }
 
-            // Calculate horizontal distance to owner (ignore Y)
+            // 计算与主人的水平距离（忽略 Y）
             double dx = owner.getX() - petEntity.getX();
             double dz = owner.getZ() - petEntity.getZ();
             double horizontalDistSq = dx * dx + dz * dz;
             double horizontalDist = Math.sqrt(horizontalDistSq);
 
-            // If horizontally close enough, just float in place
+            // 如果水平距离已经足够近，就原地漂浮
             if (horizontalDist < SURFACE_SWIM_CLOSE) {
                 return;
             }
 
-            // Swim on the surface toward owner's horizontal position
-            // Use velocity-based movement since we can't use normal pathfinding underwater
+            // 朝主人的水平位置在水面游泳
+            // 使用基于速度的移动，因为水下无法使用普通寻路
             Vec3 vel = petEntity.getDeltaMovement();
 
-            // Normalize horizontal direction
+            // 归一化水平方向
             double dirX = dx / horizontalDist;
             double dirZ = dz / horizontalDist;
 
-            // Surface swimming speed - scale with distance but cap it
+            // 水面游泳速度 - 随距离缩放但设上限
             double swimSpeed = Math.min(SURFACE_SWIM_MAX_SPEED, SURFACE_SWIM_BASE_SPEED + horizontalDist * 0.01);
 
-            // Apply horizontal velocity toward owner, keep existing Y velocity (buoyancy)
+            // 朝主人施加水平速度，保留现有的 Y 速度（浮力）
             double newVelX = dirX * swimSpeed;
             double newVelZ = dirZ * swimSpeed;
 
-            // Blend with existing velocity for smoother movement
+            // 与现有速度混合，使移动更平滑
             newVelX = vel.x * SURFACE_SWIM_BLEND + newVelX * SURFACE_SWIM_BLEND;
             newVelZ = vel.z * SURFACE_SWIM_BLEND + newVelZ * SURFACE_SWIM_BLEND;
 
             Vec3 newVel = new Vec3(newVelX, vel.y, newVelZ);
             petEntity.setDeltaMovement(newVel);
 
-            // Look at owner while swimming
+            // 游泳时看向主人
             this.petEntity.getLookControl().setLookAt(owner, this.petEntity.getMaxHeadXRot(), this.petEntity.getMaxHeadXRot());
 
-            // Don't do normal pathfinding or teleporting - we're handling movement ourselves
+            // 不要进行普通寻路或传送 - 移动由我们自行处理
             return;
         } else if (surfaceSwimmingToOwner) {
             surfaceSwimmingToOwner = false;
 		}
 
-		//Teleportation
+		// 传送
 		if (this.petEntity.canMove()) {
 			if ((!owner.getAbilities().flying && !owner.getBukkitEntity().isGliding()) || flyingPet) {
 				if (!waitForGround) {
@@ -713,10 +713,10 @@ public class FollowOwner implements AIGoal {
                             if (controlPathfinderGoal.moveTo == null && !petEntity.hasTarget()) {
                                 Location ownerLocation = owner.getBukkitEntity().getLocation();
                                 if (MyPetApi.getPlatformHelper().canSpawn(ownerLocation, this.petEntity)) {
-                                    // Stop navigation and velocity before teleport
+                                    // 传送前停止导航并清零速度
                                     this.nav.stop();
                                     this.petEntity.setDeltaMovement(Vec3.ZERO);
-                                    // Teleport without collision checks
+                                    // 不进行碰撞检测的传送
                                     this.petEntity.teleportTo(owner.getX(), owner.getY(), owner.getZ());
                                     this.petEntity.fallDistance = 0;
                                     this.setPathTimer = 0;
@@ -732,49 +732,49 @@ public class FollowOwner implements AIGoal {
                 waitForGround = true;
             }
 
-            // Follow the owner once outside the full stop distance
+            // 离开完全停止距离后再跟随主人
             if (distanceSqr > FULL_STOP_DIST_SQ) {
-                // Apply velocity control to ALL Pets to prevent overshooting
-                // Ground Pets were previously too fast because walk speed doesn't limit actual velocity
+                // 对所有宠物施加速度控制，以防冲过头
+                // 地面宠物此前过快，因为行走速度并不限制实际速度
                 boolean swimmingPet = isSwimmingPet();
                 {
                     Vec3 vel = this.petEntity.getDeltaMovement();
                     float ownerSpeed = getWalkingSpeed(owner);
-                    // Cap speed multiplier - Pets can't handle extreme speeds
-                    // At speed 5 (0.5 walkspeed), raw multiplier would be 5.0, cap at MAX_SPEED_MULTIPLIER
+                    // 限制速度倍率 - 宠物无法承受极端速度
+                    // 在速度 5（0.5 行走速度）时，原始倍率会是 5.0，按 MAX_SPEED_MULTIPLIER 限制
                     double rawSpeedMultiplier = Math.max(1.0, ownerSpeed / NORMAL_WALK_SPEED);
                     double speedMultiplier = Math.min(MAX_SPEED_MULTIPLIER, rawSpeedMultiplier);
 
-                    // Y-control: Flying Pets should hover ABOVE the owner
-                    // Ground/swimming Pets don't need this
+                    // Y 轴控制：飞行宠物应在主人上方悬停
+                    // 地面/游泳宠物不需要这样
                     if (flyingPet) {
                         double targetYLevel = owner.getY() + HOVER_HEIGHT;
 
-                        // Calculate Y offset from TARGET hover position (not owner's Y)
+                        // 相对于目标悬停位置（而不是主人的 Y）计算 Y 偏移
                         double yDiff = targetYLevel - petEntity.getY(); // positive = need to go up, negative = need to go down
                         double maxYVel = 0.5 * Math.min(speedMultiplier, 2.0); // Cap Y at 0.5-1.0
 
-                        // DIRECTIONAL Y CONTROL: Force Y velocity toward target hover height
-                        // If bat is above target (yDiff < 0), Y velocity should be negative (down)
-                        // If bat is below target (yDiff > 0), Y velocity should be positive (up)
+                        // 方向性 Y 轴控制：强制 Y 速度朝向目标悬停高度
+                        // 如果蝙蝠高于目标（yDiff < 0），Y 速度应为负（向下）
+                        // 如果蝙蝠低于目标（yDiff > 0），Y 速度应为正（向上）
                         double targetY;
                         if (Math.abs(yDiff) < 2.0) {
-                            // Close to target height - gentle correction only
+                            // 接近目标高度 - 只做轻微修正
                             targetY = yDiff * 0.3; // Smooth approach
                         } else if (yDiff < 0) {
-                            // Bat is ABOVE target - must go DOWN
-                            // Cap to negative value, stronger when further above
+                            // 蝙蝠高于目标 - 必须向下
+                            // 限定为负值，偏离越高修正越强
                             targetY = Math.max(-maxYVel, yDiff * 0.15);
                             if (vel.y > 0) {
-                                // WRONG DIRECTION! Override completely
+                                // 方向错误！完全覆盖
                                 targetY = -maxYVel * 0.8;
                             }
                         } else {
-                            // Bat is BELOW target - go UP, but capped
+                            // 蝙蝠低于目标 - 向上，但有上限
                             targetY = Math.min(maxYVel, yDiff * 0.15);
                         }
 
-                        // Apply Y correction: blend current Y with target
+                        // 应用 Y 轴修正：将当前 Y 与目标混合
                         double newY = vel.y * 0.3 + targetY * 0.7;
                         newY = Math.max(-maxYVel, Math.min(maxYVel, newY)); // Hard cap both directions
                         vel = new Vec3(vel.x, newY, vel.z);
@@ -783,23 +783,23 @@ public class FollowOwner implements AIGoal {
 
                     double speed = vel.length();
 
-                    // Velocity cap calculation - different margins for ground vs flying/swimming Pets
-                    // Flying/swimming Pets have path inefficiency in 3D, so they need higher margins
-                    // Ground Pets follow paths more directly, so margins should be closer to 1.0
+                    // 速度上限计算 - 地面宠物与飞行/游泳宠物的余量不同
+                    // 飞行/游泳宠物在 3D 中存在寻路效率损失，因此需要更高的余量
+                    // 地面宠物的路径更直接，因此余量应更接近 1.0
                     boolean needsHighMargin = flyingPet || swimmingPet;
 
                     double maxVel;
                     if (distance < CRUISE_RANGE) {
-                        // CRUISE MODE: Cap velocity proportional to owner speed
-                        // This prevents over-acceleration and oscillation
+                        // 巡航模式：按主人速度成比例限制速度
+                        // 这样可以防止过度加速和来回摆动
                         double distFactor;
                         double margin;
                         if (distance < CLOSE_RANGE) {
-                            // CLOSE: Move slower than owner to prevent catch-up
+                            // 靠近：比主人移动得慢，以防追赶
                             distFactor = 1.0;
                             margin = VEL_CAP_CLOSE_MARGIN;
                         } else if (distance < TRANSITION_RANGE) {
-                            // TRANSITION: Gradual change
+                            // 过渡：渐变
                             distFactor = 1.0;
                             if (needsHighMargin) {
                                 margin = VEL_CAP_CLOSE_MARGIN + (distance - CLOSE_RANGE) * 0.35; // -> VEL_CAP_FAR_MARGIN_HIGH
@@ -807,26 +807,26 @@ public class FollowOwner implements AIGoal {
                                 margin = VEL_CAP_CLOSE_MARGIN + (distance - CLOSE_RANGE) * 0.05; // -> VEL_CAP_FAR_MARGIN_LOW
                             }
                         } else {
-                            // CATCHING UP: Allow faster movement for flying/swimming only
+                            // 追赶：仅对飞行/游泳宠物允许更快的移动
                             if (needsHighMargin) {
                                 distFactor = 1.0 + (distance - TRANSITION_RANGE) * 0.06; // 1.0 -> 1.3
                                 margin = VEL_CAP_FAR_MARGIN_HIGH;
                             } else {
-                                // Ground Pets: NO bonus, tight margin (pathfinder is efficient)
+                                // 地面宠物：无加成，余量更紧（寻路器效率高）
                                 distFactor = 1.0;
                                 margin = VEL_CAP_FAR_MARGIN_LOW;
                             }
                         }
                         maxVel = ownerMovementSpeed * distFactor * margin;
-                        // Minimum cap to ensure Pet can still move when owner is slow/stationary
+                        // 速度下限，确保主人缓慢/静止时宠物仍能移动
                         maxVel = Math.max(maxVel, needsHighMargin ? VEL_CAP_MIN_HIGH : VEL_CAP_MIN_LOW);
                     } else {
-                        // FAR MODE: Use distance-based formula for rapid catch-up
+                        // 远距离模式：使用基于距离的公式实现快速追赶
                         double ownerBasedMinVel = ownerSpeedPeak * (needsHighMargin ? 1.3 : 1.1);
                         maxVel = Math.max(speedMultiplier, ownerBasedMinVel);
                     }
 
-                    // Calculate direction to owner (horizontal for steering)
+                    // 计算朝主人的方向（用于转向的水平向量）
                     Vec3 toOwner = new Vec3(
                             owner.getX() - petEntity.getX(),
                             0,
@@ -836,38 +836,38 @@ public class FollowOwner implements AIGoal {
                     double horizontalSpeed = horizontalVel.length();
                     double toOwnerDist = toOwner.length();
 
-                    // Calculate alignment: dot / (|vel| * |toOwner|) = cos(angle)
-                    // 1.0 = moving directly toward, 0.0 = perpendicular, -1.0 = moving away
+                    // 计算对齐度：dot / (|vel| * |toOwner|) = cos(夹角)
+                    // 1.0 = 正朝目标移动，0.0 = 垂直，-1.0 = 正在远离
                     double alignment = 0;
                     if (horizontalSpeed > 0.05 && toOwnerDist > 0.1) {
                         alignment = horizontalVel.dot(toOwner) / (horizontalSpeed * toOwnerDist);
                     }
 
-                    // STEERING: Apply continuous steering toward owner based on alignment
-                    // At higher speeds, start steering earlier (higher threshold) to prevent overshoot
-                    // Base threshold: STEER_BASE_THRESHOLD (60°), at high speed: STEER_MAX_THRESHOLD (45°)
+                    // 转向：根据对齐度持续朝主人修正方向
+                    // 速度越高越早开始转向（阈值更高），以防冲过头
+                    // 基础阈值：STEER_BASE_THRESHOLD（60°），高速时：STEER_MAX_THRESHOLD（45°）
                     double steerThreshold = STEER_BASE_THRESHOLD + (speedMultiplier - 1.0) * 0.13;
                     steerThreshold = Math.min(STEER_MAX_THRESHOLD, steerThreshold);
 
                     if (horizontalSpeed > STEER_MIN_SPEED && toOwnerDist > STEER_MIN_DIST) {
                         Vec3 toOwnerNormalized = toOwner.normalize();
 
-                        // Steering strength: stronger when more off-course and when closer
+                        // 转向强度：偏离越大、距离越近时越强
                         if (alignment < steerThreshold) {
-                            // Calculate how much to steer: blend current velocity toward target direction
-                            // At high speeds, steer more aggressively
+                            // 计算转向幅度：将当前速度朝目标方向混合
+                            // 高速时转向更激进
                             double baseSteer = STEER_BASE_FACTOR + (speedMultiplier - 1.0) * 0.1;
                             double steerFactor = baseSteer + (steerThreshold - alignment) * 0.4;
                             steerFactor = Math.min(STEER_MAX_FACTOR, steerFactor);
 
-                            // Blend current velocity with target direction
+                            // 将当前速度与目标方向混合
                             double keepFactor = 1.0 - steerFactor;
                             double newVelX = horizontalVel.x * keepFactor + toOwnerNormalized.x * horizontalSpeed * steerFactor;
                             double newVelZ = horizontalVel.z * keepFactor + toOwnerNormalized.z * horizontalSpeed * steerFactor;
 
                             Vec3 newVel = new Vec3(newVelX, vel.y, newVelZ);
                             this.petEntity.setDeltaMovement(newVel);
-                            // Update vel for subsequent checks
+                            // 更新 vel 供后续检查使用
                             vel = newVel;
                             speed = vel.length();
                             horizontalVel = new Vec3(vel.x, 0, vel.z);
@@ -875,23 +875,23 @@ public class FollowOwner implements AIGoal {
                         }
                     }
 
-                    // BRAKE & VELOCITY CAP: Only for flying/swimming Pets (velocity-based movement)
-                    // Ground Pets use position-based pathfinding with direct MOVEMENT_SPEED attribute control
+                    // 减速与速度上限：仅针对飞行/游泳宠物（基于速度的移动）
+                    // 地面宠物使用基于位置的寻路，并直接控制 MOVEMENT_SPEED 属性
                     if (flyingPet || swimmingPet) {
-                        // BRAKE: When close and moving fast, slow down to prevent overshooting
-                        // Scale down target speed as we get closer - below owner speed when very close
+                        // 减速：靠近且速度较快时减速，以防冲过头
+                        // 越接近就越多地压低目标速度 - 很近时降到主人速度以下
                         double brakeDistance = Math.max(BRAKE_MIN_DISTANCE, 5.0 / speedMultiplier);
-                        // minBrakeSpeed scales: ownerSpeed at brakeDistance, BRAKE_FACTOR_MAX*ownerSpeed at dist=0
+                        // minBrakeSpeed 的缩放：在 brakeDistance 处为 ownerSpeed，dist=0 处为 BRAKE_FACTOR_MAX*ownerSpeed
                         double distRatio = Math.min(1.0, distance / brakeDistance);
                         double minBrakeSpeed = ownerMovementSpeed * (BRAKE_FACTOR_MAX + (1.0 - BRAKE_FACTOR_MAX) * distRatio);
-                        // CRITICAL: Brake minimum must not exceed velocity cap, otherwise brake overrides
-                        // the close-range slowdown and Pet still catches up
+                        // 关键：减速的下限不能超过速度上限，否则减速会覆盖
+                        // 近距离的减速效果，宠物仍会追上
                         minBrakeSpeed = Math.min(minBrakeSpeed, maxVel);
                         if (distance < brakeDistance && speed > BRAKE_SPEED_THRESHOLD && speed > minBrakeSpeed) {
-                            // Progressive braking: stronger when closer
+                            // 渐进式减速：越近越强
                             double brakeFactor = BRAKE_FACTOR_MIN + distRatio * (BRAKE_FACTOR_MAX - BRAKE_FACTOR_MIN);
                             double targetSpeed = speed * brakeFactor;
-                            // Apply minimum but it now scales with distance
+                            // 应用下限，但它现在会随距离缩放
                             if (targetSpeed < minBrakeSpeed) {
                                 brakeFactor = minBrakeSpeed / speed;
                                 targetSpeed = minBrakeSpeed;
@@ -899,13 +899,13 @@ public class FollowOwner implements AIGoal {
                             Vec3 newVel = vel.scale(brakeFactor);
                             this.petEntity.setDeltaMovement(newVel);
                         } else if (speed > maxVel) {
-                            // Cap velocity to prevent runaway acceleration
+                            // 限制速度，防止失控加速
                             Vec3 newVel = vel.normalize().scale(maxVel);
                             this.petEntity.setDeltaMovement(newVel);
                         }
                     }
                 }
-                // Re-path only every 10 ticks, recomputing the path every tick is expensive
+                // 每 10 个 tick 才重新寻路，每 tick 重算路径开销过大
                 if (--this.setPathTimer <= 0) {
                     this.setPathTimer = 10;
                     this.hasPathToOwner = this.nav.navigateTo(owner.getBukkitEntity());
@@ -914,7 +914,7 @@ public class FollowOwner implements AIGoal {
                     applyWalkSpeed(distance);
                 }
             } else {
-                // Very close - stop navigation and clear momentum for all Pets
+                // 已经很近 - 停止导航并清理动量（所有宠物）
                 this.nav.stop();
                 this.setPathTimer = 0;
                 this.petEntity.setDeltaMovement(Vec3.ZERO);
@@ -923,38 +923,38 @@ public class FollowOwner implements AIGoal {
     }
 
     /**
-     * Calculates and applies the appropriate walk speed based on distance to owner.
+     * 根据与主人的距离计算并应用合适的行走速度。
      *
-     * <p>This method implements distance-based speed zones:
+     * <p>该方法实现了基于距离的速度分区：
      * <ul>
-     *   <li><b>Cruise Mode</b> ({@code distance < CRUISE_RANGE}): Speed proportional to owner's movement</li>
-     *   <li><b>FAR Mode</b> ({@code distance >= CRUISE_RANGE}): Boosted speed for catch-up</li>
+     *   <li><b>巡航模式</b>（{@code distance < CRUISE_RANGE}）：速度与主人的移动成比例</li>
+     *   <li><b>远距离模式</b>（{@code distance >= CRUISE_RANGE}）：以加速后的速度追赶</li>
      * </ul>
      *
-     * <p>Speed modifiers are applied differently based on Pet type:
+     * <p>速度修正的应用方式因宠物类型而异：
      * <ul>
-     *   <li>Flying/Swimming Pets: Higher multipliers due to velocity cap overhead</li>
-     *   <li>Ground Pets: Lower multipliers with direct MOVEMENT_SPEED attribute control</li>
+     *   <li>飞行/游泳宠物：因速度上限开销而使用更高的倍率</li>
+     *   <li>地面宠物：使用更低的倍率并直接控制 MOVEMENT_SPEED 属性</li>
      * </ul>
      *
-     * @param distance the current distance from Pet to owner in blocks
+     * @param distance 宠物与主人之间的当前距离（格）
      */
     private void applyWalkSpeed(double distance) {
         float baseWalkSpeed = getWalkingSpeed(owner);
         float walkSpeed = baseWalkSpeed;
 
-        // When close to owner, use cruise speed to match their pace
-        // Extended range to prevent oscillation at boundary
+        // 靠近主人时使用巡航速度以匹配其节奏
+        // 扩大范围以防在边界处来回摆动
         if (distance < CRUISE_RANGE) {
-            // Flying/swimming Pets have velocity caps, so they need higher walk speeds
-            // Ground Pets don't have velocity caps, so they need much lower multipliers
+            // 飞行/游泳宠物有速度上限，因此需要更高的行走速度
+            // 地面宠物没有速度上限，因此需要低得多的倍率
             boolean hasVelocityCap = flyingPet || isSwimmingPet();
 
             double distanceFactor;
             double speedMultiplier;
 
             if (hasVelocityCap) {
-                // FLYING/SWIMMING PETS: Higher multipliers for snappier movement
+                // 飞行/游泳宠物：更高的倍率以获得更灵敏的移动
                 if (distance < CLOSE_RANGE) {
                     distanceFactor = 1.0;
                     speedMultiplier = FLY_SWIM_CRUISE_CLOSE_MULT;
@@ -966,8 +966,8 @@ public class FollowOwner implements AIGoal {
                     speedMultiplier = FLY_SWIM_CRUISE_FAR_MULT;
                 }
             } else {
-                // GROUND PETS: Direct MOVEMENT_SPEED attribute control (set below)
-                // Use distance-based scaling to catch up when further away
+                // 地面宠物：直接控制 MOVEMENT_SPEED 属性（在下方设置）
+                // 使用基于距离的缩放，以便距离较远时追上
                 if (distance < CLOSE_RANGE) {
                     distanceFactor = 1.0;
                     speedMultiplier = GROUND_CRUISE_CLOSE_MULT;
@@ -980,16 +980,16 @@ public class FollowOwner implements AIGoal {
                 }
             }
 
-            // For ground Pets, use ownerSpeedPeak (fast-responding) instead of smoothed ownerMovementSpeed
-            // This prevents the Pet from falling behind when owner starts walking
+            // 地面宠物使用 ownerSpeedPeak（响应快）而不是平滑后的 ownerMovementSpeed
+            // 这样可以防止主人开始行走时宠物落后
             double speedForCruise = (flyingPet || isSwimmingPet()) ? ownerMovementSpeed : ownerSpeedPeak;
             float cruiseSpeed = (float) (speedForCruise * speedMultiplier * distanceFactor);
 
             if (flyingPet && distance >= CLOSE_RANGE) {
-                // Flying bonus only when not in close range
+                // 仅在非近距离时给予飞行加成
                 cruiseSpeed += FLYING_BONUS_SPEED;
             }
-            // Swimming Pets need significantly higher speed in water due to water resistance
+            // 游泳宠物在水下需要明显更高的速度以抵消水的阻力
             if (isSwimmingPet()) {
                 cruiseSpeed += SWIMMING_BONUS_SPEED;
                 if (owner.hasEffect(MobEffects.DOLPHINS_GRACE)) {
@@ -997,14 +997,14 @@ public class FollowOwner implements AIGoal {
                 }
             }
 
-            // Flying/swimming Pets need higher minimum due to 3D pathing overhead
-            // Ground Pets need reasonable minimum to not feel sluggish
+            // 飞行/游泳宠物因 3D 寻路开销而需要更高的下限
+            // 地面宠物需要合理的下限，以免移动过于迟钝
             float minCruise = (flyingPet || isSwimmingPet()) ? FLY_SWIM_MIN_CRUISE : GROUND_MIN_CRUISE;
             cruiseSpeed = Math.max(minCruise, cruiseSpeed); // Minimum to keep moving
             nav.getParameters().addSpeedModifier("FollowOwner", cruiseSpeed);
 
-            // For ground Pets, directly set entity's MOVEMENT_SPEED attribute every tick
-            // Nav parameter changes only apply when starting a new path, not during ongoing navigation
+            // 地面宠物：每 tick 直接设置实体的 MOVEMENT_SPEED 属性
+            // 导航参数变更只在开始新路径时生效，进行中的导航不会应用
             if (!flyingPet && !isSwimmingPet()) {
                 petEntity.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(cruiseSpeed);
             }
@@ -1012,27 +1012,27 @@ public class FollowOwner implements AIGoal {
             return;
         }
 
-        // FAR mode: distance >= 10 blocks, need to catch up quickly
+        // 远距离模式：距离 >= 10 格，需要快速追上
 		if (owner.getAbilities().flying) {
-			// make the Pet faster when the player is flying
+			// 玩家飞行时让宠物更快
 			walkSpeed += owner.getAbilities().getFlyingSpeed();
 		} else if (owner.isSprinting() || owner.getBukkitEntity().isGliding()) {
-			// make the Pet faster when the player is sprinting
+			// 玩家疾跑时让宠物更快
             AttributeInstance speedAttribute = owner.getAttributes().getInstance(Attributes.MOVEMENT_SPEED);
             if (speedAttribute != null) {
                 walkSpeed += (float) speedAttribute.getValue() - 0.037f;
             }
         } else if (owner.isPassenger() && owner.getVehicle() instanceof LivingEntity livingVehicle) {
-			// adjust the speed to the Pet can catch up with the vehicle the player is in
+			// 调整速度，使宠物能追上玩家所乘坐的载具
             AttributeInstance vehicleSpeedAttribute = livingVehicle.getAttributes().getInstance(Attributes.MOVEMENT_SPEED);
 			if (vehicleSpeedAttribute != null) {
 				walkSpeed = (float) vehicleSpeedAttribute.getValue();
 			}
 		}
 
-		// make aquatic/flying Pets faster
-		// This is actually due to there being a difference between MovementSpeed and FlyingSpeed, FlyingSpeed being higher
-		// (I don't completely know why this is the case for swimming but I imagine it has a similar reason)
+		// 让水生/飞行宠物更快
+		// 这实际上是因为 MovementSpeed 与 FlyingSpeed 之间存在差异，FlyingSpeed 更高
+		// （我并不完全清楚游泳为何也是如此，但我想原因类似）
 		if((this.petEntity.isInWater() || this.petEntity.getInBlockState().is(Blocks.BUBBLE_COLUMN)) && this.petEntity.getNavigation() instanceof MyAquaticPetPathNavigation) {
 			walkSpeed += 0.6f;
 			if(owner.hasEffect(MobEffects.DOLPHINS_GRACE)) {
@@ -1047,34 +1047,34 @@ public class FollowOwner implements AIGoal {
             }
         }
 
-        // Dynamic speed boost based on distance:
-        // - Close (< TRANSITION_RANGE blocks): match player speed exactly
-        // - Far (> CRUISE_RANGE blocks): full boost to catch up
-        // - In between: gradual increase
+        // 基于距离的动态加速：
+        // - 近（< TRANSITION_RANGE 格）：完全匹配玩家速度
+        // - 远（> CRUISE_RANGE 格）：全力加速以追上
+        // - 中间：逐渐增加
         float speedBoost = 0f;
         if (distance > TRANSITION_RANGE) {
-            // Scale from 0 to FAR_SPEED_BOOST_MAX as distance increases
+            // 随距离增加从 0 缩放到 FAR_SPEED_BOOST_MAX
             speedBoost = (float) Math.min(FAR_SPEED_BOOST_MAX, (distance - TRANSITION_RANGE) * FAR_SPEED_BOOST_SCALE);
         }
         walkSpeed += speedBoost;
 
-        // Dynamic multiplier: scale UP when player moves faster than normal walking speed
-        // Only use baseWalkSpeed (not flying bonuses) for ratio to avoid exponential growth
+        // 动态倍率：玩家移动速度高于正常行走速度时向上缩放
+        // 计算比值时只使用 baseWalkSpeed（不含飞行加成），以避免指数级增长
         float speedRatio = Math.max(1.0f, baseWalkSpeed / NORMAL_WALK_SPEED);
-        // Flying Pets need higher base multiplier since their bonuses get reduced too much
+        // 飞行宠物需要更高的基础倍率，因为它们的加成本来就被削减太多
         float baseMultiplier = flyingPet ? 1.0f : BASE_SPEED_MULTIPLIER;
         float effectiveMultiplier = baseMultiplier * speedRatio;
-        // Cap multiplier to prevent runaway speed
+        // 限制倍率，防止速度失控
         effectiveMultiplier = Math.min(FAR_MAX_MULTIPLIER, effectiveMultiplier);
 
-        // For flying Pets at extreme player speeds, cap the walk speed to prevent
-        // the pathfinder from over-accelerating (which then gets slammed by velocity cap)
-        // This creates smoother motion by letting the pathfinder and velocity cap work together
+        // 对于玩家速度极高时的飞行宠物，限制行走速度，以防
+        // 寻路器过度加速（随后又被速度上限猛烈拉回）
+        // 让寻路器与速度上限协同工作，从而实现更平滑的运动
         if (flyingPet && walkSpeed > FLYING_WALK_SPEED_CAP) {
             walkSpeed = FLYING_WALK_SPEED_CAP;
         }
 
-        // Apply the dynamic multiplier
+        // 应用动态倍率
         float finalSpeed = walkSpeed * effectiveMultiplier;
 
         nav.getParameters().addSpeedModifier("FollowOwner", finalSpeed);

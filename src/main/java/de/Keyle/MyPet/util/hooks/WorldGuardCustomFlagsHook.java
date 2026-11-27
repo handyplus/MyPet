@@ -57,7 +57,7 @@ public class WorldGuardCustomFlagsHook implements PlayerVersusPlayerHook, Player
     @Override
     public boolean canHurt(Player attacker, Entity defender) {
         if (wgHook == null) {
-            // the WorldGuard hook is disabled, so there are no MyPet flags to check
+            // WorldGuard hook 已被禁用，因此没有 MyPet 标志需要检查
             return true;
         }
         try {
@@ -72,7 +72,7 @@ public class WorldGuardCustomFlagsHook implements PlayerVersusPlayerHook, Player
     @Override
     public boolean canHurt(Player attacker, Player defender) {
         if (wgHook == null) {
-            // the WorldGuard hook is disabled, so there are no MyPet flags to check
+            // WorldGuard hook 已被禁用，因此没有 MyPet 标志需要检查
             return true;
         }
         try {

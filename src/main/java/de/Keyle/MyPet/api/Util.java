@@ -262,16 +262,16 @@ public class Util {
     }
 
     /**
-     * Compares two version strings.
+     * 比较两个版本字符串。
      * <p>
-     * Use this instead of String.compareTo() for a non-lexicographical
-     * comparison that works for version strings. e.g. "1.10".compareTo("1.6").
+     * 对于版本字符串，请使用本方法而不是 String.compareTo() 进行非字典序的比较。
+     * 例如 "1.10".compareTo("1.6")。
      *
-     * @param str1 a string of ordinal numbers separated by decimal points.
-     * @param str2 a string of ordinal numbers separated by decimal points.
-     * @return The result is a negative integer if str1 is _numerically_ less than str2.
-     * The result is a positive integer if str1 is _numerically_ greater than str2.
-     * The result is zero if the strings are _numerically_ equal.
+     * @param str1 由小数点分隔的序号组成的字符串。
+     * @param str2 由小数点分隔的序号组成的字符串。
+     * @return 如果 str1 在数值上小于 str2，则返回负整数。
+     * 如果 str1 在数值上大于 str2，则返回正整数。
+     * 如果两个字符串在数值上相等，则返回零。
      */
     public static int versionCompare(String str1, String str2) {
         String[] vals1 = str1.split("\\.");

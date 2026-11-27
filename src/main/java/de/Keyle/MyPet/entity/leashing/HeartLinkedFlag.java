@@ -28,20 +28,20 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 /**
- * LeashFlag for entities that can only be captured through non-damage means.
- * Specifically designed for heart-linked Creaking which must be captured by
- * destroying their Creaking Heart block rather than through combat damage.
+ * 用于只能通过非伤害方式捕捉的实体的捕捉条件。
+ * 专为与嘎枝之心绑定的嘎枝设计：必须通过摧毁其嘎枝之心方块来捕捉，
+ * 而不是通过战斗伤害。
  *
- * This flag passes when damage is 0 (indicating heart-based capture) and
- * fails when damage is greater than 0 (indicating combat-based capture).
+ * 伤害为 0 时（表示基于嘎枝之心的捕捉）该条件通过，
+ * 伤害大于 0 时（表示基于战斗的捕捉）则不通过。
  */
 @LeashFlagName("HeartLinked")
 public class HeartLinkedFlag implements LeashFlag {
 
     @Override
     public boolean check(Player player, LivingEntity entity, double damage, Settings settings) {
-        // Pass when damage is 0 (heart destruction capture)
-        // Fail when damage > 0 (combat-based capture attempt)
+        // 伤害为 0 时通过（摧毁之心捕捉）
+        // 伤害 > 0 时不通过（基于战斗的捕捉尝试）
         return damage == 0;
     }
 

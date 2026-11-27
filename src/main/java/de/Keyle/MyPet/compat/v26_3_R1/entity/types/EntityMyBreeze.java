@@ -27,7 +27,7 @@ import de.Keyle.MyPet.api.entity.types.MyBreeze;
 import de.Keyle.MyPet.compat.v26_3_R1.entity.EntityMyPet;
 import net.minecraft.world.level.Level;
 
-//TODO Add jumping mechanic
+//TODO 添加跳跃机制
 @EntitySize(width = 0.6F, height = 1.7F)
 public class EntityMyBreeze extends EntityMyPet {
 
@@ -66,7 +66,7 @@ public class EntityMyBreeze extends EntityMyPet {
 	}
 
 	/**
-	 * -> disable falldamage
+	 * -> 禁用摔落伤害
 	 */
 	@Override
 	public int calculateFallDamage(double f, float f1) {

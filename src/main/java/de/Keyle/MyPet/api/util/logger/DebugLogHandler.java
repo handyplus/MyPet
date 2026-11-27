@@ -32,8 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Manages debug file logging for MyPet.
- * Adds a FileHandler to the plugin's logger for writing to plugins/MyPet/logs/MyPet.log
+ * 管理 MyPet 的调试文件日志。
+ * 为插件日志器添加一个 FileHandler，用于写入 plugins/MyPet/logs/MyPet.log
  */
 public class DebugLogHandler {
 
@@ -41,18 +41,18 @@ public class DebugLogHandler {
     private static FileHandler debugLogFileHandler = null;
 
     /**
-     * Sets up the debug file handler on the given logger.
-     * Uses the log level from Configuration.Log.LEVEL.
+     * 在给定的日志器上设置调试文件处理器。
+     * 使用 Configuration.Log.LEVEL 中的日志级别。
      *
-     * @param logger the logger to add the handler to
-     * @return true if handler was set up successfully
+     * @param logger 要添加处理器的日志器
+     * @return 处理器是否设置成功
      */
     public static boolean setup(Logger logger) {
         if (logger == null) {
             return false;
         }
 
-        // Check if handler already exists
+        // 检查处理器是否已存在
         for (Handler h : logger.getHandlers()) {
             if (HANDLER_NAME.equals(h.toString())) {
                 if (Configuration.Log.LEVEL.equalsIgnoreCase("OFF")) {
@@ -70,13 +70,13 @@ public class DebugLogHandler {
             return false;
         }
 
-        // Reuse existing handler if available
+        // 如果可用则复用已有的处理器
         if (debugLogFileHandler != null) {
             logger.addHandler(debugLogFileHandler);
             return true;
         }
 
-        // Create new handler
+        // 创建新的处理器
         try {
             File logsFolder = new File(MyPetApi.getPlugin().getDataFolder(), "logs");
             logsFolder.mkdirs();
@@ -102,7 +102,7 @@ public class DebugLogHandler {
     }
 
     /**
-     * Updates the log level of the debug handler.
+     * 更新调试处理器的日志级别。
      */
     public static void updateLogLevel() {
         if (debugLogFileHandler != null) {
@@ -112,9 +112,9 @@ public class DebugLogHandler {
     }
 
     /**
-     * Disables and removes the debug handler from the given logger.
+     * 禁用并从给定的日志器中移除调试处理器。
      *
-     * @param logger the logger to remove the handler from
+     * @param logger 要移除处理器的日志器
      */
     public static void disable(Logger logger) {
         if (logger == null) {

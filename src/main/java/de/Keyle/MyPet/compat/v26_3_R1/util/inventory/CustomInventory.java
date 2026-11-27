@@ -63,7 +63,7 @@ public class CustomInventory extends de.Keyle.MyPet.api.util.inventory.CustomInv
 
             int slot = slotTag.getByteData();
 
-            // Skip items saved in incompatible BukkitItem format (from snapshot builds)
+            // 跳过以不兼容的 BukkitItem 格式保存的物品（来自快照构建）
             if (itemCompound.containsKey("BukkitItem")) {
                 MyPetApi.getLogger().warning("Removed item in slot " + slot + ": incompatible format");
                 setItem(slot, null);

@@ -95,7 +95,7 @@ public class PetShop {
                     if (MyPetApi.getPlayerManager().isMyPetPlayer(p)) {
                         owner = MyPetApi.getPlayerManager().getMyPetPlayer(player);
 
-                        // Race condition: player may have disconnected between isMyPetPlayer and getMyPetPlayer
+                        // 竞态条件：玩家可能在 isMyPetPlayer 与 getMyPetPlayer 之间已经断开连接
                         if (owner == null) {
                             return;
                         }
@@ -114,16 +114,16 @@ public class PetShop {
                             final boolean[] confirmed = {false};
                             IconMenu menu = new IconMenu(Util.formatText(Translation.getString("Message.Shop.Confirm.Title", player), pet.getPetName(), economyHook.getEconomy().format(pet.getPrice())), event1 -> {
                                 if (event1.getPosition() == 3) {
-                                    // The menu only closes a tick after the click and the database work is
-                                    // async, so a double click could buy (and charge for) the pet twice.
-                                    // Accept one confirm per menu and one running purchase per player.
+                                    // 菜单在点击后要过一个 tick 才关闭，而数据库操作是异步的，
+                                    // 因此双击可能导致同一只宠物被购买（并扣费）两次。
+                                    // 每个菜单只接受一次确认，且每位玩家同时只允许一个进行中的购买。
                                     if (confirmed[0] || !PURCHASES_IN_PROGRESS.add(p.getUniqueId())) {
                                         return;
                                     }
                                     confirmed[0] = true;
                                     try {
                                         if (owner != null && owner.hasMyPet()) {
-                                            // Re-check the storage limit now, not when the menu was opened
+                                            // 现在重新检查存储上限，而不是使用菜单打开时的检查结果
                                             MyPetApi.getRepository().getMyPets(owner, new RepositoryCallback<List<StoredMyPet>>() {
                                                 @Override
                                                 public void callback(List<StoredMyPet> value) {

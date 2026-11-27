@@ -30,7 +30,7 @@ import org.bukkit.entity.*;
 @PluginHookName("PlotSquared")
 public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEntityHook, MountInsideHook {
 
-    // Version constants: 0=none, 3=V3, 4=V4, 6=V6+
+    // 版本常量：0=无，3=V3，4=V4，6=V6+
     protected int version = 0;
 
     @Override
@@ -49,7 +49,7 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
 
     @Override
     public boolean onEnable() {
-        // Check V6+ first (v5 shares same API as v6)
+        // 先检查 V6+（v5 与 v6 使用相同的 API）
         try {
             Class.forName("com.plotsquared.core.plot.Plot");
             version = 6;
@@ -57,7 +57,7 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
         } catch (ClassNotFoundException ignored) {
         }
 
-        // Check V4
+        // 检查 V4
         try {
             Class.forName("com.github.intellectualsites.plotsquared.plot.object.Plot");
             version = 4;
@@ -65,7 +65,7 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
         } catch (ClassNotFoundException ignored) {
         }
 
-        // Check V3 (legacy)
+        // 检查 V3（旧版）
         try {
             Class.forName("com.intellectualcrafters.plot.flag.BooleanFlag");
             version = 3;
@@ -98,7 +98,7 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
             case 4:
             case 3:
             default:
-                // V3 and V4 don't have this check implemented
+                // V3 和 V4 未实现此检查
                 return true;
         }
     }
@@ -269,7 +269,7 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
                     plot = null;
                     stub = "road";
                 } else {
-                    // Prioritize plots for close to seamless pvp zones
+                    // 优先使用地皮，以获得接近无缝的 PvP 区域
                     if (defender.getTicksLived() > attacker.getTicksLived()) {
                         if (dplot == null || !(defender instanceof Player)) {
                             plot = vplot == null ? dplot : vplot;
@@ -287,7 +287,7 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
                 }
 
                 com.github.intellectualsites.plotsquared.plot.object.PlotPlayer plotPlayer = com.github.intellectualsites.plotsquared.bukkit.util.BukkitUtil.getPlayer(attacker);
-                if (defender instanceof Hanging) { // hanging
+                if (defender instanceof Hanging) { // 悬挂实体
                     if (plot != null && (plot.getFlag(com.github.intellectualsites.plotsquared.plot.flag.Flags.HANGING_BREAK, false) ||
                             plot.isAdded(plotPlayer.getUUID()))) {
                         return true;
@@ -299,14 +299,14 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
                         return true;
                     }
                     return com.github.intellectualsites.plotsquared.plot.util.Permissions.hasPermission(plotPlayer, "plots.admin.destroy." + stub);
-                } else if (defender instanceof Monster || defender instanceof EnderDragon) { // defender is monster
+                } else if (defender instanceof Monster || defender instanceof EnderDragon) { // 目标是怪物
                     if (plot != null && (plot.getFlag(com.github.intellectualsites.plotsquared.plot.flag.Flags.HOSTILE_ATTACK, false) ||
                             plot.getFlag(com.github.intellectualsites.plotsquared.plot.flag.Flags.PVE, false) ||
                             plot.isAdded(plotPlayer.getUUID()))) {
                         return true;
                     }
                     return com.github.intellectualsites.plotsquared.plot.util.Permissions.hasPermission(plotPlayer, "plots.admin.pve." + stub);
-                } else if (defender instanceof Tameable) { // defender is tameable
+                } else if (defender instanceof Tameable) { // 目标是可驯服生物
                     if (plot != null && (plot.getFlag(com.github.intellectualsites.plotsquared.plot.flag.Flags.TAMED_ATTACK, false) ||
                             plot.getFlag(com.github.intellectualsites.plotsquared.plot.flag.Flags.PVE, false) ||
                             plot.isAdded(plotPlayer.getUUID()))) {
@@ -318,13 +318,13 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
                         return !com.github.intellectualsites.plotsquared.plot.flag.Flags.PVP.isFalse(plot) || com.github.intellectualsites.plotsquared.plot.util.Permissions.hasPermission(plotPlayer, "plots.admin.pvp." + stub);
                     }
                     return com.github.intellectualsites.plotsquared.plot.util.Permissions.hasPermission(plotPlayer, "plots.admin.pvp." + stub);
-                } else if (defender instanceof Creature) { // defender is animal
+                } else if (defender instanceof Creature) { // 目标是动物
                     if (plot != null && (plot.getFlag(com.github.intellectualsites.plotsquared.plot.flag.Flags.ANIMAL_ATTACK, false) || plot.getFlag(com.github.intellectualsites.plotsquared.plot.flag.Flags.PVE, false) ||
                             plot.isAdded(plotPlayer.getUUID()))) {
                         return true;
                     }
                     return com.github.intellectualsites.plotsquared.plot.util.Permissions.hasPermission(plotPlayer, "plots.admin.pve." + stub);
-                } else { // defender is something else
+                } else { // 目标是其它实体
                     if (plot != null && (plot.getFlag(com.github.intellectualsites.plotsquared.plot.flag.Flags.PVE, false) || plot.isAdded(plotPlayer.getUUID()))) {
                         return true;
                     }
@@ -337,8 +337,8 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
     }
 
     /**
-     * V6 implementation uses reflection to avoid compile-time conflicts with V3's BukkitUtil
-     * (both use com.plotsquared.bukkit.util.BukkitUtil but with different methods)
+     * V6 的实现使用反射，以避免与 V3 的 BukkitUtil 产生编译期冲突
+     * （两者都使用 com.plotsquared.bukkit.util.BukkitUtil，但方法不同）
      */
     private static class V6 {
 
@@ -357,11 +357,11 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
 
         public static boolean canHurt(Player attacker, Entity defender) {
             try {
-                // Use reflection to call BukkitUtil.adapt() to avoid V3/V6 class conflict
+                // 使用反射调用 BukkitUtil.adapt()，以避免 V3/V6 类冲突
                 Object dloc = adaptLocationMethod.invoke(null, attacker.getLocation());
                 Object vloc = adaptLocationMethod.invoke(null, defender.getLocation());
 
-                // Get PlotArea from locations
+                // 从位置获取 PlotArea
                 java.lang.reflect.Method getPlotAreaMethod = dloc.getClass().getMethod("getPlotArea");
                 java.lang.reflect.Method getXMethod = dloc.getClass().getMethod("getX");
                 java.lang.reflect.Method getZMethod = dloc.getClass().getMethod("getZ");
@@ -380,7 +380,7 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
                     return true;
                 }
 
-                // Get plots
+                // 获取地皮
                 Object dplot = null;
                 Object vplot = null;
                 if (dArea != null) {
@@ -401,7 +401,7 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
                     plot = null;
                     stub = "road";
                 } else {
-                    // Prioritize plots for close to seamless pvp zones
+                    // 优先使用地皮，以获得接近无缝的 PvP 区域
                     if (defender.getTicksLived() > attacker.getTicksLived()) {
                         if (dplot == null || !(defender instanceof Player)) {
                             plot = vplot == null ? dplot : vplot;
@@ -419,13 +419,13 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
                     stub = (Boolean) hasOwnerMethod.invoke(plot) ? "other" : "unowned";
                 }
 
-                // Get plot player via reflection
+                // 通过反射获取地皮玩家
                 Object plotPlayer = adaptPlayerMethod.invoke(null, attacker);
                 java.lang.reflect.Method hasPermissionMethod = plotPlayer.getClass().getMethod("hasPermission", String.class);
                 java.lang.reflect.Method getUUIDMethod = plotPlayer.getClass().getMethod("getUUID");
                 java.util.UUID playerUUID = (java.util.UUID) getUUIDMethod.invoke(plotPlayer);
 
-                // Check flags and permissions
+                // 检查标志与权限
                 if (defender instanceof Hanging) {
                     if (plot != null && (checkBooleanFlag(plot, "HangingBreakFlag") || isAddedToPlot(plot, playerUUID))) {
                         return true;
@@ -501,11 +501,11 @@ public class PlotSquaredHook implements PlayerVersusPlayerHook, PlayerVersusEnti
                 Object plot = getPlotMethod.invoke(area, loc);
 
                 if (plot == null) {
-                    // On road, not in a plot - allow mounting
+                    // 在道路上、不在任何地皮内——允许骑乘
                     return true;
                 }
 
-                // Check if player is added to the plot (owner, member, or trusted)
+                // 检查玩家是否已被添加到该地皮（所有者、成员或受信任者）
                 return isAddedToPlot(plot, player.getPlayerUUID());
             } catch (Throwable ignored) {
             }

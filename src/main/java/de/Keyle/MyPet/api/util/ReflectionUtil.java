@@ -40,11 +40,11 @@ public class ReflectionUtil {
     }
 
     /**
-     * Loads a class by its fully qualified name using Class.forName().
+     * 使用 Class.forName() 通过全限定名加载类。
      *
-     * @param name the fully qualified class name (e.g., "java.util.ArrayList")
-     * @return the Class object representing the loaded class
-     * @throws RuntimeException if the class cannot be found or loaded
+     * @param name 全限定类名（例如 "java.util.ArrayList"）
+     * @return 表示已加载类的 Class 对象
+     * @throws RuntimeException 如果无法找到或加载该类
      */
     @SuppressWarnings("rawtypes")
     public static Class getClass(String name) {
@@ -56,13 +56,13 @@ public class ReflectionUtil {
     }
 
     /**
-     * Retrieves a declared method from a class and makes it accessible.
-     * This method can access private, protected, and package-private methods.
+     * 从类中获取已声明的方法并使其可访问。
+     * 该方法可以访问 private、protected 和包级私有方法。
      *
-     * @param clazz the class containing the method
-     * @param method the name of the method
-     * @param parameterTypes the parameter types of the method (optional, for overloaded methods)
-     * @return the Method object, or null if the method is not found
+     * @param clazz 包含该方法的类
+     * @param method 方法名
+     * @param parameterTypes 方法的参数类型（可选，用于重载方法）
+     * @return Method 对象；如果未找到该方法则返回 null
      */
     public static Method getMethod(Class<?> clazz, String method, Class<?>... parameterTypes) {
         try {
@@ -75,12 +75,12 @@ public class ReflectionUtil {
     }
 
     /**
-     * Retrieves a declared field from a class and makes it accessible.
-     * This method can access private, protected, and package-private fields.
+     * 从类中获取已声明的字段并使其可访问。
+     * 该方法可以访问 private、protected 和包级私有字段。
      *
-     * @param clazz the class containing the field
-     * @param field the name of the field
-     * @return the Field object, or null if the field is not found
+     * @param clazz 包含该字段的类
+     * @param field 字段名
+     * @return Field 对象；如果未找到该字段则返回 null
      */
     public static Field getField(Class<?> clazz, String field) {
         try {
@@ -93,13 +93,13 @@ public class ReflectionUtil {
     }
 
     /**
-     * Retrieves the value of a field from a target object by field name.
-     * The field is accessed reflectively and can be private, protected, or package-private.
+     * 按字段名从目标对象中获取字段的值。
+     * 该字段通过反射访问，可以是 private、protected 或包级私有。
      *
-     * @param clazz the class containing the field
-     * @param target the object instance to get the field value from (null for static fields)
-     * @param field the name of the field
-     * @return the value of the field, or null if the field is not found or cannot be accessed
+     * @param clazz 包含该字段的类
+     * @param target 要从中获取字段值的对象实例（静态字段传 null）
+     * @param field 字段名
+     * @return 字段的值；如果未找到该字段或无法访问则返回 null
      */
     public static Object getFieldValue(Class<?> clazz, Object target, String field) {
         try {
@@ -112,11 +112,11 @@ public class ReflectionUtil {
     }
 
     /**
-     * Retrieves the value of a field from a target object using a Field object.
+     * 使用 Field 对象从目标对象中获取字段的值。
      *
-     * @param field the Field object representing the field to access (must not be null)
-     * @param target the object instance to get the field value from (null for static fields)
-     * @return the value of the field, or null if the field cannot be accessed
+     * @param field 表示要访问字段的 Field 对象（不能为 null）
+     * @param target 要从中获取字段值的对象实例（静态字段传 null）
+     * @return 字段的值；如果无法访问该字段则返回 null
      */
     public static Object getFieldValue(@NonNull Field field, Object target) {
         try {
@@ -127,12 +127,12 @@ public class ReflectionUtil {
     }
 
     /**
-     * Sets the value of a field on a target object using a Field object.
+     * 使用 Field 对象设置目标对象上字段的值。
      *
-     * @param field the Field object representing the field to modify (must not be null)
-     * @param target the object instance to set the field value on (null for static fields)
-     * @param value the new value to assign to the field
-     * @return true if the field was successfully set, false otherwise
+     * @param field 表示要修改字段的 Field 对象（不能为 null）
+     * @param target 要在其上设置字段值的对象实例（静态字段传 null）
+     * @param value 要赋给该字段的新值
+     * @return 如果字段设置成功则返回 true，否则返回 false
      */
     public static boolean setFieldValue(@NonNull Field field, Object target, Object value) {
         try {
@@ -145,13 +145,13 @@ public class ReflectionUtil {
     }
 
     /**
-     * Sets the value of a field on a target object by field name.
-     * The field is accessed reflectively and can be private, protected, or package-private.
+     * 按字段名设置目标对象上字段的值。
+     * 该字段通过反射访问，可以是 private、protected 或包级私有。
      *
-     * @param fieldName the name of the field to modify
-     * @param target the object instance to set the field value on (null for static fields)
-     * @param value the new value to assign to the field
-     * @return true if the field was successfully set, false if the field is not found or cannot be set
+     * @param fieldName 要修改的字段名
+     * @param target 要在其上设置字段值的对象实例（静态字段传 null）
+     * @param value 要赋给该字段的新值
+     * @return 如果字段设置成功则返回 true；如果未找到该字段或无法设置则返回 false
      */
     public static boolean setFieldValue(String fieldName, Object target, Object value) {
         try {
@@ -167,14 +167,14 @@ public class ReflectionUtil {
     }
 
     /**
-     * Sets the value of a final field on a target object by field name.
-     * This method removes the final modifier before setting the value, allowing modification
-     * of fields declared as final. Use with caution as this breaks Java's immutability guarantees.
+     * 按字段名设置目标对象上 final 字段的值。
+     * 该方法会在赋值前移除 final 修饰符，从而允许修改声明为 final 的字段。
+     * 请谨慎使用，因为这会破坏 Java 的不可变性保证。
      *
-     * @param fieldName the name of the final field to modify
-     * @param target the object instance to set the field value on (null for static fields)
-     * @param value the new value to assign to the field
-     * @return true if the field was successfully set, false if the field is not found or cannot be set
+     * @param fieldName 要修改的 final 字段名
+     * @param target 要在其上设置字段值的对象实例（静态字段传 null）
+     * @param value 要赋给该字段的新值
+     * @return 如果字段设置成功则返回 true；如果未找到该字段或无法设置则返回 false
      */
     public static boolean setFinalFieldValue(String fieldName, Object target, Object value) {
         try {
@@ -195,21 +195,20 @@ public class ReflectionUtil {
     }
 
     /**
-     * Sets the value of a final field on a target object using a Field object.
-     * This method removes the final modifier before setting the value on Java versions before 12.
-     * On Java 12+, the modifiers field is not accessible, but final field modification still works
-     * through the Unsafe API internally.
+     * 使用 Field 对象设置目标对象上 final 字段的值。
+     * 在 Java 12 之前的版本中，该方法会在赋值前移除 final 修饰符。
+     * 在 Java 12+ 中 modifiers 字段不可访问，但内部仍可通过 Unsafe API 修改 final 字段。
      *
-     * @param field the Field object representing the final field to modify (must not be null)
-     * @param target the object instance to set the field value on (null for static fields)
-     * @param value the new value to assign to the field
-     * @return true if the field was successfully set, false if the field cannot be set
+     * @param field 表示要修改的 final 字段的 Field 对象（不能为 null）
+     * @param target 要在其上设置字段值的对象实例（静态字段传 null）
+     * @param value 要赋给该字段的新值
+     * @return 如果字段设置成功则返回 true；如果无法设置则返回 false
      */
     public static boolean setFinalFieldValue(@NonNull Field field, Object target, Object value) {
         try {
             field.setAccessible(true);
 
-            if(Integer.parseInt(System.getProperty("java.version").split("\\.")[0]) < 12) { //Java-Version-Check
+            if(Integer.parseInt(System.getProperty("java.version").split("\\.")[0]) < 12) { //Java 版本检查
                 Field modifiersField = Field.class.getDeclaredField("modifiers");
                 modifiersField.setAccessible(true);
                 modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
@@ -223,14 +222,13 @@ public class ReflectionUtil {
     }
 
     /**
-     * Creates a MethodHandle that can set the value of a static final field.
-     * This is necessary for modifying static final fields, which cannot be changed through
-     * normal reflection on newer Java versions. The method uses Unsafe API when the modifiers
-     * field is not accessible (Java 12+).
+     * 创建一个可设置 static final 字段值的 MethodHandle。
+     * 修改 static final 字段时必须这样做，因为在较新的 Java 版本中无法通过
+     * 常规反射修改它们。当 modifiers 字段不可访问时（Java 12+），该方法使用 Unsafe API。
      *
-     * @param className the class containing the static final field
-     * @param fieldName the name of the static final field
-     * @return a MethodHandle for setting the field, or null if the field is not found or cannot be accessed
+     * @param className 包含该 static final 字段的类
+     * @param fieldName static final 字段的名称
+     * @return 用于设置该字段的 MethodHandle；如果未找到该字段或无法访问则返回 null
      */
     public static MethodHandle createStaticFinalSetter(Class<?> className, String fieldName) {
         Field field = getField(className, fieldName);
@@ -269,13 +267,13 @@ public class ReflectionUtil {
     }
 
     /**
-     * Creates a MethodHandle for a method, allowing for efficient repeated invocation.
-     * MethodHandles provide better performance than standard reflection for repeated calls.
+     * 为一个方法创建 MethodHandle，以便高效地重复调用。
+     * 在重复调用时，MethodHandle 比标准反射性能更好。
      *
-     * @param className the class containing the method
-     * @param method the name of the method
-     * @param parameters the parameter types of the method (optional, for overloaded methods)
-     * @return a MethodHandle for the method, or null if the method is not found or className is null
+     * @param className 包含该方法的类
+     * @param method 方法名
+     * @param parameters 方法的参数类型（可选，用于重载方法）
+     * @return 该方法的 MethodHandle；如果未找到该方法或 className 为 null 则返回 null
      */
     public static MethodHandle getMethodHandle(Class<?> className, String method, Class<?>... parameters) {
         if (className != null) {
@@ -288,12 +286,11 @@ public class ReflectionUtil {
     }
 
     /**
-     * Checks if a class is a subclass of or equal to another class by recursively
-     * checking the superclass hierarchy.
+     * 通过递归检查父类层级，判断一个类是否为另一个类的子类或与之相等。
      *
-     * @param clazz the class to check
-     * @param superClass the potential superclass to check against
-     * @return true if clazz is equal to or extends superClass, false otherwise
+     * @param clazz 要检查的类
+     * @param superClass 用于比较的候选父类
+     * @return 如果 clazz 等于或继承自 superClass 则返回 true，否则返回 false
      */
     public static boolean isTypeOf(Class<?> clazz, Class<?> superClass) {
         if (!clazz.equals(superClass)) {

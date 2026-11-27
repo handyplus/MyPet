@@ -120,7 +120,7 @@ public class MyPetPlayerImpl implements MyPetPlayer {
         return false;
     }
 
-    // Custom Data -----------------------------------------------------------------
+    // 自定义数据 -------------------------------------------------------------------
 
     public void setAutoRespawnEnabled(boolean flag) {
         autoRespawn = flag;
@@ -496,7 +496,7 @@ public class MyPetPlayerImpl implements MyPetPlayer {
             entityLoop:
             for (Entity entity : entities) {
                 if (entity instanceof LivingEntity && !(entity instanceof Player) && !(entity instanceof MyPetBukkitEntity)) {
-                    // Skip Creakings here - they're handled separately with particles on their heart block
+                    // 这里跳过嘎枝——它们已在上方单独用其所在的心脏方块上的粒子来处理
                     if ("CREAKING".equals(entity.getType().name())) {
                         continue;
                     }
@@ -526,9 +526,9 @@ public class MyPetPlayerImpl implements MyPetPlayer {
                 }
             }
 
-            // Show particles above Creaking Heart blocks for heart-linked Creakings
+            // 为与心脏链接的嘎枝在其心脏方块上方显示粒子
             if (MyPetApi.getCompatUtil().compareWithMinecraftVersion("1.21.4") >= 0) {
-                // Search in a wider radius since Creakings can wander far from their heart
+                // 以更大的半径搜索，因为嘎枝可能远离其心脏四处游荡
                 List<Entity> nearbyEntities = p.getNearbyEntities(32, 32, 32);
                 Set<Location> shownHeartLocations = new HashSet<>();
                 for (Entity entity : nearbyEntities) {
@@ -541,25 +541,25 @@ public class MyPetPlayerImpl implements MyPetPlayer {
 
                     Location homePos = getCreakingHome(entity);
                     if (homePos == null || homePos.getWorld() == null) {
-                        continue; // Not a heart-linked Creaking (transient) or invalid location
+                        continue; // 不是与心脏链接的嘎枝（瞬生体）或位置无效
                     }
 
-                    // Only show particles for hearts within 16 blocks of the player (same world)
+                    // 只为距玩家 16 格以内的心脏显示粒子（同一世界）
                     Location blockLoc = homePos.getBlock().getLocation();
                     if (!blockLoc.getWorld().equals(p.getWorld())) {
-                        continue; // Different world
+                        continue; // 不同的世界
                     }
-                    if (blockLoc.distanceSquared(p.getLocation()) > 256) { // 16^2 = 256
+                    if (blockLoc.distanceSquared(p.getLocation()) > 256) { // 16 的平方 = 256
                         continue;
                     }
 
-                    // Avoid showing duplicate particles for the same heart block
+                    // 避免为同一个心脏方块重复显示粒子
                     if (shownHeartLocations.contains(blockLoc)) {
                         continue;
                     }
                     shownHeartLocations.add(blockLoc);
 
-                    // Check if player can leash Creaking
+                    // 检查玩家能否捕捉嘎枝
                     if (!Permissions.has(this, "MyPet.leash.Creaking")) {
                         continue;
                     }
@@ -575,7 +575,7 @@ public class MyPetPlayerImpl implements MyPetPlayer {
                         continue;
                     }
 
-                    // Show particles above the Creaking Heart block (centered, 1 block above)
+                    // 在嘎枝心脏方块上方显示粒子（居中，上方 1 格处）
                     Location particleLoc = blockLoc.clone().add(0.5, 1.5, 0.5);
                     if (checkTamable((LivingEntity) entity, p)) {
                         MyPetApi.getPlatformHelper().playParticleEffect(p, particleLoc, ParticleCompat.ITEM_CRACK.get(), 0, 0, 0, 0.02f, 20, 100, ParticleCompat.LIME_GREEN_WOOL_DATA);
@@ -599,7 +599,7 @@ public class MyPetPlayerImpl implements MyPetPlayer {
     }
 
     /**
-     * Gets the home location of a Creaking entity using the version-specific CreakingService.
+     * 使用与版本相关的 CreakingService 获取嘎枝实体的巢穴位置。
      */
     private static Location getCreakingHome(Entity entity) {
         return MyPetApi.getServiceManager()

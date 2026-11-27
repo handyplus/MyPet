@@ -70,7 +70,7 @@ import org.bukkit.projectiles.ProjectileSource;
 
 public class MyPetEntityListener implements Listener {
 
-    // JUMP was renamed to JUMP_BOOST in newer API versions
+    // 在新版 API 中 JUMP 已被重命名为 JUMP_BOOST
     private static final PotionEffectType JUMP_EFFECT;
     static {
         PotionEffectType jump = PotionEffectType.getByName("JUMP_BOOST");
@@ -86,7 +86,7 @@ public class MyPetEntityListener implements Listener {
     public void onMyPet(CreatureSpawnEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         if (event.getEntity() instanceof MyPetBukkitEntity) {
@@ -98,7 +98,7 @@ public class MyPetEntityListener implements Listener {
     public void onMyPet(EntityPortalEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         if (event.getEntity() instanceof MyPetBukkitEntity) {
@@ -110,7 +110,7 @@ public class MyPetEntityListener implements Listener {
     public void onMyPet(EntityInteractEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         if (event.getEntity() instanceof MyPetBukkitEntity) {
@@ -126,7 +126,7 @@ public class MyPetEntityListener implements Listener {
     public void onMyPet(EntityCombustByEntityEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         if (WorldGroup.getGroupByWorld(event.getEntity().getWorld()).isDisabled()) {
@@ -156,7 +156,7 @@ public class MyPetEntityListener implements Listener {
     public void onMyPet(final EntityDamageByEntityEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         if (WorldGroup.getGroupByWorld(event.getEntity().getWorld()).isDisabled()) {
@@ -303,12 +303,11 @@ public class MyPetEntityListener implements Listener {
                     if (myPet == shooterMyPet) {
                         event.setCancelled(true);
                     }
-                    // Allow damage if both pets are dueling each other (bypasses PvP restrictions).
-                    // Read the Behavior skill mode like the EntityDeathEvent duel handler below does:
-                    // the targetPriority field is never populated (setMyPetTarget ignores its priority
-                    // argument), so checking getTargetPriority() == Duel here would always be false and
-                    // duel projectiles would always be canceled. Also require the shooter to actually
-                    // be targeting the pet it hit.
+                    // 若两只宠物正在互相决斗则允许造成伤害（绕过 PvP 限制）。
+                    // 像下面 EntityDeathEvent 的决斗处理一样读取 Behavior 技能的模式：
+                    // targetPriority 字段从未被赋值（setMyPetTarget 会忽略它的 priority
+                    // 参数），所以在这里检查 getTargetPriority() == Duel 会始终为 false，
+                    // 决斗弹射物也会一律被取消。另外还要求射手的实际目标正是被击中的宠物。
                     boolean inDuel = shooterMyPet.getSkills().isActive(Behavior.class)
                             && myPet.getSkills().isActive(Behavior.class)
                             && shooterMyPet.getSkills().get(Behavior.class).getBehavior() == BehaviorMode.Duel
@@ -347,7 +346,7 @@ public class MyPetEntityListener implements Listener {
 
     public void onMyPetDamageMonitor(final EntityDamageByEntityEvent event) {
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         Entity target = event.getEntity();
@@ -387,13 +386,12 @@ public class MyPetEntityListener implements Listener {
                     return;
                 }
 
-                // We run at MONITOR, so the BASE modifier already reflects what earlier plugins did to it.
-                // MythicLib (MMOItems) applies a player's DEFENSE at HIGHEST by writing the mitigated value
-                // into the BASE modifier via setDamage(double); resetting to getOriginalDamage(BASE) here would
-                // erase that defense (the original "ignore all plugin influence" behaviour). We take the
-                // smaller of the original and current BASE so legitimate reductions (armor/defense/resistance)
-                // are honoured while the pet's configured Damage still acts as a cap against damage-inflating
-                // plugins. BASE excludes the vanilla ARMOR modifier, so armor is not double-counted.
+                // 我们在 MONITOR 优先级运行，因此 BASE 修正值已经反映了更早的插件对它所做的修改。
+                // MythicLib（MMOItems）在 HIGHEST 优先级通过 setDamage(double) 把减免后的数值
+                // 写入 BASE 修正值来施加玩家防御；在此处重置为 getOriginalDamage(BASE) 会
+                // 抹掉该防御（这正是原先“忽略所有插件影响”的行为）。我们取原始 BASE 与当前 BASE
+                // 中较小的那个，这样合法的减免（护甲/防御/抗性）得以生效，而宠物的配置伤害仍能作为
+                // 上限抵消那些放大伤害的插件。BASE 不包含原版 ARMOR 修正值，因此护甲不会被重复计算。
                 double baseDamage = Math.min(
                         event.getOriginalDamage(EntityDamageEvent.DamageModifier.BASE),
                         event.getDamage(EntityDamageEvent.DamageModifier.BASE));
@@ -430,7 +428,7 @@ public class MyPetEntityListener implements Listener {
     public void onMyPet(final EntityDamageEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         if (event.getEntity() instanceof MyPetBukkitEntity) {
@@ -488,7 +486,7 @@ public class MyPetEntityListener implements Listener {
     public void onMyPet(final EntityDeathEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         LivingEntity deadEntity = event.getEntity();
@@ -497,7 +495,7 @@ public class MyPetEntityListener implements Listener {
         }
         if (deadEntity instanceof MyPetBukkitEntity) {
             MyPet myPet = ((MyPetBukkitEntity) deadEntity).getMyPet();
-            // check health for death events where the pet isn't really dead (/killall)
+            // 检查生命值，以处理宠物其实并未真正死亡的死亡事件（/killall）
             if (myPet == null || myPet.getHealth() > 0) {
                 return;
             }

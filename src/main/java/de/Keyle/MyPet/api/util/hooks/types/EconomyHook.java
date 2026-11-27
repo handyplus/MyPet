@@ -27,7 +27,7 @@ import org.bukkit.OfflinePlayer;
 import java.util.UUID;
 
 /**
- * This interface defines that the hook handles economy interactions
+ * 该接口定义：钩子用于处理经济相关的交互
  */
 public interface EconomyHook extends PluginHook {
     boolean canPay(MyPetPlayer petOwner, double costs);

@@ -24,14 +24,14 @@ import de.Keyle.MyPet.api.player.MyPetPlayer;
 import de.Keyle.MyPet.api.util.hooks.PluginHook;
 
 /**
- * This interface defines that the hook checks if a player is in any a place where he is allowed to have a pet
+ * 该接口定义：钩子用于检查玩家是否处于允许拥有宠物的任何场所
  */
 public interface AllowedHook extends PluginHook {
     /**
-     * Return if a MyPet player is in any a place where he is allowed to have a pet
+     * 返回 MyPet 玩家是否处于允许拥有宠物的任何场所
      *
-     * @param player the MyPet player
-     * @return if player is in any a place where he is allowed to have a pet
+     * @param player MyPet 玩家
+     * @return 玩家是否处于允许拥有宠物的任何场所
      */
     boolean isPetAllowed(MyPetPlayer player);
 }

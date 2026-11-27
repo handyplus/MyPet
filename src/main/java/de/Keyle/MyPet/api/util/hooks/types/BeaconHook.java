@@ -24,55 +24,55 @@ import de.Keyle.MyPet.api.util.hooks.PluginHook;
 import org.bukkit.Location;
 
 /**
- * This interface defines hooks that control beacon skill behavior in regions
+ * 该接口定义用于控制各区域内信标技能行为的钩子
  */
 public interface BeaconHook extends PluginHook {
 
     /**
-     * Returns if beacon effects can be activated at a certain location
+     * 返回在指定位置能否激活信标效果
      *
-     * @param location checked location
-     * @return if beacon is allowed at this location
+     * @param location 要检查的位置
+     * @return 该位置是否允许使用信标
      */
     boolean isBeaconAllowed(Location location);
 
     /**
-     * Returns if beacon effects can be shared to non-owners at a certain location
+     * 返回在指定位置能否将信标效果共享给非所有者
      *
-     * @param location checked location
-     * @return if beacon sharing is allowed at this location
+     * @param location 要检查的位置
+     * @return 该位置是否允许共享信标
      */
     boolean isBeaconShareAllowed(Location location);
 
     /**
-     * Returns if owners can receive their own beacon effects at a certain location
+     * 返回在指定位置所有者能否获得自己的信标效果
      *
-     * @param location checked location
-     * @return if beacon self-effects are allowed at this location
+     * @param location 要检查的位置
+     * @return 该位置是否允许信标自身效果
      */
     boolean isBeaconSelfAllowed(Location location);
 
     /**
-     * Returns the range multiplier for beacons at a certain location
+     * 返回指定位置信标的范围倍数
      *
-     * @param location checked location
-     * @return range multiplier (default 1.0)
+     * @param location 要检查的位置
+     * @return 范围倍数（默认 1.0）
      */
     double getBeaconRangeMultiplier(Location location);
 
     /**
-     * Returns the duration multiplier for beacon effects at a certain location
+     * 返回指定位置信标效果的持续时间倍数
      *
-     * @param location checked location
-     * @return duration multiplier (default 1.0)
+     * @param location 要检查的位置
+     * @return 持续时间倍数（默认 1.0）
      */
     double getBeaconDurationMultiplier(Location location);
 
     /**
-     * Returns the amplifier modifier for beacon effects at a certain location
+     * 返回指定位置信标效果的等级（amplifier）修正值
      *
-     * @param location checked location
-     * @return amplifier modifier (default 0)
+     * @param location 要检查的位置
+     * @return 等级修正值（默认 0）
      */
     int getBeaconAmplifierModifier(Location location);
 }

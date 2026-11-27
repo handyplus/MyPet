@@ -60,7 +60,7 @@ public class MyPetSelectionGui {
 
     public void open(List<StoredMyPet> pets, final RepositoryCallback<StoredMyPet> callback) {
         List<StoredMyPet> pagedPets;
-        // restrict the number of pets to 54 per page
+        // 限制每页宠物数量为 54
         int startIndex = (page - 1) * 54;
         int endIndex = Math.min(startIndex + 54, pets.size());
         if (startIndex < pets.size()) {
@@ -77,10 +77,9 @@ public class MyPetSelectionGui {
             if (petSlotList.containsKey(event.getPosition())) {
                 StoredMyPet storedMyPet = petSlotList.get(event.getPosition());
                 if (storedMyPet != null && callback != null) {
-                    // The menu shows the pets as they were when it opened. Reload the clicked
-                    // pet before using it: since then it may have been stored with different
-                    // contents, traded to another player, released, or activated elsewhere.
-                    // getMyPet waits for pending saves and answers on the main thread.
+                    // 菜单显示的是打开时的宠物状态。在使用被点击的宠物之前需要重新加载，
+                    // 因为此后它可能以不同内容被保存、被交易给其他玩家、被释放或在别处被激活。
+                    // getMyPet 会等待待处理的保存，并在主线程上返回结果。
                     MyPetApi.getRepository().getMyPet(storedMyPet.getUUID(), new RepositoryCallback<StoredMyPet>() {
                         @Override
                         public void callback(StoredMyPet current) {

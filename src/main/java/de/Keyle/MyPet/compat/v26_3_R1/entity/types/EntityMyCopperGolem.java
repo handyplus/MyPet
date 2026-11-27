@@ -130,7 +130,7 @@ public class EntityMyCopperGolem extends EntityMyPet {
 		if (getOwner().equals(entityhuman) && itemStack != null && canUseItem()) {
 			boolean isAxe = itemStack.is(ItemTags.AXES);
 
-			// Waxing with honeycomb
+			// 用蜜脾打蜡
 			if (itemStack.is(Items.HONEYCOMB) && !getMyPet().isWaxed()) {
 				getMyPet().setWaxed(true);
 				if (itemStack != ItemStack.EMPTY && !entityhuman.getAbilities().instabuild) {
@@ -143,21 +143,21 @@ public class EntityMyCopperGolem extends EntityMyPet {
 				spawnParticlesAroundEntity(Particle.WAX_ON);
 				return InteractionResult.CONSUME;
 			}
-			// Remove wax with axe
+			// 用斧头去除蜡层
 			else if (isAxe && getMyPet().isWaxed()) {
 				getMyPet().setWaxed(false);
 				if (itemStack != ItemStack.EMPTY && !entityhuman.getAbilities().instabuild) {
 					try {
 						itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 					} catch (Error e) {
-						// ignore
+						// 忽略
 					}
 				}
 				makeSound("item.axe.wax_off", 1.0F, 1.0F);
 				spawnParticlesAroundEntity(Particle.WAX_OFF);
 				return InteractionResult.CONSUME;
 			}
-			// Scrape oxidation with axe
+			// 用斧头刮除氧化层
 			else if (isAxe && !getMyPet().isWaxed()) {
 				MyCopperGolem.OxidationState currentState = getMyPet().getOxidationState();
                 MyCopperGolem.OxidationState newState = switch (currentState) {
@@ -173,7 +173,7 @@ public class EntityMyCopperGolem extends EntityMyPet {
 						try {
 							itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 						} catch (Error e) {
-							// ignore
+							// 忽略
 						}
 					}
 					makeSound("item.axe.scrape", 1.0F, 1.0F);
@@ -181,7 +181,7 @@ public class EntityMyCopperGolem extends EntityMyPet {
 					return InteractionResult.CONSUME;
 				}
 			}
-			// Add poppy interaction
+			// 添加虞美人交互
 			if (itemStack.getItem() == Blocks.POPPY.asItem() && !getMyPet().hasPoppy()) {
 				getMyPet().setPoppy(CompatItemStack.asBukkitCopy(itemStack));
 				if (itemStack != ItemStack.EMPTY && !entityhuman.getAbilities().instabuild) {
@@ -193,7 +193,7 @@ public class EntityMyCopperGolem extends EntityMyPet {
 				makeSound("entity.iron_golem.repair", 1.0F, 1.0F);
 				return InteractionResult.CONSUME;
 			}
-			// Remove poppy with shears
+			// 用剪刀取下虞美人
 			if (itemStack.getItem() == Items.SHEARS && getMyPet().hasPoppy()) {
 				ItemEntity entityitem = new ItemEntity(this.level(), this.getX(), this.getY() + 1, this.getZ(),
 					CraftItemStack.asNMSCopy(getMyPet().getPoppy()));
@@ -207,7 +207,7 @@ public class EntityMyCopperGolem extends EntityMyPet {
 					try {
 						itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 					} catch (Error e) {
-						// ignore
+						// 忽略
 					}
 				}
 				return InteractionResult.CONSUME;
@@ -220,7 +220,7 @@ public class EntityMyCopperGolem extends EntityMyPet {
 	public void updateVisuals() {
 		this.entityData.set(DATA_WEATHER_STATE, convertToNMSState(getMyPet().getOxidationState()));
 
-		// Update poppy visual in antenna slot
+		// 更新触角槽位中虞美人的外观
 		if (getMyPet().hasPoppy()) {
 			org.bukkit.inventory.ItemStack bukkitPoppy = getMyPet().getPoppy();
 			net.minecraft.world.item.ItemStack nmsPoppy = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(bukkitPoppy);
@@ -252,7 +252,7 @@ public class EntityMyCopperGolem extends EntityMyPet {
 		double height = this.getBbHeight();
 		double width = this.getBbWidth();
 
-		// Spawn particles around the entity using Bukkit API
+		// 使用 Bukkit API 在实体周围生成粒子
 		for (int i = 0; i < 15; i++) {
 			double offsetX = (this.random.nextDouble() - 0.5) * width * 1.5;
 			double offsetY = (this.random.nextDouble() - 0.5) * height;
@@ -270,7 +270,7 @@ public class EntityMyCopperGolem extends EntityMyPet {
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
 
-		// Handle oxidation over time
+		// 处理随时间的氧化
 		if (!Configuration.MyPet.CopperGolem.CAN_OXIDIZE || getMyPet().isWaxed()) {
 			return;
 		}
@@ -282,11 +282,11 @@ public class EntityMyCopperGolem extends EntityMyPet {
 
 		int tickCounter = getMyPet().getOxidationTickCounter() + 1;
 
-		// Check if it's time to oxidize
+		// 检查是否到了氧化时间
 		if (tickCounter >= Configuration.MyPet.CopperGolem.OXIDATION_TIME) {
 			tickCounter = 0;
 
-			// Progress to next oxidation state
+			// 推进到下一个氧化状态
 			MyCopperGolem.OxidationState newState = switch (currentState) {
 				case UNAFFECTED -> MyCopperGolem.OxidationState.EXPOSED;
 				case EXPOSED -> MyCopperGolem.OxidationState.WEATHERED;

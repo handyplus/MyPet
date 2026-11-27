@@ -100,15 +100,15 @@ public class MySQLRepository implements Repository {
         dataSource.setPassword(Configuration.Repository.MySQL.PASSWORD);
         dataSource.setMaximumPoolSize(Configuration.Repository.MySQL.POOL_SIZE);
         dataSource.addDataSourceProperty("cachePrepStmts", true);
-        // Only a warning, never a real leak by itself: loading a player's Pets keeps the connection
-        // while their saved data is decoded, which took over 10s on busy servers (MYPET-D82).
-        // A minute still catches a connection that is never returned.
+        // 这只是警告，本身从不代表真正的泄漏：加载玩家宠物时会一直占用该连接
+        // 直到其存档数据被解码完成，在繁忙的服务器上曾耗时超过 10 秒（MYPET-D82）。
+        // 一分钟的阈值仍能捕获永远不会归还的连接。
         dataSource.setLeakDetectionThreshold(60000);
 
-        // Read the schema version, then release the connection *before* running any
-        // migrations. The migration methods each borrow their own connection, so holding
-        // this one open across the whole ALTER TABLE chain only pinned it idle and could
-        // trip HikariCP's 10s leak detector on slow databases (MYPET-DMY).
+        // 先读取 schema 版本，然后在执行任何迁移 *之前* 释放该连接。
+        // 每个迁移方法都会各自借用连接，若在整个 ALTER TABLE 链期间一直占用
+        // 这个连接，只会让它空闲占用，并可能在缓慢的数据库上触发 HikariCP 的
+        // 10 秒泄漏检测（MYPET-DMY）。
         int oldVersion;
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + Configuration.Repository.MySQL.PREFIX + "info;");
@@ -488,7 +488,7 @@ public class MySQLRepository implements Repository {
         }
     }
 
-    // Pets ------------------------------------------------------------------------------------------------------------
+    // 宠物 ------------------------------------------------------------------------------------------------------------
 
     private List<StoredMyPet> resultSetToMyPet(MyPetPlayer owner, ResultSet resultSet) {
         List<StoredMyPet> pets = new ArrayList<>();
@@ -904,7 +904,7 @@ public class MySQLRepository implements Repository {
         }.runTaskAsynchronously(MyPetApi.getPlugin());
     }
 
-    // Players ---------------------------------------------------------------------------------------------------------
+    // 玩家 ------------------------------------------------------------------------------------------------------------
 
     private MyPetPlayer resultSetToMyPetPlayer(ResultSet resultSet) {
         try {

@@ -32,7 +32,7 @@ public class Colorizer {
 
     private static Map<String, String> colorCodes = new HashMap<>();
     private static final Map<Character, String> ANSI_CODES = new HashMap<>();
-    // Matches every <colorname> tag, compiled once instead of one regex per color on every call
+    // 匹配所有 <colorname> 标签，只编译一次，而不是每次调用都为每种颜色编译一个正则
     private static final Pattern COLOR_NAME_TAG_PATTERN;
     private static final Pattern COLOR_CODE_TAG_PATTERN = Pattern.compile("(?i)<([0-9a-fk-or])>");
 
@@ -111,7 +111,7 @@ public class Colorizer {
         }
         COLOR_NAME_TAG_PATTERN = Pattern.compile("(?i)<(" + names + ")>");
 
-        // Colors
+        // 颜色
         ANSI_CODES.put('0', "\u001b[30m");   // BLACK
         ANSI_CODES.put('1', "\u001b[34m");   // DARK_BLUE
         ANSI_CODES.put('2', "\u001b[32m");   // DARK_GREEN
@@ -128,7 +128,7 @@ public class Colorizer {
         ANSI_CODES.put('d', "\u001b[95m");   // LIGHT_PURPLE
         ANSI_CODES.put('e', "\u001b[93m");   // YELLOW
         ANSI_CODES.put('f', "\u001b[97m");   // WHITE
-        // Formatting
+        // 格式
         ANSI_CODES.put('k', "\u001b[8m");    // OBFUSCATED
         ANSI_CODES.put('l', "\u001b[1m");    // BOLD
         ANSI_CODES.put('m', "\u001b[9m");    // STRIKETHROUGH

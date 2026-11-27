@@ -215,7 +215,7 @@ public class EntityConverterService extends de.Keyle.MyPet.api.util.service.type
             ((Pig) normalEntity).setSaddle(((MyPig) myPet).hasSaddle());
             ((Pig) normalEntity).setVariant(VariantConverter.getBukkitPigVariant(((MyPig) myPet).getVariant()));
         } else if (myPet instanceof MyCow) {
-            // Use CraftCow to avoid AbstractCow#setVariant NoSuchMethodError on Paper
+            // 使用 CraftCow 以避免在 Paper 上出现 AbstractCow#setVariant 的 NoSuchMethodError
             CraftCow craftCow = (CraftCow) normalEntity;
             CowVariant cowVariant = VariantConverter.convertCowVariant(((MyCow) myPet).getVariant());
             craftCow.getHandle().setVariant(VariantConverter.COW_REGISTRY.wrapAsHolder(cowVariant));
@@ -265,8 +265,8 @@ public class EntityConverterService extends de.Keyle.MyPet.api.util.service.type
                     if (villagerTag.containsKey("Gossips")) {
                         TagList inventoryTag = villagerTag.get("Gossips");
                         ListTag vanillaNBT = (ListTag) ItemStackNBTConverter.compoundToVanillaCompound(inventoryTag);
-                        //This might be useful for later/following versions
-                        //((GossipContainer) ReflectionUtil.getFieldValue(net.minecraft.world.entity.npc.Villager.class, entityVillager, "ci")) //Field: gossips
+                        // 这在后续版本中可能会派上用场
+                        //((GossipContainer) ReflectionUtil.getFieldValue(net.minecraft.world.entity.npc.Villager.class, entityVillager, "ci")) // 字段：gossips
 
                         entityVillager.setGossips(
                           GossipContainer.CODEC
@@ -390,12 +390,12 @@ public class EntityConverterService extends de.Keyle.MyPet.api.util.service.type
                 e.printStackTrace();
             }
         } else if (myPet instanceof MyCopperGolem) {
-            // Apply oxidation state, waxed status, and poppy back to the vanilla entity
+            // 将氧化状态、打蜡状态和虞美人花还原到原版实体上
             try {
                 CraftCopperGolem craftGolem = (CraftCopperGolem) normalEntity;
                 net.minecraft.world.entity.animal.golem.CopperGolem nmsGolem = craftGolem.getHandle();
 
-                // Convert our OxidationState to NMS WeatherState
+                // 将我们的 OxidationState 转换为 NMS 的 WeatherState
                 MyCopperGolem myCopperGolem = (MyCopperGolem) myPet;
                 net.minecraft.world.level.block.WeatheringCopper.WeatherState weatherState = switch (myCopperGolem.getOxidationState()) {
                     case EXPOSED -> net.minecraft.world.level.block.WeatheringCopper.WeatherState.EXPOSED;
@@ -404,17 +404,17 @@ public class EntityConverterService extends de.Keyle.MyPet.api.util.service.type
                     default -> net.minecraft.world.level.block.WeatheringCopper.WeatherState.UNAFFECTED;
                 };
 
-                // Apply weathering state
+                // 应用风化状态
                 nmsGolem.setWeatherState(weatherState);
 
-                // Apply waxed status (waxed = negative nextWeatheringTick)
+                // 应用打蜡状态（已打蜡 = nextWeatheringTick 为负值）
                 if (myCopperGolem.isWaxed()) {
                     nmsGolem.nextWeatheringTick = -2;
                 } else {
                     nmsGolem.nextWeatheringTick = -1;
                 }
 
-                // Apply poppy (antenna slot)
+                // 应用虞美人花（天线槽位）
                 if (myCopperGolem.hasPoppy()) {
                     org.bukkit.inventory.ItemStack bukkitPoppy = myCopperGolem.getPoppy();
                     net.minecraft.world.item.ItemStack poppyStack = CraftItemStack.asNMSCopy(bukkitPoppy);
@@ -587,8 +587,8 @@ public class EntityConverterService extends de.Keyle.MyPet.api.util.service.type
 
     public void convertCow(Cow cow, TagCompound properties) {
         String key;
-        // We have to use NMS because Paper redirects Cow#getVariant() to AbstractCow#getVariant() due to paper.yml's api-version being set to 1.13.
-        // Related GitHub issue (labeled as "not a bug"): https://github.com/PaperMC/Paper/issues/13064
+        // 必须使用 NMS，因为 paper.yml 的 api-version 被设为 1.13，Paper 会将 Cow#getVariant() 重定向到 AbstractCow#getVariant()。
+        // 相关 GitHub issue（被标记为“不是 bug”）：https://github.com/PaperMC/Paper/issues/13064
         try {
             CraftCow craftCow = (CraftCow) cow;
             net.minecraft.world.entity.animal.cow.Cow nmsCow = craftCow.getHandle();
@@ -601,7 +601,7 @@ public class EntityConverterService extends de.Keyle.MyPet.api.util.service.type
 
             key = rl.getPath();
         } catch (Throwable nmsErr) {
-            // If, somehow, NMS fails, default to temperate
+            // 如果 NMS 出于某种原因失败，则默认使用 temperate
             key = "temperate";
         }
 
@@ -720,21 +720,21 @@ public class EntityConverterService extends de.Keyle.MyPet.api.util.service.type
     }
 
     public void convertCopperGolem(CopperGolem copperGolem, TagCompound properties) {
-        // Bukkit CopperGolem API not available, access NMS directly
+        // Bukkit 没有 CopperGolem API，直接访问 NMS
         try {
             CraftCopperGolem craftGolem = (CraftCopperGolem) copperGolem;
             net.minecraft.world.entity.animal.golem.CopperGolem nmsGolem = craftGolem.getHandle();
 
-            // Get weathering state from NMS
+            // 从 NMS 获取风化状态
             net.minecraft.world.level.block.WeatheringCopper.WeatherState weatherState = nmsGolem.getWeatherState();
             properties.getCompoundData().put("OxidationState", new TagString(weatherState.name()));
 
-            // Store waxed state based on nextWeatheringTick
-            // Waxed: nextWeatheringTick < 0
+            // 根据 nextWeatheringTick 保存打蜡状态
+            // 已打蜡：nextWeatheringTick < 0
             boolean waxed = nmsGolem.nextWeatheringTick < 0;
             properties.getCompoundData().put("Waxed", new TagByte(waxed ? 1 : 0));
 
-            // Get poppy from antenna slot
+            // 从天线槽位获取虞美人花
             net.minecraft.world.item.ItemStack poppyNMS = nmsGolem.getItemBySlot(net.minecraft.world.entity.animal.golem.CopperGolem.EQUIPMENT_SLOT_ANTENNA);
 
             if (poppyNMS != null && !poppyNMS.isEmpty()) {
@@ -743,7 +743,7 @@ public class EntityConverterService extends de.Keyle.MyPet.api.util.service.type
             }
         } catch (Exception e) {
             e.printStackTrace();
-            // Fallback: use default values
+            // 兜底：使用默认值
             properties.getCompoundData().put("OxidationState", new TagString("UNAFFECTED"));
             properties.getCompoundData().put("Waxed", new TagByte(0));
         }

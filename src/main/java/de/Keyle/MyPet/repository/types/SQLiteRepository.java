@@ -115,11 +115,11 @@ public class SQLiteRepository implements Repository {
             }
             createIndexes();
         } catch (Exception | LinkageError e) {
-            // LinkageError (e.g. UnsatisfiedLinkError) is thrown when the server-provided
-            // sqlite-jdbc native library can't be linked — typically a version conflict with
-            // another plugin's org.sqlite on the shared classpath. It's an Error, not an
-            // Exception, so without this it would escape onEnable uncaught instead of routing
-            // into MyPet's intended "repository unavailable -> disable cleanly" path.
+            // 当服务器提供的 sqlite-jdbc 原生库无法链接时会抛出 LinkageError
+            // （例如 UnsatisfiedLinkError）——通常是与共享 classpath 上其他插件的
+            // org.sqlite 版本冲突所致。它属于 Error 而非 Exception，因此若不在这里捕获，
+            // 它会以未捕获的方式从 onEnable 抛出，而不是走 MyPet 预期的
+            // “存储库不可用 -> 干净地禁用插件”路径。
             e.printStackTrace();
             throw new RepositoryInitException(e);
         }
@@ -199,8 +199,8 @@ public class SQLiteRepository implements Repository {
     }
 
     /**
-     * Runs on every start (new and existing databases) so that older databases get the
-     * index on pets.owner_uuid, which every per-player pet lookup filters by.
+     * 每次启动都会执行（无论新库还是已有库），以便旧数据库也能获得
+     * pets.owner_uuid 上的索引，因为按玩家查询宠物时都会以此字段过滤。
      */
     private void createIndexes() {
         try (Statement create = connection.createStatement()) {
@@ -415,7 +415,7 @@ public class SQLiteRepository implements Repository {
         }
     }
 
-    // Pets ------------------------------------------------------------------------------------------------------------
+    // 宠物 ------------------------------------------------------------------------------------------------------------
 
     private List<StoredMyPet> resultSetToMyPet(MyPetPlayer owner, ResultSet resultSet, boolean next) {
         List<StoredMyPet> pets = new ArrayList<>();
@@ -833,7 +833,7 @@ public class SQLiteRepository implements Repository {
         }.runTaskAsynchronously(MyPetApi.getPlugin());
     }
 
-    // Players ---------------------------------------------------------------------------------------------------------
+    // 玩家 ------------------------------------------------------------------------------------------------------------
 
     private MyPetPlayer resultSetToMyPetPlayer(ResultSet resultSet) {
         try {

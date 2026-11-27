@@ -27,9 +27,8 @@ import de.Keyle.MyPet.api.Util;
 import java.util.*;
 
 /**
- * The {@link ServiceManager} manages all interactions with other plugins. Services are stored by class and by the
- * interfaces they implement so they can also be retrieved by them. You can get instances of other plugins and check if
- * other plugins are active.
+ * {@link ServiceManager} 负责管理与其他插件的所有交互。服务按类以及它所实现的接口存储，
+ * 因此也可以通过这些接口来获取它们。你可以获取其他插件的实例，并检查其他插件是否处于活动状态。
  */
 public class ServiceManager {
     Map<Class<? extends ServiceContainer>, ServiceContainer> services = new HashMap<>();
@@ -42,9 +41,9 @@ public class ServiceManager {
     }
 
     /**
-     * register new services here. A service needs the {@link ServiceName} annotation to be accepted.
+     * 在此注册新的服务。服务必须带有 {@link ServiceName} 注解才会被接受。
      *
-     * @param serviceClass the service class
+     * @param serviceClass 服务类
      */
     public void registerService(Class<? extends ServiceContainer> serviceClass) {
         Load.State loadingState = Load.State.OnEnable;
@@ -101,10 +100,10 @@ public class ServiceManager {
     }
 
     /**
-     * returns all services that inherit from a specific class/interface
+     * 返回所有继承自指定类/接口的服务
      *
-     * @param serviceClass class that implements from {@link ServiceContainer}
-     * @return list of instances of the service class
+     * @param serviceClass 实现自 {@link ServiceContainer} 的类
+     * @return 该服务类的实例列表
      */
     @SuppressWarnings("unchecked")
     public <T extends ServiceContainer> List<T> getServices(Class<? extends T> serviceClass) {
@@ -123,20 +122,20 @@ public class ServiceManager {
     }
 
     /**
-     * returns if services that inherit from a specific class/interface are available
+     * 返回是否存在继承自指定类/接口的可用服务
      *
-     * @param serviceClass class that implements from {@link ServiceContainer}
-     * @return if any service was found
+     * @param serviceClass 实现自 {@link ServiceContainer} 的类
+     * @return 是否找到了任何服务
      */
     public boolean hasServices(Class<? extends ServiceContainer> serviceClass) {
         return services.containsKey(serviceClass);
     }
 
     /**
-     * returns the services of a specific class
+     * 返回指定类的服务
      *
-     * @param serviceClass class that implements from {@link ServiceContainer}
-     * @return instance of the service class
+     * @param serviceClass 实现自 {@link ServiceContainer} 的类
+     * @return 该服务类的实例
      */
     @SuppressWarnings("unchecked")
     public <T extends ServiceContainer> Optional<T> getService(Class<? extends T> serviceClass) {
@@ -144,30 +143,30 @@ public class ServiceManager {
     }
 
     /**
-     * returns the services with a specific {@link ServiceName}
+     * 返回具有指定 {@link ServiceName} 的服务
      *
-     * @param name name of the plugin
-     * @return instance of a service class associated with the plugin name
+     * @param name 插件名称
+     * @return 与该插件名称关联的服务类实例
      */
     public Optional<ServiceContainer> getService(String name) {
         return Optional.ofNullable(serviceByName.get(name));
     }
 
     /**
-     * returns if a services with a specific {@link ServiceName} is available
+     * 返回是否存在具有指定 {@link ServiceName} 的可用服务
      *
-     * @param name name of the plugin
-     * @return if any service was found
+     * @param name 插件名称
+     * @return 是否找到了任何服务
      */
     public boolean isServiceActive(String name) {
         return serviceByName.containsKey(name);
     }
 
     /**
-     * returns if a service that inherit from a specific class/interface is available
+     * 返回是否存在继承自指定类/接口的可用服务
      *
-     * @param serviceClass class that implements from {@link ServiceContainer}
-     * @return if any service was found
+     * @param serviceClass 实现自 {@link ServiceContainer} 的类
+     * @return 是否找到了任何服务
      */
     public boolean isServiceActive(Class<? extends ServiceContainer> serviceClass) {
         return services.containsKey(serviceClass);

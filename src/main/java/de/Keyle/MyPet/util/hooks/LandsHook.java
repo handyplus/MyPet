@@ -69,8 +69,8 @@ public class LandsHook implements PlayerVersusEntityHook, PlayerVersusPlayerHook
     }
 
     /**
-     * Lands protects passive mobs with the attack-animals setting. Villagers, wandering traders
-     * and iron/snow golems are not {@link Animals} in the Bukkit API.
+     * Lands 通过 attack-animals 设置保护被动生物。在 Bukkit API 中，村民、流浪商人
+     * 以及铁傀儡/雪傀儡都不是 {@link Animals}。
      */
     private static boolean isPassiveMob(Entity entity) {
         return entity instanceof NPC || entity instanceof IronGolem || entity instanceof Snowman;

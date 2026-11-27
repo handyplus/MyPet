@@ -77,7 +77,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerListener implements Listener {
 
-    // Beacon zone state tracking (ConcurrentHashMap for thread safety)
+    // 信标区域状态跟踪（使用 ConcurrentHashMap 保证线程安全）
     private final Map<UUID, BeaconZoneState> beaconZoneStates = new ConcurrentHashMap<>();
 
     private static final class BeaconZoneState {
@@ -116,7 +116,7 @@ public class PlayerListener implements Listener {
 
         @Override
         public int hashCode() {
-            // Use rounded values for hash to be consistent with equals
+            // 哈希使用四舍五入后的值，以与 equals 保持一致
             return Objects.hash(deny, selfDeny, shareDeny,
                    Math.round(rangeMult * 10000),
                    Math.round(durationMult * 10000),
@@ -125,9 +125,8 @@ public class PlayerListener implements Listener {
     }
 
     /**
-     * The control item is null when the config sets it to "none" (MyPet's convention for "no item
-     * needed") or the item could not be loaded. Treat that as an empty hand instead of crashing on
-     * every right-click (MYPET-DT0).
+     * 当配置将其设为 "none"（MyPet 表示"不需要物品"的约定）或物品无法加载时，控制物品为 null。
+     * 此时应将其视为空手，而不是在每次右键时崩溃（MYPET-DT0）。
      */
     private static boolean isControlItem(ItemStack item) {
         ConfigItem controlItem = Configuration.Skilltree.Skill.CONTROL_ITEM;
@@ -209,7 +208,7 @@ public class PlayerListener implements Listener {
         String internalVersion = MyPetApi.getCompatUtil().getInternalVersion();
         if (internalVersion != null) {
             try {
-                // If we're running on a server using the v1_21_* (or newer) compat module, skip this logic
+                // 如果服务器使用的是 v1_21_*（或更新）的兼容模块，则跳过这段逻辑
                 if (internalVersion.startsWith("v1_21_")) {
                     return;
                 }
@@ -302,7 +301,7 @@ public class PlayerListener implements Listener {
             }
         }.runTaskLater(MyPetApi.getPlugin(), delay);
 
-        // the update check runs in the background; read its result once, it may still be null
+        // 更新检查在后台运行；这里只读取一次结果，此时它可能仍为 null
         Updater.Update latestUpdate = Updater.getLatest();
         if (Configuration.Update.SHOW_OP && event.getPlayer().isOp() && latestUpdate != null) {
             String versionUrl = "https://modrinth.com/plugin/mypet/version/" + latestUpdate.getVersion();
@@ -384,9 +383,9 @@ public class PlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void on(PlayerQuitEvent event) {
-        // Clean up beacon zone state
+        // 清理信标区域状态
         beaconZoneStates.remove(event.getPlayer().getUniqueId());
-        // Never leave a pet shop purchase guard behind
+        // 绝不能让宠物商店的购买保护标记残留
         PetShop.releasePurchase(event.getPlayer().getUniqueId());
 
         if (WorldGroup.getGroupByWorld(event.getPlayer().getWorld()).isDisabled()) {
@@ -419,7 +418,7 @@ public class PlayerListener implements Listener {
         if (MyPetApi.getPlayerManager().isMyPetPlayer(event.getPlayer())) {
             final MyPetPlayer myPetPlayer = MyPetApi.getPlayerManager().getMyPetPlayer(event.getPlayer());
 
-            // Race condition: player may have disconnected between isMyPetPlayer and getMyPetPlayer
+            // 竞态条件：玩家可能在 isMyPetPlayer 与 getMyPetPlayer 之间已经断线
             if (myPetPlayer == null) {
                 return;
             }
@@ -502,7 +501,7 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    //This does not work for new minecraft versions (1.19+) as the player gets dismounted before the TeleportEvent is thrown. Yay.
+    //这在较新的 Minecraft 版本（1.19+）中不起作用，因为玩家在被触发 TeleportEvent 之前就已下坐骑。唉。
     public void onMyPet(PlayerTeleportEvent event) {
         if (!event.getPlayer().isOnline()) {
             return;
@@ -577,30 +576,30 @@ public class PlayerListener implements Listener {
                     }
                 }
 
-                // Track beacon zone state changes
+                // 跟踪信标区域状态的变化
                 checkBeaconZoneState(event.getPlayer(), player, event.getTo());
             }
         }
     }
 
     private void checkBeaconZoneState(Player player, MyPetPlayer mpPlayer, org.bukkit.Location to) {
-        // Only process if zone messages are enabled
+        // 仅在启用了区域消息时才进行处理
         if (!Configuration.Skilltree.Skill.Beacon.ZONE_MESSAGES) {
             return;
         }
 
-        // Only process if player has a pet with beacon skill
+        // 仅在玩家拥有带信标技能的宠物时才进行处理
         if (!mpPlayer.hasMyPet() || mpPlayer.getMyPet().getStatus() != MyPet.PetState.Here) {
             return;
         }
-        // Every pet has a Beacon skill object, so check if it is actually active before running the region queries
+        // 每只宠物都有一个 Beacon 技能对象，因此在执行区域查询前先检查该技能是否确实处于激活状态
         if (!mpPlayer.getMyPet().getSkills().isActive(BeaconImpl.class)) {
-            // Forget the old zone so the first check after the Beacon becomes active doesn't send a message
+            // 遗忘旧区域，这样信标刚激活后的第一次检查不会发送消息
             beaconZoneStates.remove(player.getUniqueId());
             return;
         }
 
-        // Build current zone state (immutable)
+        // 构建当前区域状态（不可变）
         BeaconZoneState current = new BeaconZoneState(
             !MyPetApi.getHookHelper().isBeaconAllowed(to),
             !MyPetApi.getHookHelper().isBeaconSelfAllowed(to),
@@ -615,16 +614,16 @@ public class PlayerListener implements Listener {
         if (previous == null || !current.equals(previous)) {
             beaconZoneStates.put(player.getUniqueId(), current);
 
-            // Don't message on first check (login/join)
+            // 第一次检查（登录/加入）时不发送消息
             if (previous == null) {
                 return;
             }
 
             if (!current.hasModifications() && previous.hasModifications()) {
-                // Left all modifications
+                // 离开了所有修改区域
                 player.sendMessage(Translation.getString("Message.Skill.Beacon.Zone.Leave", player));
             } else if (current.hasModifications()) {
-                // Entered or changed zone - build multi-line message
+                // 进入或切换了区域 - 构建多行消息
                 List<String> lines = new ArrayList<>();
                 lines.add(Translation.getString("Message.Skill.Beacon.Zone.Enter", player));
 

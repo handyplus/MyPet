@@ -36,7 +36,7 @@ public class EntityMySeat extends ArmorStand {
 		setSmall(true);
 		setMarker(true);
 		((CraftLivingEntity) getBukkitEntity()).setInvisible(true);
-		// 26.3 split setInvulnerable(boolean) into a permanent and a timed flag; the seat needs the permanent one
+		// 26.3 将 setInvulnerable(boolean) 拆分为永久标志与限时标志；座位需要的是永久标志
 		setPermanentlyInvulnerable(true);
 		persist = false;
 	}
@@ -57,16 +57,16 @@ public class EntityMySeat extends ArmorStand {
 	@Override
 	public void tick() {
 		super.tick();
-		if (getPassengers().isEmpty()) { //Done riding? Begone seat
+		if (getPassengers().isEmpty()) { // 骑乘结束了吗？那就移除座位
 			stopRiding();
 			discard();
-		} else if (this.getVehicle() == null) { //Got blown off the thing or something
+		} else if (this.getVehicle() == null) { // 被炸飞或其他原因脱离了承载对象
 			ejectPassengers();
 			discard();
 		}
 	}
 
-	//This should never matter but... hey - futureproofing
+	// 这本来应该永远不会发生，但是……嘿——为了面向未来
 	@Override
 	public boolean dismountsUnderwater() {
 		if (getVehicle() != null) {

@@ -36,7 +36,7 @@ public abstract class MyPetManager {
     protected final BiMap<MyPetPlayer, MyPet> mActivePlayerPets = HashBiMap.create();
     protected final BiMap<MyPet, MyPetPlayer> mActivePetsPlayer = mActivePlayerPets.inverse();
 
-    // Active -------------------------------------------------------------------
+    // 活跃 ---------------------------------------------------------------------
 
     public MyPet getMyPet(MyPetPlayer owner) {
         return mActivePlayerPets.get(owner);
@@ -70,11 +70,11 @@ public abstract class MyPetManager {
         return false;
     }
 
-    // Inactive -----------------------------------------------------------------
+    // 非活跃 -------------------------------------------------------------------
 
     public abstract StoredMyPet getInactiveMyPetFromMyPet(StoredMyPet storedMyPet);
 
-    // All ----------------------------------------------------------------------
+    // 全部 ---------------------------------------------------------------------
 
     public abstract Optional<MyPet> activateMyPet(StoredMyPet storedMyPet);
 

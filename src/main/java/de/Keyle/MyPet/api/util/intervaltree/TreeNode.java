@@ -23,121 +23,112 @@ package de.Keyle.MyPet.api.util.intervaltree;
 import java.util.*;
 
 /**
- * A representation of a single node in the {@link IntervalTree}.
+ * {@link IntervalTree} 中单个节点的表示。
  * <p>
- * Since the Interval Tree is practically a binary search tree, every node is
- * identified by a unique key - the center (called middlepoint) of the first
- * interval that triggers the creation of this node. The key is immutable and
- * can't be changed during the lifespan of this node. It can however move up or
- * down in the tree as a result of balancing rotations, similarly to a normal
- * balanced search tree. Unlike a traditional binary search tree, every node in
- * the interval tree can store multiple intervals. The invariant is, that each node
- * stores only intervals that contain its middlepoint.
+ * 由于间隔树实际上是一棵二叉搜索树，每个节点都由唯一的键标识——
+ * 即触发创建该节点的第一个区间的中心（称为中点）。该键不可变，
+ * 在本节点的生命周期内不能更改。不过与普通平衡搜索树一样，
+ * 它可能因平衡旋转而在树中上移或下移。与传统二叉搜索树不同，
+ * 间隔树中的每个节点可以存储多个区间。不变量是：每个节点
+ * 只存储包含其中点的区间。
  * </p>
  * <p>
- * There are several invariants that the {@code TreeNode} needs to keep. First,
- * the subtrees rooted in each node are always kept balanced. Second, each node
- * must contain at least one interval, otherwise the node must be removed from
- * the tree to keep it as small as possible. Balancing is done by traditional
- * binary search tree rotations.
+ * {@code TreeNode} 需要维护若干不变量。首先，
+ * 以每个节点为根的子树始终保持平衡。其次，每个节点
+ * 必须至少包含一个区间，否则必须从树中移除该节点，
+ * 以使其尽可能小。平衡通过传统的
+ * 二叉搜索树旋转完成。
  * </p>
  * <p>
- * Given an interval that needs to be found, inserted or removed from the tree,
- * an augmented binary search algorithm is performed in the following fashion.
- * For each visited node, check if the middlepoint of this node is contained in
- * the query interval. If so, then this node is the position where the query interval
- * must be stored. Otherwise, visit the left child, if the interval is entirely
- * to the left of the middlepoint, or visit the right child otherwise.
+ * 给定一个需要查找、插入或从树中移除的区间，
+ * 会以如下方式执行增强版二叉搜索算法。
+ * 对每个访问的节点，检查该节点的中点是否包含在
+ * 查询区间中。如果是，则该节点就是查询区间
+ * 应存储的位置。否则，如果区间完全
+ * 位于中点左侧则访问左子节点，反之访问右子节点。
  * </p>
  * <p>
- * Since intervals may contain middlepoints from multiple nodes in the tree,
- * there are multiple valid locations where an interval may be stored based
- * on the above augmented binary search algorithm. However, to ensure the
- * optimal time complexity of the {@link IntervalTree#add(Interval) add},
- * {@link IntervalTree#remove(Object) remove} and
- * {@link IntervalTree#contains(Object) contains} operations, we define the base
- * position of an interval (or base) as the node closest to root within the set of
- * nodes, where the interval may be stored. To be able to guarantee the
- * correctness of the algorithm, this invariant must be preserved after each
- * tree operation. This is especially important, when tree rotations are
- * performed. Whenever a node is promoted closer to the root as a result of a
- * rotation, the promoted node must assimilate all intervals from the node demoted
- * by the rotation. This ensures that whenever the binary search algorithm encounters
- * a node, which is a valid location for a given interval, this node will be the base
- * of the interval.
+ * 由于区间可能包含树中多个节点的中点，基于上述增强版二叉搜索算法，
+ * 一个区间可能有多个有效的存储位置。不过，为确保
+ * {@link IntervalTree#add(Interval) add}、
+ * {@link IntervalTree#remove(Object) remove} 和
+ * {@link IntervalTree#contains(Object) contains} 操作的最佳时间复杂度，
+ * 我们将区间的基准位置（或基准，base）定义为：在该区间可能存储的
+ * 节点集合中，距离根最近的节点。为保证算法的正确性，
+ * 每次树操作后都必须保持这一不变量。这在执行树旋转时
+ * 尤为重要。每当某节点因旋转而被提升得更靠近根时，
+ * 被提升的节点必须接收（assimilate）因该旋转而降级的节点中的
+ * 所有区间。这确保每当二叉搜索算法遇到
+ * 一个可作为给定区间有效位置的节点时，该节点就是该区间
+ * 的基准。
  * </p>
  * <p>
- * Since each node can store multiple intervals, we need an efficient way
- * to perform intersecting queries (given a query in the form of a point or
- * an interval, find all intervals intersecting the query). The {@code TreeNode}
- * can't simply keep an ArrayList of all intervals stored in it, because
- * it will have to linearly check each interval in the List. This can
- * degrade the performance of the tree, especially in cases where a single
- * node contains all intervals. Intervals have to be stored in an ordered
- * way. Each node keeps its intervals in two {@link TreeSet}s at the same
- * time - one containing the intervals by their start points in ascending order
- * and the other by the end points in descending order. Whenever we have to provide
- * a set of all intervals contained within this node, that intersect a query point,
- * we check if the query is left or right of the middlepoint of the node.
- * If it is left, we iterate through the TreeSet ordered by the start points
- * until we reach an interval completely to the right of the query. Analogously,
- * if the query is to the right of the middlepoint, we iterate through the set
- * ordered by the end points until we reach an interval that's completely to
- * the left of the query. This allows us to only iterate through these intervals,
- * that we will actually return as a result of the query.
+ * 由于每个节点可以存储多个区间，我们需要一种高效的方式
+ * 执行相交查询（给定点或区间形式的查询，找出所有与查询相交的区间）。
+ * {@code TreeNode} 不能简单地保存一个含其全部区间的 ArrayList，
+ * 因为那样就必须线性检查 List 中的每个区间，这会
+ * 降低树的性能，尤其是在单个节点包含所有区间的情况下。
+ * 区间必须以有序方式存储。每个节点同时用两个 {@link TreeSet} 保存其区间——
+ * 一个按起点升序排列，另一个按终点降序排列。
+ * 每当需要给出该节点中所有与查询点相交的区间集合时，
+ * 我们检查查询位于该节点中点的左侧还是右侧。
+ * 如果在左侧，则按起点排序遍历 TreeSet，直到
+ * 遇到完全位于查询右侧的区间。类似地，
+ * 如果查询位于中点右侧，则按终点排序遍历集合，
+ * 直到遇到完全位于查询左侧的区间。这样我们就只需遍历
+ * 真正会作为查询结果返回的区间。
  * </p>
  *
- * @param <T> The type for the start and end point of the interval
+ * @param <T> 区间起点和终点的类型
  */
 public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<Interval<T, S>> {
 
     /**
-     * A set containing all {@link Interval}s stored in this node, ordered by their
-     * starting points.
+     * 包含存储于本节点的所有 {@link Interval} 的集合，按其
+     * 起点排序。
      *
      * @see Interval#sweepLeftToRight
      */
     protected NavigableSet<Interval<T, S>> increasing;
 
     /**
-     * A set containing all {@link Interval}s stored in this node, ordered by their
-     * end points.
+     * 包含存储于本节点的所有 {@link Interval} 的集合，按其
+     * 终点排序。
      *
      * @see Interval#sweepRightToLeft
      */
     protected NavigableSet<Interval<T, S>> decreasing;
 
     /**
-     * A pointer to the left child of the current node. The left child must either be
-     * {@code null} or have a midpoint, smaller than the midpoint of the current node. More
-     * formally, {@code left.midpoint.compareTo(this.midpoint) < 0} must evaluate to {@code true}.
+     * 指向当前节点左子节点的指针。左子节点要么为
+     * {@code null}，要么其中点小于当前节点的中点。更
+     * 正式地说，{@code left.midpoint.compareTo(this.midpoint) < 0} 必须为 {@code true}。
      */
     protected TreeNode<T, S> left;
 
     /**
-     * A pointer to the right child of the current node. The right child must either be
-     * {@code null} or have a midpoint, larger than the midpoint of the current node. More
-     * formally, {@code right.midpoint.compareTo(this.midpoint) > 0} must evaluate to {@code true}.
+     * 指向当前节点右子节点的指针。右子节点要么为
+     * {@code null}，要么其中点大于当前节点的中点。更
+     * 正式地说，{@code right.midpoint.compareTo(this.midpoint) > 0} 必须为 {@code true}。
      */
     protected TreeNode<T, S> right;
 
     /**
-     * The midpoint of the initial interval added to the node. It is an immutable value
-     * and can not be changed, even if the initial interval has been removed from the
-     * node.
+     * 添加到该节点的初始区间的中点。它是一个不可变值，
+     * 即使初始区间已从该节点中移除也不能更改。
      */
     protected final T midpoint;
 
     /**
-     * The height of the node.
+     * 节点的高度。
      */
     protected int height;
 
     /**
-     * Instantiates a new node in an {@link IntervalTree}.
+     * 实例化 {@link IntervalTree} 中的一个新节点。
      *
-     * @param interval The initial interval stored in the node. The middlepoint of
-     *                 the node will be set based on this interval.
+     * @param interval 存储在节点中的初始区间。节点的中点
+     *                 将基于该区间设置。
      */
     public TreeNode(Interval<T, S> interval) {
         decreasing = new TreeSet<>(Interval.sweepRightToLeft);
@@ -150,16 +141,16 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
     }
 
     /**
-     * A helper function for the {@link IntervalTree#add(Interval)} method. Adds a new
-     * interval to the subtree rooted at a {@code TreeNode}.
+     * {@link IntervalTree#add(Interval)} 方法的辅助函数。向以某个 {@code TreeNode}
+     * 为根的子树添加新区间。
      *
-     * @param tree     The {@link IntervalTree} containing the subtree. Used primarily for
-     *                 housekeeping, such as adjusting the size of the tree, if needed.
-     * @param root     The root of the subtree, to which we are adding a new interval.
-     * @param interval The {@link Interval} that we are adding.
-     * @param <T>      The type of the start and end points of the interval.
-     * @return The new root of the subtree. It may be different than the current root,
-     * if the subtree had to be rebalanced after the operation.
+     * @param tree     {@link IntervalTree} 包含该子树。主要用于
+     *                 内部记录，例如按需调整树的大小。
+     * @param root     我们正在向其添加新区间的子树的根。
+     * @param interval 我们要添加的 {@link Interval}。
+     * @param <T>      区间起点和终点的类型。
+     * @return 子树的新根。如果操作后子树需要再平衡，
+     * 它可能与当前根不同。
      */
     public static <T extends Comparable<? super T>, S> TreeNode<T, S> addInterval(IntervalTree<T, S> tree, TreeNode<T, S> root, Interval<T, S> interval) {
         if (root == null) {
@@ -184,40 +175,39 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
     }
 
     /**
-     * Returns the height of the subtree, rooted at the current node.
+     * 返回以当前节点为根的子树的高度。
      *
-     * @return The height of the subtree, rooted ad the current node. It will be 1, if
-     * the node is a leaf.
+     * @return 以当前节点为根的子树的高度。如果节点是叶子，
+     * 则为 1。
      */
     public int height() {
         return height;
     }
 
     /**
-     * Returns the height of a subtree, rooted at a given node. This function accepts
-     * {@code null} values and returns 0 as height for them.
+     * 返回以给定节点为根的子树的高度。该函数接受
+     * {@code null} 值，并将其高度返回为 0。
      *
-     * @param node The node, whose height has to be determined.
-     * @return The height of the subtree rooted at {@code node}. Returns 0, if {@code node}
-     * is {@code null}.
+     * @param node 需要确定高度的节点。
+     * @return 以 {@code node} 为根的子树的高度。如果 {@code node}
+     * 为 {@code null}，则返回 0。
      */
     private static int height(TreeNode node) {
         return node == null ? 0 : node.height();
     }
 
     /**
-     * Checks if the subtree rooted at the current node is balanced and balances it
-     * if necessary.
+     * 检查以当前节点为根的子树是否平衡，必要时
+     * 对其进行平衡。
      *
-     * @return The new root of the subtree, after the balancing operation has been
-     * performed. It may return a {@code null} value, if the balancing has been
-     * triggered by a {@link #removeInterval(IntervalTree, TreeNode, Interval)} operation
-     * and the removed interval had been the last one in the subtree.
+     * @return 执行平衡操作后子树的新根。如果平衡是由
+     * {@link #removeInterval(IntervalTree, TreeNode, Interval)} 操作触发的，
+     * 且被移除的区间是子树中最后一个区间，则可能返回 {@code null}。
      */
     private TreeNode<T, S> balanceOut() {
         int balance = height(left) - height(right);
         if (balance < -1) {
-            // The tree is right-heavy.
+            // 树偏向右侧。
             if (height(right.left) > height(right.right)) {
                 this.right = this.right.rightRotate();
                 return leftRotate();
@@ -225,7 +215,7 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
                 return leftRotate();
             }
         } else if (balance > 1) {
-            // The tree is left-heavy.
+            // 树偏向左侧。
             if (height(left.right) > height(left.left)) {
                 this.left = this.left.leftRotate();
                 return rightRotate();
@@ -233,19 +223,18 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
                 return rightRotate();
             }
         } else {
-            // The tree is already balanced.
+            // 树已经平衡。
             return this;
         }
     }
 
     /**
-     * Performs a left rotation of the current node, by promoting its right child
-     * and demoting the current node. After the left rotation, the promoted node
-     * {@link #assimilateOverlappingIntervals(TreeNode) assimilates} the intervals in
-     * the demoted node, which intersect its middlepoint.
+     * 对当前节点执行左旋，即提升其右子节点
+     * 并降级当前节点。左旋之后，被提升的节点会
+     * {@link #assimilateOverlappingIntervals(TreeNode) assimilates} 降级节点中
+     * 与其中点相交的区间。
      *
-     * @return The new root of the subtree rooted at the current node, after the
-     * rotation has been performed.
+     * @return 执行旋转后以当前节点为根的子树的新根。
      */
     private TreeNode<T, S> leftRotate() {
         TreeNode<T, S> head = right;
@@ -257,13 +246,12 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
     }
 
     /**
-     * Performs a right rotation of the current node, by promoting its left child
-     * and demoting the current node. After the right rotation, the promoted node
-     * {@link #assimilateOverlappingIntervals(TreeNode) assimilates} the intervals in
-     * the demoted node, which intersect its middlepoint.
+     * 对当前节点执行右旋，即提升其左子节点
+     * 并降级当前节点。右旋之后，被提升的节点会
+     * {@link #assimilateOverlappingIntervals(TreeNode) assimilates} 降级节点中
+     * 与其中点相交的区间。
      *
-     * @return The new root of the subtree rooted at the current node, after the
-     * rotation has been performed.
+     * @return 执行旋转后以当前节点为根的子树的新根。
      */
     private TreeNode<T, S> rightRotate() {
         TreeNode<T, S> head = left;
@@ -275,13 +263,13 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
     }
 
     /**
-     * Transfers all intervals from a target node to the current node, if they
-     * intersect the middlepoint of the current node. After this operation, it
-     * is possible that the target node remains empty. If so, it needs to be
-     * deleted, possible causing the subtree to be rebalanced.
+     * 如果目标节点中的区间与当前节点的中点相交，
+     * 则将这些区间全部转移到当前节点。此操作之后，
+     * 目标节点可能变为空。如果是这样，则需删除它，
+     * 这可能导致子树再平衡。
      *
-     * @param from The target node, from which intervals will be assimilated.
-     * @return The new root of subtree, rooted at the current node.
+     * @param from 将被接收区间的目标节点。
+     * @return 以当前节点为根的子树的新根。
      */
     private TreeNode<T, S> assimilateOverlappingIntervals(TreeNode<T, S> from) {
         ArrayList<Interval<T, S>> tmp = new ArrayList<>();
@@ -313,16 +301,16 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
     }
 
     /**
-     * A helper function for the {@link IntervalTree#query(Comparable)} method.
-     * It searches recursively for all intervals stored in the subtree rooted at
-     * the current node, that intersect a target point.
+     * {@link IntervalTree#query(Comparable)} 方法的辅助函数。
+     * 它递归查找以当前节点为根的子树中存储的所有与
+     * 目标点相交的区间。
      *
-     * @param root  The root of the currently traversed subtree. May be {@code null}.
-     * @param point The query point.
-     * @param res   The set used to store all intervals to be returned.
-     * @param <T,S> The type of the start and end points of the intervals, as well as
-     *              the query point.
-     * @return The set of all intervals from the current subtree, containing the query.
+     * @param root  当前遍历子树的根。可以为 {@code null}。
+     * @param point 查询点。
+     * @param res   用于存储所有要返回的区间的集合。
+     * @param <T,S> 区间起点和终点的类型，以及
+     *              查询点的类型。
+     * @return 当前子树中包含该查询的所有区间组成的集合。
      */
     public static <T extends Comparable<? super T>, S> Set<Interval<T, S>> query(TreeNode<T, S> root, T point, Set<Interval<T, S>> res) {
         if (root == null) {
@@ -349,22 +337,20 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
 
 
     /**
-     * A helper function for the {@link IntervalTree#remove(Interval)} method.
-     * It searches recursively for the base node of a target interval and
-     * removes the interval from the base node, if it is stored there. This is
-     * a more efficient way to remove an interval from the tree, since it
-     * doesn't iterate through all intervals, but performs a binary search in
-     * O(logn).
+     * {@link IntervalTree#remove(Interval)} 方法的辅助函数。
+     * 它递归查找目标区间的基准节点，如果该区间存储在
+     * 基准节点中，则将其移除。与遍历所有区间相比，
+     * 这是从树中移除区间更高效的方式，因为它
+     * 在 O(logn) 时间内执行二分查找。
      *
-     * @param tree     The {@link IntervalTree} containing the subtree. Used primarily for
-     *                 housekeeping, such as adjusting the size of the tree, if needed.
-     * @param root     The root of the currently traversed subtree. May be {@code null}.
-     * @param interval The target interval to be removed.
-     * @param <T,S>    The type of the start and end points of the intervals, as well as
-     *                 the query point.
-     * @return The new root of the subtree, rooted at the current node, after the
-     * interval has been removed. This could be {@code null} if the interval
-     * was the last one stored at the subtree.
+     * @param tree     {@link IntervalTree} 包含该子树。主要用于
+     *                 内部记录，例如按需调整树的大小。
+     * @param root     当前遍历子树的根。可以为 {@code null}。
+     * @param interval 要移除的目标区间。
+     * @param <T,S>    区间起点和终点的类型，以及
+     *                 查询点的类型。
+     * @return 区间移除后以当前节点为根的子树的新根。如果该区间
+     * 是子树中存储的最后一个区间，则可能为 {@code null}。
      */
     public static <T extends Comparable<? super T>, S> TreeNode<T, S> removeInterval(IntervalTree<T, S> tree, TreeNode<T, S> root, Interval<T, S> interval) {
         if (root == null) {
@@ -388,13 +374,13 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
     }
 
     /**
-     * Deletes a node from the tree. The caller of this method needs to check, if the
-     * node is actually empty, because this method only performs the deletion.
+     * 从树中删除一个节点。该方法的调用方需要先检查该
+     * 节点是否确实为空，因为此方法只执行删除操作。
      *
-     * @param root  The node that needs to be deleted.
-     * @param <T,S> The type of the start and end points of the intervals.
-     * @return The new root of the subtree rooted at the node to be deleted. It may
-     * be {@code null}, if the deleted node was the last in the subtree.
+     * @param root  需要删除的节点。
+     * @param <T,S> 区间起点和终点的类型。
+     * @return 以被删除节点为根的子树的新根。如果被删除的节点
+     * 是子树中的最后一个节点，则可能为 {@code null}。
      */
     private static <T extends Comparable<? super T>, S> TreeNode<T, S> deleteNode(TreeNode<T, S> root) {
         if (root.left == null && root.right == null) {
@@ -402,9 +388,9 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
         }
 
         if (root.left == null) {
-            // If the left child is empty, then the right subtree can consist of at most
-            // one node, otherwise it would have been unbalanced. So, just return
-            // the right child.
+            // 如果左子节点为空，那么右子树最多只能有一个节点，
+            // 否则它就会不平衡了。因此直接返回
+            // 右子节点即可。
             return root.right;
         } else {
             TreeNode<T, S> node = root.left;
@@ -433,16 +419,15 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
     }
 
     /**
-     * A helper method for the range search used in the interval intersection query in the tree.
-     * This corresponds to the left branch of the range search, once we find a node, whose
-     * midpoint is contained in the query interval. All intervals in the left subtree of that node
-     * are guaranteed to intersect with the query, if they have an endpoint greater or equal than
-     * the start of the query interval. Basically, this means that every time we branch to the left
-     * in the binary search, we need to add the whole right subtree to the result set.
+     * 树中区间相交查询所用范围搜索的辅助方法。
+     * 一旦找到一个中点包含在查询区间中的节点，它就对应范围搜索的左分支。
+     * 该节点左子树中的所有区间，只要其端点大于或等于
+     * 查询区间的起点，就保证与查询相交。基本上，这意味着
+     * 每次在二分搜索中向左分支时，都需要把整个右子树加入结果集。
      *
-     * @param node   The left child of the node, whose midpoint is contained in the query interval.
-     * @param query  The query interval.
-     * @param result The set which stores all intervals in the tree, intersecting the query.
+     * @param node   中点包含在查询区间中的节点的左子节点。
+     * @param query  查询区间。
+     * @param result 存储树中所有与查询相交的区间的集合。
      */
     static <T extends Comparable<? super T>, S> void rangeQueryLeft(TreeNode<T, S> node, Interval<T, S> query, Set<Interval<T, S>> result) {
         while (node != null) {
@@ -467,16 +452,15 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
     }
 
     /**
-     * A helper method for the range search used in the interval intersection query in the tree.
-     * This corresponds to the right branch of the range search, once we find a node, whose
-     * midpoint is contained in the query interval. All intervals in the right subtree of that node
-     * are guaranteed to intersect with the query, if they have an endpoint smaller or equal than
-     * the end of the query interval. Basically, this means that every time we branch to the right
-     * in the binary search, we need to add the whole left subtree to the result set.
+     * 树中区间相交查询所用范围搜索的辅助方法。
+     * 一旦找到一个中点包含在查询区间中的节点，它就对应范围搜索的右分支。
+     * 该节点右子树中的所有区间，只要其端点小于或等于
+     * 查询区间的终点，就保证与查询相交。基本上，这意味着
+     * 每次在二分搜索中向右分支时，都需要把整个左子树加入结果集。
      *
-     * @param node   The right child of the node, whose midpoint is contained in the query interval.
-     * @param query  The query interval.
-     * @param result The set which stores all intervals in the tree, intersecting the query.
+     * @param node   中点包含在查询区间中的节点的右子节点。
+     * @param query  查询区间。
+     * @param result 存储树中所有与查询相交的区间的集合。
      */
     static <T extends Comparable<? super T>, S> void rangeQueryRight(TreeNode<T, S> node, Interval<T, S> query, Set<Interval<T, S>> result) {
         while (node != null) {
@@ -502,10 +486,10 @@ public class TreeNode<T extends Comparable<? super T>, S> implements Iterable<In
 
 
     /**
-     * An iterator over all intervals stored in subtree rooted at the current node. Traversal
-     * is done via classic iterative in-order tree traversal where each iteration is in
-     * amortized O(1) time. The iterator requires O(logn) space - at each point of the
-     * traversal we keep a stack of the currently traversed branch of the tree.
+     * 遍历以当前节点为根的子树中所有存储区间的迭代器。
+     * 遍历采用经典的中序迭代树遍历，每次迭代均为
+     * 摊还 O(1) 时间。迭代器需要 O(logn) 空间——遍历的每个
+     * 时刻，我们保留一个当前所遍历树分支的栈。
      */
     @Override
     public TreeNodeIterator iterator() {

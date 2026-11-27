@@ -38,7 +38,7 @@ public interface MyPetPlayer extends Scheduler, NBTStorage {
 
     boolean hasCustomData();
 
-    // Custom Data -----------------------------------------------------------------
+    // 自定义数据 -----------------------------------------------------------------
 
     void setAutoRespawnEnabled(boolean flag);
 

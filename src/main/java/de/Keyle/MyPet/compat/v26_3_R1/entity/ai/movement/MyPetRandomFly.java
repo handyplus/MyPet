@@ -27,18 +27,17 @@ import net.minecraft.world.entity.ai.util.HoverRandomPos;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * AI goal that makes flying Pets hover and flutter randomly near their stationary owner.
+ * 让飞行宠物在静止的主人附近悬停并随机飞舞的 AI goal。
  *
- * <p>This goal extends {@link MyPetRandomStroll} to provide specialized aerial wandering
- * behavior for flying Pets (bats, allays, bees, etc.). Flying Pets have a higher chance
- * of wandering (8% versus 2%) to create more active hovering behavior.
+ * <p>该 goal 继承 {@link MyPetRandomStroll}，为飞行宠物（蝙蝠、悦灵、蜜蜂等）提供专门的
+ * 空中漫游行为。飞行宠物具有更高的漫游概率（8% 对 2%），从而形成更活跃的悬停行为。
  *
- * <p>Key differences from ground strolling:
+ * <p>与地面漫步的主要区别：
  * <ul>
- *   <li>Uses 3D position generation via {@link HoverRandomPos} and {@link AirAndWaterRandomPos}</li>
- *   <li>Supports both horizontal and vertical radius for wander targets</li>
- *   <li>Higher wander chance (8%) for more active buzzing/hovering</li>
- *   <li>Slightly faster movement speeds than ground Pets</li>
+ *   <li>通过 {@link HoverRandomPos} 和 {@link AirAndWaterRandomPos} 生成 3D 位置</li>
+ *   <li>漫游目标同时支持水平与垂直半径</li>
+ *   <li>更高的漫游概率（8%），使嗡嗡飞舞/悬停更活跃</li>
+ *   <li>移动速度略高于地面宠物</li>
  * </ul>
  *
  * @see MyPetRandomStroll
@@ -47,88 +46,88 @@ import net.minecraft.world.phys.Vec3;
 @Compat("v26_3_R1")
 public class MyPetRandomFly extends MyPetRandomStroll {
 
-	// ==================== TUNABLE CONSTANTS ====================
-	// These values control flying Pet random hover behavior.
-	// All distance values are in blocks, speeds are in blocks/tick unless noted.
+	// ==================== 可调常量 ====================
+	// 这些值控制飞行宠物的随机悬停行为。
+	// 除特别注明外，所有距离值单位为格，速度单位为格/tick。
 
 	// -------------------------------------------------------------------------
-	// HOVER ACTIVATION - Parameters controlling when hovering starts
+	// 悬停激活 - 控制何时开始悬停的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Probability (0.0-1.0) of starting a hover each tick when conditions are met.
-	 * Value of 0.08 means 8% chance per tick - 4x higher than ground Pets.
-	 * Creates more active buzzing/hovering behavior appropriate for flying creatures.
+	 * 条件满足时，每 tick 开始一次悬停的概率（0.0-1.0）。
+	 * 取 0.08 表示每 tick 有 8% 概率 - 是地面宠物的 4 倍。
+	 * 为飞行生物营造更活跃的嗡嗡飞舞/悬停行为。
 	 */
 	private static final float FLY_STROLL_CHANCE = 0.08F;
 
 	// -------------------------------------------------------------------------
-	// HOVER POSITION GENERATION - Parameters for aerial target selection
+	// 悬停位置生成 - 空中目标选择的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Horizontal hover radius (blocks) when owner is stationary.
-	 * Flying Pets use smaller radius for tighter hovering near owner.
+	 * 主人静止时的水平悬停半径（格）。
+	 * 飞行宠物使用较小半径，以便在主人附近更紧凑地悬停。
 	 */
 	private static final int FLY_WANDER_RADIUS_STATIONARY = 2;
 
 	/**
-	 * Horizontal hover radius (blocks) when owner is moving.
-	 * Allows more freedom in position selection when following.
+	 * 主人移动时的水平悬停半径（格）。
+	 * 跟随时允许更自由地选择位置。
 	 */
 	private static final int FLY_WANDER_RADIUS_MOVING = 4;
 
 	/**
-	 * Vertical hover radius (blocks) when owner is stationary.
-	 * Controls altitude variation during idle hovering.
+	 * 主人静止时的垂直悬停半径（格）。
+	 * 控制空闲悬停时的高度变化。
 	 */
 	private static final int FLY_WANDER_VERTICAL_STATIONARY = 2;
 
 	/**
-	 * Vertical hover radius (blocks) when owner is moving.
-	 * Allows more vertical freedom when following.
+	 * 主人移动时的垂直悬停半径（格）。
+	 * 跟随时允许更大的垂直自由空间。
 	 */
 	private static final int FLY_WANDER_VERTICAL_MOVING = 4;
 
 	/**
-	 * Maximum squared distance (blocks²) from Pet's current position for hover targets when stationary.
-	 * Value of 9.0 = 3 blocks. Keeps hovering tight.
+	 * 静止时，悬停目标距宠物当前位置的最大距离平方（格²）。
+	 * 值 9.0 = 3 格。使悬停保持紧凑。
 	 */
 	private static final double FLY_WANDER_MAX_DIST_SQ_FROM_PET_STATIONARY = 9.0;
 
 	/**
-	 * Maximum squared distance (blocks²) from Pet's current position when owner is moving.
-	 * Value of 16.0 = 4 blocks. Allows longer hover distances.
+	 * 主人移动时，悬停目标距宠物当前位置的最大距离平方（格²）。
+	 * 值 16.0 = 4 格。允许更远的悬停距离。
 	 */
 	private static final double FLY_WANDER_MAX_DIST_SQ_FROM_PET_MOVING = 16.0;
 
 	/**
-	 * Maximum attempts to find a valid hover position before giving up.
-	 * Same as ground Pets for consistency.
+	 * 放弃前寻找有效悬停位置的最大尝试次数。
+	 * 与地面宠物保持一致。
 	 */
 	private static final int FLY_WANDER_MAX_ATTEMPTS = 5;
 
 	// -------------------------------------------------------------------------
-	// HOVER SPEED - Parameters for aerial movement
+	// 悬停速度 - 空中移动的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Movement speed (blocks/tick) for hovering when owner is stationary.
-	 * Slow, calm hovering creates natural idle behavior.
+	 * 主人静止时的悬停移动速度（格/tick）。
+	 * 缓慢、平静的悬停营造自然的空闲行为。
 	 */
 	private static final double FLY_HOVER_SPEED_STATIONARY = 0.2;
 
 	/**
-	 * Movement speed (blocks/tick) for hovering when owner is moving.
-	 * Slightly faster to keep up while still appearing relaxed.
+	 * 主人移动时的悬停移动速度（格/tick）。
+	 * 稍快一些以便跟上，同时仍显得从容。
 	 */
 	private static final double FLY_HOVER_SPEED_MOVING = 0.3;
 
 	/**
-	 * Creates a new random fly AI goal for the specified flying Pet.
+	 * 为指定的飞行宠物创建新的随机飞行 AI goal。
 	 *
-	 * @param petEntity     the flying Pet entity
-	 * @param startDistance maximum distance from owner for flying (will be squared by parent)
+	 * @param petEntity     飞行宠物实体
+	 * @param startDistance 飞行时与主人的最大距离（将由父类求平方）
 	 */
 	public MyPetRandomFly(EntityMyPet petEntity, int startDistance) {
 		super(petEntity, startDistance);
@@ -136,20 +135,20 @@ public class MyPetRandomFly extends MyPetRandomStroll {
 	}
 
 	/**
-	 * Generates a random aerial position for the flying Pet to hover toward.
+	 * 为飞行宠物生成一个随机的空中位置，供其朝该位置悬停。
 	 *
-	 * <p>Uses {@link HoverRandomPos} as the primary position generator, falling back to
-	 * {@link AirAndWaterRandomPos} if hover position fails. The position is constrained
-	 * within range of both the owner and the Pet's current position.
+	 * <p>以 {@link HoverRandomPos} 作为主要位置生成器，若悬停位置生成失败则回退到
+	 * {@link AirAndWaterRandomPos}。该位置会被约束在主人与宠物当前位置的范围内。
 	 *
-	 * <p>When the owner is stationary, uses a smaller radius (2 blocks vs 4 blocks)
-	 * for tighter hovering behavior.
+	 * <p>当主人静止时，使用更小的半径（2 格 vs 4 格）以获得更紧凑的悬停行为。
 	 *
-	 * @return a valid aerial wander target, or {@code null} if no suitable position found
+	 * <p>位置相对于主人和宠物当前位置同时受限，保证两者都在可达范围内。
+	 *
+	 * @return 有效的空中漫游目标；若找不到合适位置则返回 {@code null}
 	 */
 	@Override
 	protected Vec3 getPosition() {
-		// ownerStationary is already set by parent's updateOwnerMovementTracking() in shouldStart()
+		// ownerStationary 已由父类的 updateOwnerMovementTracking() 在 shouldStart() 中设置
 		int horizontalRadius = ownerStationary ? FLY_WANDER_RADIUS_STATIONARY : FLY_WANDER_RADIUS_MOVING;
 		int verticalRadius = ownerStationary ? FLY_WANDER_VERTICAL_STATIONARY : FLY_WANDER_VERTICAL_MOVING;
 		double maxDistSqFromOwner = ownerStationary ? STATIONARY_MAX_DIST_SQ : (double) startDistance;
@@ -177,12 +176,12 @@ public class MyPetRandomFly extends MyPetRandomStroll {
 	}
 
 	/**
-	 * Applies the movement speed for idle flying.
+	 * 应用空闲飞行时的移动速度。
 	 *
-	 * <p>Uses calm, controlled speeds to prevent darting behavior:
+	 * <p>使用平静、受控的速度，以防出现猛冲行为：
 	 * <ul>
-	 *   <li>Stationary owner: 0.2 (slow hovering)</li>
-	 *   <li>Moving owner: 0.3 (slightly faster)</li>
+	 *   <li>主人静止：0.2（缓慢悬停）</li>
+	 *   <li>主人移动：0.3（稍快）</li>
 	 * </ul>
 	 */
 	@Override

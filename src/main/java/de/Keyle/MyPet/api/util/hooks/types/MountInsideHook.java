@@ -4,14 +4,14 @@ import de.Keyle.MyPet.api.player.MyPetPlayer;
 import org.bukkit.entity.Entity;
 
 /**
- * This interface defines that the hook checks if a player tries to enter a region by mounting their pet
+ * 此接口表示该 Hook 负责检查玩家是否试图通过骑乘宠物进入某个区域
  */
 public interface MountInsideHook {
     /**
-     * Return if a MyPet player is in any a place where he is allowed to have a pet
+     * 返回 MyPet 玩家是否处于任何允许其拥有宠物的位置
      *
-     * @param player the MyPet player
-     * @return if the player can mount the pet there
+     * @param player MyPet 玩家
+     * @return 玩家能否在该处骑乘宠物
      */
     boolean playerCanMount(MyPetPlayer player, Entity pet);
 }

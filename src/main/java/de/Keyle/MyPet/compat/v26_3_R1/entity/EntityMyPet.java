@@ -135,12 +135,12 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     protected CraftMyPet bukkitEntity = null;
     protected AttributeMap attributeMap;
     protected boolean indirectRiding = false;
-    // Needed for the MyPetFlyingMoveControl - Sometimes overwritten by specific pets
+    // MyPetFlyingMoveControl 需要用到 - 有时会被特定宠物覆盖
     protected float maxTurn = 20;
-    // Copied from prior version
+    // 从旧版本复制而来
     protected final float rotA = (float) ((Math.random() + 1.0) * 0.009999999776482582);
 
-    // FIXME: This field has been removed at the v26_3_R1 update - what was its purpose?
+    // FIXME：该字段在 v26_3_R1 更新中已被移除 - 它原本是做什么用的？
     protected double lerpX;
 
     public EntityMyPet(Level world, MyPet myPet) {
@@ -159,7 +159,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
             this.navigation = this.setSpecialNav();
             this.petNavigation = new VanillaNavigation(this);
             this.sitPathfinder = new Sit(this);
-            this.attributeMap = this.getAttributes(); // Make sure to initiate the attributeMap, otherwise teleporting crashes the server
+            this.attributeMap = this.getAttributes(); // 务必初始化 attributeMap，否则传送会导致服务器崩溃
             this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(Integer.MAX_VALUE);
             this.setHealth((float) myPet.getHealth());
             this.updateNameTag();
@@ -179,12 +179,12 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     protected void replaceAttributes() {
-        // The LivingEntity super constructor builds its `attributes` field from
-        // DefaultAttributes.getSupplier(mypet_*), which is null for our custom entity
-        // types -> an AttributeMap with a null supplier. Most paths go through the
-        // overridden getAttributes(), but vanilla's equipment sync reads the field
-        // directly (LivingEntity.collectEquipmentChanges), which NPEs when a pet wears
-        // an item carrying attribute modifiers. Point the field at our safe map.
+        // LivingEntity 的父类构造函数会基于
+        // DefaultAttributes.getSupplier(mypet_*) 构建其 `attributes` 字段，而我们的自定义实体
+        // 类型在该处返回 null -> 得到一个 supplier 为 null 的 AttributeMap。大多数路径都会走
+        // 被覆盖的 getAttributes()，但原版的装备同步会直接读取该字段
+        // （LivingEntity.collectEquipmentChanges），当宠物穿着带有属性修饰符的物品时这里会抛出
+        // NPE。因此把该字段指向我们安全的 map。
         Field attributesField = ReflectionUtil.getField(LivingEntity.class, "attributes");
         ReflectionUtil.setFinalFieldValue(attributesField, this, this.getAttributes());
     }
@@ -193,8 +193,8 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     protected void setBukkitEntity() {
-        // Will be calling the overridden method to keep our own CraftMyPet to avoid potential other super. problems
-        // Using that to override bukkitEntity in Entity. Because we can. Might be redundant but who cares.
+        // 会调用被覆盖的方法以保留我们自己的 CraftMyPet，避免其他潜在的 super 问题
+        // 借此在 Entity 中覆盖 bukkitEntity。因为可以这么做。可能有些冗余，但无所谓。
         Field leField = ReflectionUtil.getField(Entity.class, "bukkitEntity");
         ReflectionUtil.setFieldValue(leField, this, this.getBukkitEntity());
     }
@@ -240,7 +240,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
         return attributeMap;
     }
 
-    // This method has to be overriden in 1.21.8+ because teleporting says "this.supplier == null"
+    // 在 1.21.8+ 中必须覆盖该方法，因为传送时会报 "this.supplier == null"
     @Override
     protected void onAttributeUpdated(Holder<Attribute> holder) {
         if (holder == Attributes.MAX_HEALTH) {
@@ -452,7 +452,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * Is called when a MyPet attemps to do damge to another entity
+     * 当 MyPet 尝试对另一个实体造成伤害时调用
      */
     public boolean attack(Entity entity) {
         boolean damageEntity = false;
@@ -467,7 +467,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
                     return false;
                 }
             }
-            // Set kill credit to owner BEFORE damage so loot tables see it
+            // 在造成伤害之前先把击杀归属记给主人，这样掉落表才能识别到
             if (Configuration.Misc.PET_KILLS_GIVE_PLAYER_REWARDS) {
                 if (entity instanceof LivingEntity && getOwner() != null) {
                     Player owner = getOwner().getPlayer();
@@ -532,13 +532,13 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
         return this.bukkitEntity;
     }
 
-    // Obfuscated Method handler ------------------------------------------------------------------------------------
+    // 混淆方法处理 ------------------------------------------------------------------------------------
 
     /**
-     * Is called when player rightclicks this MyPet
-     * return:
-     * true: there was a reaction on rightclick
-     * false: no reaction on rightclick
+     * 当玩家右键点击此 MyPet 时调用
+     * 返回：
+     * true：右键有反应
+     * false：右键无反应
      */
     public InteractionResult handlePlayerInteraction(final net.minecraft.world.entity.player.Player entityhuman, InteractionHand enumhand, final ItemStack itemStack) {
         new BukkitRunnable() {
@@ -689,7 +689,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
         if (hasRider) {
             if (!isVehicle()) {
                 hasRider = false;
-                this.setMaxUpStep(0.5F); // climb height -> halfslab
+                this.setMaxUpStep(0.5F); // 攀爬高度 -> 半砖
                 Location playerLoc = getOwner().getPlayer().getLocation();
                 Location petLoc = getBukkitEntity().getLocation();
                 petLoc.setYaw(playerLoc.getYaw());
@@ -701,11 +701,11 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
                     Entity ridingEntity = (e instanceof EntityMySeat) ? e.getFirstPassenger() : e;
                     if (ridingEntity instanceof ServerPlayer && getOwner().equals(ridingEntity)) {
                         hasRider = true;
-                        this.setMaxUpStep(1.0F); // climb height -> 1 block
+                        this.setMaxUpStep(1.0F); // 攀爬高度 -> 1 格
                         petTargetSelector.finish();
                         petPathfinderSelector.finish();
                     } else {
-                        ridingEntity.stopRiding(); // just the owner can ride a pet
+                        ridingEntity.stopRiding(); // 只有主人才能骑乘宠物
                     }
                 }
             }
@@ -775,8 +775,8 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * Returns the speed of played sounds
-     * The faster the higher the sound will be
+     * 返回播放声音的速度
+     * 数值越大，声音音调越高
      */
     public float getSoundSpeed() {
         float pitchAddition = 0;
@@ -789,17 +789,17 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * Returns the default sound of the MyPet
+     * 返回 MyPet 的默认声音
      */
     protected abstract String getLivingSound();
 
     /**
-     * Returns the sound that is played when the MyPet get hurt
+     * 返回 MyPet 受伤时播放的声音
      */
     protected abstract String getHurtSound();
 
     /**
-     * Returns the sound that is played when the MyPet dies
+     * 返回 MyPet 死亡时播放的声音
      */
     protected abstract String getMyPetDeathSound();
 
@@ -827,7 +827,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
                     double deltaZ = getZ() - entityplayer.getZ();
                     double maxDistance = volume > 1.0F ? (double) (16.0F * volume) : 16.0D;
                     if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < maxDistance * maxDistance) {
-                        entityplayer.connection.send(new ClientboundSoundPacket(Holder.direct(se), SoundSource.HOSTILE, getX(), getY(), getZ(), volume, getSoundSpeed(), 1)); //TODO: check if this works.
+                        entityplayer.connection.send(new ClientboundSoundPacket(Holder.direct(se), SoundSource.HOSTILE, getX(), getY(), getZ(), volume, getSoundSpeed(), 1)); //TODO：确认这样是否有效。
                     }
                 }
             } else {
@@ -838,7 +838,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
 
 
     /**
-     * returns the first passenger
+     * 返回第一个乘客
      */
     public Entity getFirstPassenger() {
         return this.getPassengers().isEmpty() ? null : this.getPassengers().get(0);
@@ -918,7 +918,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
 
             this.setDeltaMovement(motX, motY, motZ);
         }
-        //           is bird
+        //           是鸟类
         this.startRiding(this);
     }
 
@@ -933,7 +933,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * do NOT drop anything
+     * 不要掉落任何东西
      */
     @Override
     public boolean shouldDropExperience() {
@@ -941,23 +941,23 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * do NOT drop anything
+     * 不要掉落任何东西
      */
     @Override
     protected void dropCustomDeathLoot(ServerLevel worldserver, DamageSource damagesource, boolean flag) {
     }
 
     /**
-     * do NOT drop anything (and skip vanilla loot-table evaluation entirely).
-     * Besides matching the "pets drop nothing" behavior, this avoids running loot predicates
-     * against the custom mypet_* entity-type holder, whose data components are unbound -> that
-     * throws "Components not bound yet" during death-loot on 26.x+.
+     * 不要掉落任何东西（并完全跳过原版掉落表判定）。
+     * 除了符合「宠物不掉落物品」的行为外，这样还能避免对自定义 mypet_* 实体类型 holder
+     * 执行掉落谓词：其数据组件尚未绑定 -> 在 26.x+ 死亡掉落时会抛出
+     * "Components not bound yet"。
      */
     @Override
     protected void dropFromLootTable(ServerLevel worldserver, DamageSource damagesource, boolean flag) {
     }
 
-    // Obfuscated Methods -------------------------------------------------------------------------------------------
+    // 混淆方法 -------------------------------------------------------------------------------------------
 
     @Override
     public EntityDimensions getDefaultDimensions(Pose entitypose) {
@@ -971,8 +971,8 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * Allows handlePlayerInteraction() to
-     * be fired when a lead is used
+     * 允许在使用拴绳时触发
+     * handlePlayerInteraction()
      */
     @Override
     public boolean canBeLeashed() {
@@ -980,10 +980,10 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * Is called when player rightclicks this MyPet
-     * return:
-     * true: there was a reaction on rightclick
-     * false: no reaction on rightclick
+     * 当玩家右键点击此 MyPet 时调用
+     * 返回：
+     * true：右键有反应
+     * false：右键无反应
      * -> handlePlayerInteraction(EntityHuman)
      */
     @Override
@@ -1022,7 +1022,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * Returns the sound that is played when the MyPet get hurt
+     * 返回 MyPet 受伤时播放的声音
      * -> getHurtSound()
      */
     @Override
@@ -1036,7 +1036,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * Returns the sound that is played when the MyPet dies
+     * 返回 MyPet 死亡时播放的声音
      */
     @Override
     protected SoundEvent getDeathSound() {
@@ -1049,7 +1049,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * Returns the speed of played sounds
+     * 返回播放声音的速度
      */
     protected float sp() {
         try {
@@ -1131,14 +1131,14 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
         this.xxa *= 0.98F;
         this.zza *= 0.98F;
 
-        // this.n(); //no Elytra flight
+        // this.n(); //禁用鞘翅飞行
         this.travel(new Vec3(this.xxa, this.yya, this.zza));
         this.pushEntities();
     }
 
     @Override
     protected void addPassenger(Entity entity) {
-        // don't allow anything but the owner to ride this entity
+        // 除主人之外不允许任何实体骑乘该实体
         Ride rideSkill = myPet.getSkills().get(RideImpl.class);
         if (rideSkill != null && entity instanceof ServerPlayer && getOwner().equals(entity)) {
             if (entity.getVehicle() != this) {
@@ -1158,7 +1158,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
                 }
             }
 
-			/* this should not matter anymore but I'm leaving it in here in case it is relevant
+			/* 这应该已经不再重要了，但为了防止仍有关联，先保留在这里
 			if (this instanceof EntityMyAbstractHorse) {
 				double factor = 1;
 				if (Configuration.HungerSystem.USE_HUNGER_SYSTEM && Configuration.HungerSystem.AFFECT_RIDE_SPEED) {
@@ -1196,7 +1196,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     /**
      * -> unmount(Entity)
      */
-    // guards against the unsafe-dismount re-mount recursing into itself
+    // 防止不安全下坐骑后的重新骑乘递归调用自身
     private boolean reMounting = false;
     @Override
     protected boolean removePassenger(Entity entity) {
@@ -1237,7 +1237,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * Entity AI tick method
+     * 实体 AI 的 tick 方法
      * -> updateAITasks()
      */
     protected void doMyPetTick() {
@@ -1245,7 +1245,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
             ++this.noActionTime;
 
             if (isAlive()) {
-                getSensing().tick(); // sensing
+                getSensing().tick(); // 感知
 
                 Player p = getOwner().getPlayer();
                 if (p == null || !p.isOnline()) {
@@ -1258,9 +1258,9 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
                 }
 
                 if (!hasMyPetRider()) {
-                    petTargetSelector.tick(); // target selector
-                    petPathfinderSelector.tick(); // pathfinder selector
-                    petNavigation.tick(); // navigation
+                    petTargetSelector.tick(); // 目标选择器
+                    petPathfinderSelector.tick(); // 寻路选择器
+                    petNavigation.tick(); // 导航
                 }
 
                 Ride rideSkill = myPet.getSkills().get(RideImpl.class);
@@ -1274,17 +1274,17 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
 
             customServerAiStep(this.level().getMinecraftWorld());
 
-            // controls
-            getMoveControl().tick(); // move
-            getLookControl().tick(); // look
-            getJumpControl().tick(); // jump
+            // 控制器
+            getMoveControl().tick(); // 移动
+            getLookControl().tick(); // 朝向
+            getJumpControl().tick(); // 跳跃
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * -> falldamage
+     * -> falldamage（摔落伤害）
      */
     @Override
     public int calculateFallDamage(double f, float f1) {
@@ -1296,7 +1296,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
 
 
     /**
-     * -> travel
+     * -> travel（移动处理）
      */
     @Override
     public void travel(Vec3 vec3d) {
@@ -1331,7 +1331,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
             return;
         }
 
-        //Rotations are fun
+        // 旋转很有趣
         if (indirectRiding) {
             if (this.getFirstPassenger() instanceof EntityMySeat seat) {
                 seat.yRotO = this.getYRot();
@@ -1341,14 +1341,14 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
             }
         }
 
-        //apply pitch & yaw
+        // 应用俯仰角与偏航角
         this.yRotO = this.getYRot();
         this.setYRot(passenger.getYRot());
         this.setXRot(passenger.getXRot() * 0.5F);
         this.setRot(this.getYRot(), this.getXRot());
         this.yHeadRot = (this.yBodyRot = this.getYRot());
 
-        // get motion from passenger-input (player)
+        // 从乘客输入（玩家）获取运动量
         Input passengerInput = passenger.getLastClientInput();
         float f = passengerInput.left() == passengerInput.right() ? 0.0F : (passengerInput.left() ? 1.0F : -1.0F);
         float f1 = passengerInput.forward() == passengerInput.backward() ? 0.0F : (passengerInput.forward() ? 1.0F : -1.0F);
@@ -1357,7 +1357,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
         double motionSideways = move.x;
         double motionForward = move.z * 2;
 
-        // backwards is slower
+        // 向后移动更慢
         if (motionForward <= 0.0F) {
             motionForward *= 0.5F;
         }
@@ -1373,9 +1373,9 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
             ascendSpeed *= factor;
         }
 
-        ride(motionSideways, motionForward, move.y(), speed); // apply motion
+        ride(motionSideways, motionForward, move.y(), speed); // 应用运动量
 
-        // throw player move event
+        // 抛出玩家移动事件
         if (Configuration.Misc.THROW_PLAYER_MOVE_EVENT_WHILE_RIDING) {
             double delta = Math.pow(this.getX() - this.xo, 2.0D) + Math.pow(this.getY() - this.yo, 2.0D) + Math.pow(this.getZ() - this.zo, 2.0D);
             float deltaAngle = Math.abs(this.getYRot() - yRotO) + Math.abs(this.getXRot() - xRotO);
@@ -1469,7 +1469,7 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
     }
 
     /**
-     * Returns the default sound of the MyPet
+     * 返回 MyPet 的默认声音
      * -> getLivingSound()
      */
     @Override
@@ -1504,25 +1504,25 @@ public abstract class EntityMyPet extends PathfinderMob implements MyPetMinecraf
         return this.uuid;
     }
 
-    public boolean floatsInLava() {    //Some entities do - now they can
+    public boolean floatsInLava() {    // 某些实体会这样 - 现在它们也能了
         return false;
     }
 
     /**
-     * Used for abnormal floating-behaviour
+     * 用于处理异常的漂浮行为
      *
-     * @return true if it handled the floating - false if normal floating can be used
+     * @return 若已处理漂浮则返回 true；若可使用常规漂浮则返回 false
      */
 
-    public boolean specialFloat() { //Some entities do strange stuff in Water/Lava - this enables that
+    public boolean specialFloat() { // 某些实体在水中/岩浆中有特殊行为 - 这里允许它们这么做
         return false;
     }
 
-    public void switchMovement(MoveControl mvcontrol) {    //This is for switching between Movesets
+    public void switchMovement(MoveControl mvcontrol) {    // 用于在移动模式（Movesets）之间切换
         this.moveControl = mvcontrol;
     }
 
-    protected PathNavigation setSpecialNav() { //Some Pets have special PathNavigations
+    protected PathNavigation setSpecialNav() { // 某些宠物有特殊的 PathNavigation
         return this.navigation;
     }
 

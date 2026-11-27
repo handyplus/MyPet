@@ -26,10 +26,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * The item round trip itself (encode with the server's codec, decode through the data
- * fixers) needs a running server's registries and is checked on a server. These tests
- * cover the part every module shares: what the stamp looks like on a saved compound,
- * how it is read back, and that removing it restores the compound exactly.
+ * 物品的往返本身（用服务端的编解码器编码、再通过 DataFixer 解码）依赖运行中服务端的
+ * registry，需要在实际服务端上验证。这里测试的是所有模块共用的部分：标记在保存后的 compound
+ * 上是什么样子、如何读回，以及移除标记后能否精确还原该 compound。
  */
 class ItemDataVersionTest {
 

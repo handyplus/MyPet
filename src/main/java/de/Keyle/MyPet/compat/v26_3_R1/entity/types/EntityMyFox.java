@@ -133,7 +133,7 @@ public class EntityMyFox extends EntityMyPet {
 							try {
 								itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 							} catch (Error e) {
-								// TODO REMOVE
+								// TODO 移除
 							}
 						}
 					}
@@ -168,13 +168,13 @@ public class EntityMyFox extends EntityMyPet {
 	}
 
 	/*
-	 *  1   = sitting
+	 *  1   = 坐下
 	 *  2   =
-	 *  4   = ready for jumping
-	 *  8   = curious
+	 *  4   = 准备跳跃
+	 *  8   = 好奇
 	 *  16  =
-	 *  32  = sleeping
-	 *  64  = feet spasm
+	 *  32  = 睡觉
+	 *  64  = 腿部抽动
 	 *  128 =
 	 */
 	public void updateActionsWatcher(int i, boolean flag) {
@@ -188,7 +188,7 @@ public class EntityMyFox extends EntityMyPet {
 	@Override
 	public void aiStep() {
 		super.aiStep();
-		// foxes can't look up
+		// 狐狸无法向上看
 		this.setXRot(0F);
 	}
 

@@ -62,7 +62,7 @@ public class Timer {
                 player.schedule();
             }
         }, 10L, 20L));
-        // drop metadata from mobs/projectiles that despawned or unloaded without dying
+        // 清除那些未死亡就已消失或卸载的怪物/投掷物上的元数据
         timerIDs.add(Bukkit.getScheduler().scheduleSyncRepeatingTask(MyPetApi.getPlugin(), EntityMetadataTracker::sweep, 1200L, 1200L));
     }
 

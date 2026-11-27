@@ -27,17 +27,17 @@ import org.bukkit.entity.Creaking;
 import org.bukkit.entity.Entity;
 
 /**
- * Default implementation of CreakingService.
- * Uses the Bukkit Creaking API directly (available in 1.21.4+).
- * The Creaking class reference is isolated in a static inner class to prevent
- * class loading errors on servers older than 1.21.4.
+ * CreakingService 的默认实现。
+ * 直接使用 Bukkit 的 Creaking API（1.21.4+ 可用）。
+ * Creaking 类的引用被隔离在静态内部类中，以避免在低于 1.21.4 的服务器上
+ * 出现类加载错误。
  */
 public class DefaultCreakingService extends CreakingService {
 
     private final boolean supported;
 
     public DefaultCreakingService() {
-        // Check if we're on 1.21.4+ where Creaking exists
+        // 检查是否运行在存在 Creaking 的 1.21.4+ 版本上
         this.supported = MyPetApi.getCompatUtil().compareWithMinecraftVersion("1.21.4") >= 0;
     }
 
@@ -46,7 +46,7 @@ public class DefaultCreakingService extends CreakingService {
         if (!supported) {
             return null;
         }
-        // Delegate to inner class to isolate Creaking class reference
+        // 委托给内部类以隔离 Creaking 类的引用
         return CreakingHelper.getHome(entity);
     }
 
@@ -65,14 +65,14 @@ public class DefaultCreakingService extends CreakingService {
     }
 
     /**
-     * Inner class that references the Creaking class.
-     * This class is only loaded when getHome() is called, which only happens
-     * on 1.21.4+ servers where Creaking exists.
+     * 引用 Creaking 类的内部类。
+     * 该类仅在调用 getHome() 时才会被加载，而这只会在存在 Creaking 的
+     * 1.21.4+ 服务器上发生。
      */
     private static class CreakingHelper {
         static Location getHome(Entity entity) {
             if (entity instanceof Creaking) {
-                try { return ((Creaking) entity).getHome(); } catch (LinkageError ignored) { return null; } // getHome() may be absent on some 1.21.4 builds
+                try { return ((Creaking) entity).getHome(); } catch (LinkageError ignored) { return null; } // 某些 1.21.4 构建中可能不存在 getHome()
             }
             return null;
         }

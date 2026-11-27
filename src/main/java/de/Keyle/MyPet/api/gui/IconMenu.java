@@ -78,7 +78,7 @@ public class IconMenu implements Listener {
 
         int size = maximumOptionPosition + 1;
         int roundedSize = (int) (Math.ceil(size / 9.) * 9);
-        // Clamp to Bukkit's valid inventory size range: 9-54 slots (1-6 rows)
+        // 限制在 Bukkit 允许的物品栏大小范围内：9-54 个槽位（1-6 行）
         return Math.max(9, Math.min(54, roundedSize));
     }
 
@@ -176,7 +176,7 @@ public class IconMenu implements Listener {
             if (position == pageSizeInSlots - 1)
                 return makeConfigurableItem("NextPage");
 
-            // Last row is always empty, besides the navigation-buttons
+            // 最后一行始终为空，导航按钮除外
             if (position > pageSizeInSlots - 9 && position < pageSizeInSlots - 1)
                 return null;
 

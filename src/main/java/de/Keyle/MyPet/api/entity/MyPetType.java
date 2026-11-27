@@ -409,12 +409,12 @@ public enum MyPetType {
     }
 
     /**
-     * Returns a MyPetType by name, or null if not found.
-     * This method does NOT check Minecraft version compatibility.
-     * Use this when you want to gracefully handle invalid/unknown pet types.
+     * 按名称返回 MyPetType，若未找到则返回 null。
+     * 该方法不会检查 Minecraft 版本兼容性。
+     * 当你希望对无效/未知的宠物类型做优雅处理时使用该方法。
      *
-     * @param name the name to look up (case-insensitive)
-     * @return the MyPetType, or null if not found
+     * @param name 要查找的名称（不区分大小写）
+     * @return MyPetType，若未找到则返回 null
      */
     public static MyPetType byNameOrNull(String name) {
         for (MyPetType t : values()) {

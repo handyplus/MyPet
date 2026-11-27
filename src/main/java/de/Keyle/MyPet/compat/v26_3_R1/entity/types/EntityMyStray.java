@@ -93,7 +93,7 @@ public class EntityMyStray extends EntityMyPet {
 						try {
 							itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 						} catch (Error e) {
-							// TODO REMOVE
+							// TODO 移除
 						}
 					}
 				}

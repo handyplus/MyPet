@@ -54,7 +54,7 @@ public class ResidenceHook implements PlayerVersusPlayerHook, PlayerVersusEntity
             FlagPermissions.addFlag("mypet-fly");
             FlagPermissions.addFlag("mypet-damage");
 
-            // Register events for pressure plate and area entry handling
+            // 注册用于压力板与区域进入处理的事件监听
             Bukkit.getPluginManager().registerEvents(this, MyPetApi.getPlugin());
 
             return true;
@@ -112,7 +112,7 @@ public class ResidenceHook implements PlayerVersusPlayerHook, PlayerVersusEntity
         try {
             Player p = player.getPlayer();
             FlagPermissions flagPermissions = residence.getPermsByLoc(p.getLocation());
-            // Check if player has "move" permission in this residence
+            // 检查玩家在该领地中是否拥有 "move" 权限
             return flagPermissions.playerHas(p, Flags.move, true);
         } catch (Throwable ignored) {
         }
@@ -126,7 +126,7 @@ public class ResidenceHook implements PlayerVersusPlayerHook, PlayerVersusEntity
             Block block = event.getBlock();
             String blockTypeName = block.getType().name();
 
-            // Check all pressure plate variants (modern + legacy names)
+            // 检查所有压力板变体（现代名称 + 旧版名称）
             if (blockTypeName.contains("PRESSURE_PLATE") ||
                 blockTypeName.equals("WOOD_PLATE") ||
                 blockTypeName.equals("STONE_PLATE") ||
@@ -137,7 +137,7 @@ public class ResidenceHook implements PlayerVersusPlayerHook, PlayerVersusEntity
                     Player owner = ((MyPetBukkitEntity) ent).getOwner().getPlayer();
                     FlagPermissions flagPermissions = residence.getPermsByLoc(block.getLocation());
 
-                    // Check "use" flag for the player (pressure plates fall under "use" permission)
+                    // 检查玩家是否拥有 "use" 标志（压力板属于 "use" 权限范畴）
                     if (!flagPermissions.playerHas(owner, Flags.use, true)) {
                         event.setCancelled(true);
                     }

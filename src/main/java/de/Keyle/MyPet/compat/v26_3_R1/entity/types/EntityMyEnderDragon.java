@@ -91,12 +91,12 @@ public class EntityMyEnderDragon extends EntityMyFlyingPet {
 				this.setDeltaMovement(getDeltaMovement().multiply(1, 0.6D, 1));
 			}
 		}
-		// TODO Since dragons are disabled/bugged anyway atm, it's commented out for 1.21.8+ support
+		// TODO 由于末影龙目前本来就被禁用/存在 Bug，为了支持 1.21.8+ 这段代码已被注释掉
 		/*if (!registered && this.valid) {
 			if (this.getCommandSenderWorld() instanceof ServerLevel) {
 				ServerLevel world = (ServerLevel) this.getCommandSenderWorld();
 				
-				//The next part used to be prettier but... whilst it is listed everywhere I looked, ServerLevel dragonParts isn't public so...
+				// 接下来的部分以前更好看，但是……尽管我查过的所有地方都列出了它，ServerLevel 的 dragonParts 却不是 public 的，所以……
 				Int2ObjectMap dragonParts = (Int2ObjectMap) ReflectionUtil.getFieldValue(dragonPartsField, world);
 				Arrays.stream(this.children)
 						.forEach(entityMyPetPart -> dragonParts.put(entityMyPetPart.getId(), entityMyPetPart));
@@ -104,7 +104,7 @@ public class EntityMyEnderDragon extends EntityMyFlyingPet {
 			}
 			this.registered = true;
 		}*/
-		//registerPartsIfNeeded(); // TODO Generated solution for dragon parts, requires testing
+		//registerPartsIfNeeded(); // TODO 为末影龙多部件生成的解决方案，尚需测试
 
 	}
 
@@ -118,17 +118,17 @@ public class EntityMyEnderDragon extends EntityMyFlyingPet {
 
 	public void registerPartsIfNeeded() {
 		if (!this.registered && this.valid) {
-			Level lvl = this.level(); // 1.21.8 replacement for getCommandSenderWorld()
+			Level lvl = this.level(); // 1.21.8 中 getCommandSenderWorld() 的替代写法
 			if (lvl instanceof ServerLevel server) {
 
 				Int2ObjectMap<Entity> dragonParts = getDragonParts(server);
 
-				// Put your multipart children into the existing map
+				// 将多部件的子实体放入已有的 map 中
 				for (EntityMyPetPart part : this.children) {
 					dragonParts.put(part.getId(), part);
 				}
 
-				// NOTE: no need to set the field back; we're mutating the same map instance
+				// 注意：无需把字段写回，我们修改的就是同一个 map 实例
 			}
 			this.registered = true;
 		}
@@ -136,12 +136,12 @@ public class EntityMyEnderDragon extends EntityMyFlyingPet {
 
 	private static Int2ObjectMap<Entity> getDragonParts(ServerLevel serverLevel) {
 		try {
-			// Mojang-mapped name is still "dragonParts" in 1.21.8
+			// Mojang 映射名称在 1.21.8 中仍然是 "dragonParts"
 			Field f = ServerLevel.class.getDeclaredField("dragonParts");
 			f.setAccessible(true);
 			return (Int2ObjectMap<Entity>) f.get(serverLevel);
 		} catch (NoSuchFieldException e) {
-			// Fallback by type in case the name ever changes
+			// 按类型回退查找，以防名称以后发生变化
 			for (Field f : ServerLevel.class.getDeclaredFields()) {
 				if (Int2ObjectMap.class.isAssignableFrom(f.getType())) {
 					f.setAccessible(true);

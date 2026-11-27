@@ -33,7 +33,7 @@ public @interface Load {
     }
 
     /**
-     * @return the state where the service is loaded
+     * @return 服务被加载时所处的状态
      */
     State value() default State.OnEnable;
 }

@@ -26,13 +26,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to add name information to the {@link ServiceContainer} class
+ * 用于为 {@link ServiceContainer} 类添加名称信息的注解
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface ServiceName {
     /**
-     * @return the name of the service
+     * @return 服务的名称
      */
     String value();
 }

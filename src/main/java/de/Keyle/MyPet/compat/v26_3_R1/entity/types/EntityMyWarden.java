@@ -103,9 +103,9 @@ public class EntityMyWarden extends EntityMyPet {
 
 	@Override
 	public void remove(Entity.RemovalReason entity_removalreason) {
-		//We don't want it to dig multiple times
+		// 不希望它多次钻地
 		if(this.getPose()!=Pose.DIGGING && entity_removalreason!=RemovalReason.KILLED && !getMyPet().wantsToRespawn()) {
-			//Play sound
+			// 播放声音
 			this.makeSound("entity.warden.dig");
 			this.setPose(Pose.DIGGING);
 			if(!MyPetApi.getPlugin().isDisabling()) {
@@ -113,7 +113,7 @@ public class EntityMyWarden extends EntityMyPet {
 			} else {
 				super.remove(entity_removalreason);
 			}
-		} else if(this.getPose()!=Pose.DIGGING) { //Just in case it get's called more than once
+		} else if(this.getPose()!=Pose.DIGGING) { // 以防该方法被多次调用
 			super.remove(entity_removalreason);
 		}
 	}

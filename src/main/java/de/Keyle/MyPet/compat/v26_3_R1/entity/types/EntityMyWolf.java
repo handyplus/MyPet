@@ -58,7 +58,7 @@ public class EntityMyWolf extends EntityMyPet {
 	private static final EntityDataAccessor<Boolean> AGE_LOCKED_WATCHER = SynchedEntityData.defineId(EntityMyWolf.class, EntityDataSerializers.BOOLEAN);
 	protected static final EntityDataAccessor<Byte> SIT_WATCHER = SynchedEntityData.defineId(EntityMyWolf.class, EntityDataSerializers.BYTE);
 	protected static final EntityDataAccessor<Optional<EntityReference<LivingEntity>>> OWNER_WATCHER = SynchedEntityData.defineId(EntityMyWolf.class, EntityDataSerializers.OPTIONAL_LIVING_ENTITY_REFERENCE);
-	private static final EntityDataAccessor<Boolean> UNUSED_WATCHER = SynchedEntityData.defineId(EntityMyWolf.class, EntityDataSerializers.BOOLEAN); //Interested
+	private static final EntityDataAccessor<Boolean> UNUSED_WATCHER = SynchedEntityData.defineId(EntityMyWolf.class, EntityDataSerializers.BOOLEAN); // 感兴趣
 	private static final EntityDataAccessor<Integer> COLLAR_COLOR_WATCHER = SynchedEntityData.defineId(EntityMyWolf.class, EntityDataSerializers.INT);
 	private static final EntityDataAccessor<Long> ANGER_WATCHER = SynchedEntityData.defineId(EntityMyWolf.class, EntityDataSerializers.LONG);
 	private static final EntityDataAccessor<Holder<WolfVariant>> VARIANT_WATCHER = SynchedEntityData.defineId(EntityMyWolf.class, EntityDataSerializers.WOLF_VARIANT);
@@ -145,7 +145,7 @@ public class EntityMyWolf extends EntityMyPet {
 		builder.define(AGE_LOCKED_WATCHER, false);
 		builder.define(SIT_WATCHER, (byte) 0);
 		builder.define(OWNER_WATCHER, Optional.empty());
-		builder.define(UNUSED_WATCHER, false); // not used
+		builder.define(UNUSED_WATCHER, false); // 未使用
 		builder.define(COLLAR_COLOR_WATCHER, 14);
 		builder.define(ANGER_WATCHER, -1L);
 
@@ -171,7 +171,7 @@ public class EntityMyWolf extends EntityMyPet {
 			this.getEntityData().set(SIT_WATCHER, (byte) (b0 & 0xFFFFFFFB));
 		}
 
-		// In 1.21.11+, anger is stored as an end time (Long). Use -1L for not angry, positive value for angry.
+		// 1.21.11+ 中愤怒状态以结束时间（Long）存储。用 -1L 表示不愤怒，正值表示愤怒。
 		this.getEntityData().set(ANGER_WATCHER, getMyPet().isAngry() ? Long.MAX_VALUE : -1L);
 
 		this.getEntityData().set(COLLAR_COLOR_WATCHER, getMyPet().getCollarColor().ordinal());
@@ -191,7 +191,7 @@ public class EntityMyWolf extends EntityMyPet {
 			this.level().broadcastEntityEvent(this, (byte) 8);
 		}
 
-		if (isInWater()) // -> is in water
+		if (isInWater()) // -> 是否在水中
 		{
 			this.isWet = true;
 			this.shaking = false;

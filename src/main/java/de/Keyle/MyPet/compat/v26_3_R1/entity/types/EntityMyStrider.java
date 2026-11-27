@@ -106,7 +106,7 @@ public class EntityMyStrider extends EntityMyPet {
 					try {
 						itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 					} catch (Error e) {
-						// TODO REMOVE
+						// TODO 移除
 					}
 				}
 
@@ -151,7 +151,7 @@ public class EntityMyStrider extends EntityMyPet {
 		return (MyStrider) myPet;
 	}
 	
-	//Special Strider-Behavior
+	// 炽足兽的特殊行为
 
 	@Override
 	public boolean floatsInLava() {
@@ -163,11 +163,11 @@ public class EntityMyStrider extends EntityMyPet {
 		return fluid.is(FluidTags.LAVA);
 	}
 	
-	@Override	//Special riding for Lava
+	@Override	// 岩浆上的特殊骑乘
 	protected void ride(double motionSideways, double motionForward, double motionUpwards, float speedModifier) {
 		float speed;
 		
-		if(this.specialFloat()) {	//This already has the floating/walking on Lava logic -> Now we just ride it like it's solid
+		if(this.specialFloat()) {	// 这里已经有在岩浆上漂浮/行走的逻辑 -> 现在只需把它当作固体来骑乘
 			double minY;
 			minY = this.getBoundingBox().minY;
 
@@ -198,12 +198,12 @@ public class EntityMyStrider extends EntityMyPet {
 			this.setDeltaMovement(motX, motY, motZ);
 			
 			this.startRiding(this);
-		} else { //Call normal riding when not in lava aka when specialFloat returned false
+		} else { // 不在岩浆中（即 specialFloat 返回 false）时调用普通骑乘
 			super.ride(motionSideways, motionForward, motionUpwards, speedModifier);
 		}
 	}
 	
-	@Override	//Striders stand on Lava. This does this
+	@Override	// 炽足兽可以站在岩浆上，这里实现该效果
 	public boolean specialFloat() {
 		if(this.isInLava()) {
 			CollisionContext collisioncontext = CollisionContext.of((Entity) this);

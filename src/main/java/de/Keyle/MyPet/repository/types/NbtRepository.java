@@ -100,7 +100,7 @@ public class NbtRepository implements Repository {
         callback.run(counter);
     }
 
-    // Pets ------------------------------------------------------------------------------------------------------------
+    // 宠物 ------------------------------------------------------------------------------------------------------------
 
     @Override
     public List<StoredMyPet> getAllMyPets() {
@@ -260,7 +260,7 @@ public class NbtRepository implements Repository {
         return UUID.fromString(petTag.getAs("UUID", TagString.class).getStringData());
     }
 
-    // Players ---------------------------------------------------------------------------------------------------------
+    // 玩家 ------------------------------------------------------------------------------------------------------------
 
     @Override
     public List<MyPetPlayer> getAllMyPetPlayers() {

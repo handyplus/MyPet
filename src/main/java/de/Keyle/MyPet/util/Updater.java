@@ -68,7 +68,7 @@ public class Updater {
         }
     }
 
-    // written by the startup check thread, read on the main thread (join message, /mypet update)
+    // 由启动检查线程写入，主线程读取（加入消息、/mypet update）
     protected static volatile Update latest = null;
     protected String plugin;
     protected volatile Thread thread;
@@ -79,11 +79,11 @@ public class Updater {
     }
 
     /**
-     * Checks for updates and returns a status message to log at startup.
-     * Blocks on the network, so MyPet calls it from a background thread. Downloads,
-     * if enabled, run on their own thread when "async" is set, otherwise on the caller's.
+     * 检查更新并返回一条在启动时记录到日志的状态消息。
+     * 该操作会阻塞网络请求，因此 MyPet 从后台线程调用它。若启用了下载，
+     * 则在 "async" 为真时在独立线程中执行，否则在调用者线程中执行。
      *
-     * @return a status message, or null if update checking is disabled
+     * @return 状态消息；若更新检查已禁用则返回 null
      */
     public String update() {
         if (!Configuration.Update.CHECK) {
@@ -114,7 +114,7 @@ public class Updater {
 
             String currentPluginVersion = MyPetVersion.getVersion();
 
-            // Use Modrinth API to check for updates
+            // 使用 Modrinth API 检查更新
             String url = "https://api.modrinth.com/v2/project/mypet/version?loaders=%5B%22paper%22,%22spigot%22%5D";
 
             String content = Util.readUrlContent(url);
@@ -127,17 +127,17 @@ public class Updater {
             for (int i = 0; i < resultArr.size(); i++) {
                 JsonObject version = (JsonObject) resultArr.get(i);
 
-                // Check version type: "release" for stable, "alpha"/"beta" for snapshots
+                // 检查版本类型："release" 表示稳定版，"alpha"/"beta" 表示快照版
                 String versionType = version.get("version_type").getAsString();
                 boolean isAlpha = "alpha".equals(versionType) || "beta".equals(versionType);
 
-                // Release builds should only see releases
-                // Dev builds can see both snapshots AND releases (to upgrade to final release)
+                // 正式版构建只应看到正式版
+                // 开发版构建既能看到快照版也能看到正式版（以便升级到最终正式版）
                 if (!isDevBuild && isAlpha) {
                     continue;
                 }
 
-                // Check if this version supports the current Minecraft version
+                // 检查该版本是否支持当前 Minecraft 版本
                 JsonArray gameVersions = version.has("game_versions") ? version.getAsJsonArray("game_versions") : null;
                 if (gameVersions == null || gameVersions.size() == 0) {
                     continue;
@@ -145,7 +145,7 @@ public class Updater {
                 boolean supportsCurrentMc = false;
                 for (int j = 0; j < gameVersions.size(); j++) {
                     String gameVersion = gameVersions.get(j).getAsString();
-                    // Support both exact match (1.21.4) and wildcard (1.21.x)
+                    // 同时支持精确匹配（1.21.4）与通配符（1.21.x）
                     if (gameVersion.equals(currentMcVersion) ||
                         (gameVersion.endsWith(".x") && currentMcVersion.startsWith(gameVersion.substring(0, gameVersion.length() - 2)))) {
                         supportsCurrentMc = true;
@@ -159,13 +159,13 @@ public class Updater {
 
                 String versionNumber = version.get("version_number").getAsString();
 
-                // Only consider this an update if the version is actually newer
-                // Handle versions like "3.14.1" and "3.14.1-SNAPSHOT-b42"
+                // 仅当版本确实更新时才将其视为一次更新
+                // 处理 "3.14.1" 与 "3.14.1-SNAPSHOT-b42" 这类版本号
                 if (!isNewerVersion(versionNumber, currentPluginVersion)) {
                     continue;
                 }
 
-                // Find the primary file (or first file if none marked primary)
+                // 找到主文件（若没有文件被标记为主文件则取第一个）
                 JsonArray files = version.getAsJsonArray("files");
                 JsonObject primaryFile = null;
                 for (int j = 0; j < files.size(); j++) {
@@ -243,7 +243,7 @@ public class Updater {
                 return;
             }
 
-            // Verify SHA512 hash
+            // 校验 SHA512 哈希
             if (!expectedHash.equalsIgnoreCase(actualHash)) {
                 MyPetApi.getLogger().severe("Download verification failed! Hash mismatch.");
                 MyPetApi.getLogger().severe("Expected: " + expectedHash);
@@ -291,12 +291,12 @@ public class Updater {
     }
 
     /**
-     * Compares two version strings to determine if the first is newer.
-     * Handles formats like "3.14.1", "3.14.1-SNAPSHOT", and "3.14.1-SNAPSHOT-b42".
-     * A release (3.14.1) is always considered newer than snapshots of the same base (3.14.1-SNAPSHOT-b10).
+     * 比较两个版本字符串，判断前者是否更新。
+     * 支持 "3.14.1"、"3.14.1-SNAPSHOT" 和 "3.14.1-SNAPSHOT-b42" 等格式。
+     * 正式版（3.14.1）始终被视为比同一基线的快照（3.14.1-SNAPSHOT-b10）更新。
      */
     private static boolean isNewerVersion(String newVersion, String currentVersion) {
-        // Extract base version (before any dash)
+        // 提取基础版本号（第一个连字符之前的部分）
         String newBase = newVersion.split("-")[0];
         String currentBase = currentVersion.split("-")[0];
 
@@ -305,20 +305,20 @@ public class Updater {
             return baseCompare > 0;
         }
 
-        // Base versions are equal - check if release vs snapshot
+        // 基础版本相同 - 检查正式版与快照版的区别
         boolean newIsSnapshot = newVersion.contains("-SNAPSHOT");
         boolean currentIsSnapshot = currentVersion.contains("-SNAPSHOT");
 
-        // A release is always newer than a snapshot of the same base version
+        // 正式版始终比同一基础版本的快照更新
         if (!newIsSnapshot && currentIsSnapshot) {
             return true;
         }
-        // A snapshot is never newer than a release of the same base version
+        // 快照版永远不会比同一基础版本的正式版更新
         if (newIsSnapshot && !currentIsSnapshot) {
             return false;
         }
 
-        // Both are snapshots (or both releases), compare build numbers
+        // 两者都是快照（或都是正式版），比较构建号
         int newBuild = extractBuildNumber(newVersion);
         int currentBuild = extractBuildNumber(currentVersion);
 
@@ -326,8 +326,8 @@ public class Updater {
     }
 
     /**
-     * Extracts build number from version string like "3.14.1-SNAPSHOT-b42".
-     * Returns 0 if no build number is found.
+     * 从 "3.14.1-SNAPSHOT-b42" 这类版本字符串中提取构建号。
+     * 若未找到构建号则返回 0。
      */
     private static int extractBuildNumber(String version) {
         int bIndex = version.lastIndexOf("-b");

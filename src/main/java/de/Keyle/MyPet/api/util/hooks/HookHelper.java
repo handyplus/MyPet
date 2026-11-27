@@ -29,139 +29,139 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 /**
- * The {@link HookHelper} is a wrapper for the hooks of the default functionality this plugin needs from other plugins.
+ * {@link HookHelper} 是本插件从其他插件所需默认功能的钩子封装。
  */
 public abstract class HookHelper {
 
     /**
-     * Return if a player can hurt another player and if needed vice versa
+     * 返回某个玩家能否伤害另一个玩家，以及（如需要）反向是否成立
      *
-     * @param attacker  attacking player
-     * @param victim    attacked player
-     * @param viceversa when true check if the attacked can attack the attacker
-     * @return if the attacker can hurt the attacked (and optionally vice versa)
+     * @param attacker  攻击方玩家
+     * @param victim    被攻击方玩家
+     * @param viceversa 为 true 时同时检查被攻击方能否攻击攻击方
+     * @return 攻击方能否伤害被攻击方（以及可选的相反方向）
      */
     public abstract boolean canHurt(Player attacker, Player victim, boolean viceversa);
 
     /**
-     * Return if a player can hurt another player.
+     * 返回某个玩家能否伤害另一个玩家。
      *
-     * @param attacker attacking player
-     * @param victim   attacked player
-     * @return if the attacker can hurt the attacked player
+     * @param attacker 攻击方玩家
+     * @param victim   被攻击方玩家
+     * @return 攻击方能否伤害被攻击方玩家
      */
     public abstract boolean canHurt(Player attacker, Player victim);
 
     /**
-     * Return if a player can hurt a specific entity.
+     * 返回某个玩家能否伤害指定实体。
      *
-     * @param attacker attacking player
-     * @param victim   attacked entity
-     * @return if the attacker can hurt the entity
+     * @param attacker 攻击方玩家
+     * @param victim   被攻击方实体
+     * @return 攻击方能否伤害该实体
      */
     public abstract boolean canHurt(Player attacker, Entity victim);
 
     /**
-     * Return if a MyPet player is in any type of arena (Minigames, Survival Games, PvP Arena, etc.)
+     * 返回 MyPet 玩家是否处于任意类型的竞技场中（小游戏、生存游戏、PvP 竞技场等）
      *
-     * @param player the MyPet player
-     * @return if player is in arena
+     * @param player MyPet 玩家
+     * @return 玩家是否在竞技场中
      */
     public abstract boolean isPetAllowed(MyPetPlayer player);
 
     /**
-     * Returns if a player can fly a pet at a certain location
+     * 返回玩家能否在指定位置飞行宠物
      *
-     * @param location checked location
-     * @return if a player can fly the pet
+     * @param location 要检查的位置
+     * @return 玩家能否飞行该宠物
      */
     public abstract boolean canMyPetFlyAt(Location location);
 
     /**
-     * Returns if a player is in a party (Ancient, mcMMO, Heroes)
+     * 返回玩家是否处于队伍中（Ancient、mcMMO、Heroes）
      *
-     * @param player checked player
-     * @return if a player is in a party
+     * @param player 要检查的玩家
+     * @return 玩家是否在队伍中
      */
     public abstract boolean isInParty(Player player);
 
     /**
-     * Returns all members of a party if the player is in one (Ancient, mcMMO, Heroes)
+     * 如果玩家处于队伍中，返回该队伍的所有成员（Ancient、mcMMO、Heroes）
      *
-     * @param player members of the party
-     * @return all members of the party
+     * @param player 队伍成员
+     * @return 队伍的所有成员
      */
     public abstract List<Player> getPartyMembers(Player player);
 
     /**
-     * Returns wether the player is vanished or not
+     * 返回玩家是否处于隐身（vanish）状态
      *
-     * @param player the player to be checked
-     * @return wether the player is vanished
+     * @param player 要检查的玩家
+     * @return 玩家是否处于隐身状态
      */
     public abstract boolean isVanished(Player player);
 
     /**
-     * Returns the Vault economy hook
+     * 返回 Vault 经济钩子
      *
-     * @return the Vault economy hook
+     * @return Vault 经济钩子
      */
     public abstract EconomyHook getEconomy();
 
     /**
-     * Returns if the Vault economy hook is enabled
+     * 返回 Vault 经济钩子是否已启用
      *
-     * @return true if enabled
+     * @return 已启用时返回 true
      */
     public abstract boolean isEconomyEnabled();
 
-    // Beacon region checks
+    // 信标区域检查
 
     /**
-     * Returns if beacon effects can be activated at a certain location
+     * 返回在指定位置能否激活信标效果
      *
-     * @param location checked location
-     * @return if beacon is allowed at this location
+     * @param location 要检查的位置
+     * @return 该位置是否允许使用信标
      */
     public abstract boolean isBeaconAllowed(Location location);
 
     /**
-     * Returns if beacon effects can be shared to non-owners at a certain location
+     * 返回在指定位置能否将信标效果共享给非所有者
      *
-     * @param location checked location
-     * @return if beacon sharing is allowed at this location
+     * @param location 要检查的位置
+     * @return 该位置是否允许共享信标
      */
     public abstract boolean isBeaconShareAllowed(Location location);
 
     /**
-     * Returns if owners can receive their own beacon effects at a certain location
+     * 返回在指定位置所有者能否获得自己的信标效果
      *
-     * @param location checked location
-     * @return if beacon self-effects are allowed at this location
+     * @param location 要检查的位置
+     * @return 该位置是否允许信标自身效果
      */
     public abstract boolean isBeaconSelfAllowed(Location location);
 
     /**
-     * Returns the range multiplier for beacons at a certain location
+     * 返回指定位置信标的范围倍数
      *
-     * @param location checked location
-     * @return range multiplier (default 1.0)
+     * @param location 要检查的位置
+     * @return 范围倍数（默认 1.0）
      */
     public abstract double getBeaconRangeMultiplier(Location location);
 
     /**
-     * Returns the duration multiplier for beacon effects at a certain location
+     * 返回指定位置信标效果的持续时间倍数
      *
-     * @param location checked location
-     * @return duration multiplier (default 1.0)
+     * @param location 要检查的位置
+     * @return 持续时间倍数（默认 1.0）
      */
     public abstract double getBeaconDurationMultiplier(Location location);
 
     /**
-     * Returns the amplifier modifier for beacon effects at a certain location
+     * 返回指定位置信标效果的等级（amplifier）修正值
      *
-     * @param location checked location
-     * @return amplifier modifier (default 0)
+     * @param location 要检查的位置
+     * @return 等级修正值（默认 0）
      */
     public abstract int getBeaconAmplifierModifier(Location location);
 }

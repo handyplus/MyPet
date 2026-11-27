@@ -26,24 +26,24 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 
 /**
- * Service for accessing Creaking entity functionality.
- * This abstraction allows version-specific implementations without reflection.
+ * 用于访问 Creaking 实体功能的服务。
+ * 这层抽象允许在不使用反射的情况下提供各版本专用的实现。
  */
 @ServiceName("CreakingService")
 public abstract class CreakingService implements ServiceContainer {
 
     /**
-     * Gets the home location (Creaking Heart position) of a Creaking entity.
+     * 获取 Creaking 实体的归属位置（即 Creaking Heart 的位置）。
      *
-     * @param entity The entity to get the home location from
-     * @return The home Location, or null if not a Creaking or not heart-linked
+     * @param entity 要获取归属位置的实体
+     * @return 归属 Location；如果实体不是 Creaking 或未与 heart 关联，则返回 null
      */
     public abstract Location getCreakingHome(Entity entity);
 
     /**
-     * Checks if this version supports Creaking Heart capture.
+     * 检查当前版本是否支持 Creaking Heart 捕捉。
      *
-     * @return true if Creaking Heart capture is supported
+     * @return 如果支持 Creaking Heart 捕捉则返回 true
      */
     public abstract boolean isSupported();
 }

@@ -24,7 +24,7 @@ import de.Keyle.MyPet.api.util.hooks.PluginHook;
 import org.bukkit.entity.LivingEntity;
 
 /**
- * This interface defines that the hook checks if the leashed entity will be removed
+ * 此接口表示该 Hook 负责检查被拴住的实体是否会被移除
  */
 public interface LeashEntityHook extends PluginHook {
 

@@ -97,7 +97,7 @@ public class EntityMyPiglinBrute extends EntityMyPet {
 						try {
 							itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 						} catch (Error e) {
-							// TODO REMOVE
+							// TODO 移除
 						}
 					}
 				}
@@ -131,8 +131,8 @@ public class EntityMyPiglinBrute extends EntityMyPet {
 	}
 
 	/**
-	 * Returns the speed of played sounds
-	 * The faster the higher the sound will be
+	 * 返回播放声音时的速度
+	 * 速度越快，声音音调越高
 	 */
 	@Override
 	public float getSoundSpeed() {

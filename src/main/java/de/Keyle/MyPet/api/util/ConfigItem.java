@@ -43,7 +43,7 @@ public abstract class ConfigItem {
 
     public ConfigItem(String data) {
         if(data.startsWith(".")) {
-            // Assumption: This is a 1.20.5+ Item
+            //假设：这是一个 1.20.5+ 的物品
             load(data.replace(". ", ""));
             return;
         }
@@ -69,7 +69,7 @@ public abstract class ConfigItem {
     }
 
     public static ConfigItem createConfigItem(String data) {
-    	if(data.equalsIgnoreCase("none")) {	//For enabling non itembound interaction (riding etc)
+    	if(data.equalsIgnoreCase("none")) {	//用于启用非物品绑定的交互（骑乘等）
     		return null;
     	}
         return MyPetApi.getCompatUtil().getCompatInstance(ConfigItem.class, "util", "ConfigItem", data);

@@ -129,16 +129,16 @@ public class EntityMyChicken extends EntityMyPet {
 		}
 	}
 
-	// CraftBukkit's forceDrops flag makes spawnAtLocation() spawn a real item instead of
-	// funneling it into the death-loot capture list. Some server builds don't expose this
-	// field at runtime even though it's present in the API MyPet compiles against, throwing
-	// NoSuchFieldError. Swallow that instead of crashing every egg-lay tick; worst case on
-	// those builds is a lost egg if the capture list happens to be active, not a broken pet.
+	// CraftBukkit 的 forceDrops 标志会让 spawnAtLocation() 生成真正的物品，
+	// 而不是将其送入死亡战利品捕获列表中。某些服务端构建在运行时并不暴露该
+	// 字段，即使 MyPet 编译所依赖的 API 中存在，会抛出
+	// NoSuchFieldError。这里吞掉该错误，避免每次下蛋 tick 都崩溃；在
+	// 那些构建上最坏情况是捕获列表恰好启用时丢一个蛋，而不会让宠物坏掉。
 	private void setForceDrops(boolean value) {
 		try {
 			this.forceDrops = value;
 		} catch (LinkageError e) {
-			// field not present on this server build - ignore
+			// 该服务端构建中不存在此字段 —— 忽略
 		}
 	}
 
@@ -153,7 +153,7 @@ public class EntityMyChicken extends EntityMyPet {
 	}
 
 	/**
-	 * -> disable falldamage
+	 * -> 禁用摔落伤害
 	 */
 	@Override
 	public int calculateFallDamage(double f, float f1) {

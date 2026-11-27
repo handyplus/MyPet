@@ -50,7 +50,7 @@ public abstract class EntityMyFlyingPet extends EntityMyPet {
 		return new FlyingPathNavigation(this, this.level());
 	}
 
-	//Disengage FallDamage
+	//关闭坠落伤害
 	@Override
 	protected void checkFallDamage(double d0, boolean flag, BlockState iblockdata, BlockPos blockposition) {}
 

@@ -53,24 +53,24 @@ public class ProtocolLibHook implements PluginHook {
     @Override
     public boolean onEnable() {
         try {
-            // All listeners below only fix Ender Dragon pets (the dragon parts and the rotation).
-            // Ender Dragon pets can't be activated on 1.21.4+ so there is nothing to fix there,
-            // and listening to every entity movement packet would only cost performance.
+            // 下面所有监听器只用于修复末影龙宠物（龙的各个部件以及朝向旋转）。
+            // 末影龙宠物在 1.21.4+ 上无法激活，因此那里没有需要修复的内容，
+            // 而监听每一个实体移动数据包只会白白消耗性能。
             if (MyPetApi.getCompatUtil().compareWithMinecraftVersion("1.21.4") >= 0) {
                 return true;
             }
 
         	if(MyPetApi.getCompatUtil().compareWithMinecraftVersion("1.17") < 0) {
-        		//This is async
+        		// 这是异步的
         		registerEnderDragonInteractionFix();
         	} else {
-                //This is not - 1.17+ does NOT like async stuff
+                // 这不是异步的——1.17+ 不喜欢异步操作
                 registerSyncEnderDragonInteractionFix();
             }
 
             checkTemporaryPlayers = ReflectionUtil.getMethod(PacketEvent.class, "isPlayerTemporary") != null;
 
-            // reverse dragon facing direction
+            // 反转龙的朝向
             if (MyPetApi.getCompatUtil().compareWithMinecraftVersion("1.9") >= 0) {
                 registerEnderDragonRotationFix19();
             } else {
@@ -131,12 +131,12 @@ public class ProtocolLibHook implements PluginHook {
                     return;
                 }
 
-                //Prevent click-spamming causing Network-Issues for entire server. Basically cheap rate-limiting
+                // 防止点击刷屏导致整个服务器出现网络问题。本质上是一种低成本限流
                 if (tempBlockedPlayers.contains(event.getPlayer())) {
                     return;
                 } else {
                     tempBlockedPlayers.add(event.getPlayer());
-                    //Register Rate-Limit-Clear-Task
+                    // 注册限流清理任务
                     Bukkit.getScheduler().runTaskLaterAsynchronously(MyPetApi.getPlugin(), () -> tempBlockedPlayers.remove(event.getPlayer()), 2L);
                 }
 
@@ -163,7 +163,7 @@ public class ProtocolLibHook implements PluginHook {
                             packet.getIntegers().write(0, ent.getEntityId());
                         }
                     } catch (TimeoutException e) {
-                        // Assume the main thread is blocked and should free this netty thread.
+                        // 假定主线程已被阻塞，应当释放这个 netty 线程。
                         return;
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -200,7 +200,7 @@ public class ProtocolLibHook implements PluginHook {
     }
 
     private void registerEnderDragonRotationFix19() {
-        // Cache version check result — it never changes at runtime
+        // 缓存版本检查结果——它在运行期间不会改变
         final boolean isAtLeast1_17 = MyPetApi.getCompatUtil().compareWithMinecraftVersion("1.17") >= 0;
 
         ProtocolLibrary.getProtocolManager().addPacketListener(
@@ -226,7 +226,7 @@ public class ProtocolLibHook implements PluginHook {
                                 try {
                                     entity = ensureMainThread(() -> MyPetApi.getPlatformHelper().getEntity(id, event.getPlayer().getWorld()));
                                 } catch (TimeoutException e) {
-                                    // Assume the main thread is blocked and should free this netty thread.
+                                    // 假定主线程已被阻塞，应当释放这个 netty 线程。
                                     return;
                                 }  catch (Exception e) {
                                     e.printStackTrace();

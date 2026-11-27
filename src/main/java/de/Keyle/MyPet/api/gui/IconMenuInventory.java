@@ -36,24 +36,24 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Default, version-agnostic IconMenu inventory implementation using only the Bukkit API.
+ * 默认的、与版本无关的 IconMenu 物品栏实现，仅使用 Bukkit API。
  * <p>
- * This class centralizes the shared behavior used across compat modules. It avoids any NMS or CraftBukkit
- * types and should work from legacy servers up to current Spigot/Paper versions. The compat layer can
- * subclass this if needed, but most versions should not require overrides.
+ * 该类集中了各兼容模块共用的行为。它不依赖任何 NMS 或 CraftBukkit
+ * 类型，应能适用于从旧版服务端到当前 Spigot/Paper 版本。兼容层如有需要可以
+ * 继承该类，但大多数版本应该无需覆盖。
  */
 public class IconMenuInventory {
 
     private Inventory bukkitInventory;
     /**
-     * Logical size in slots. Set when {@link #open(IconMenu, HumanEntity)} is called.
+     * 以槽位计的逻辑大小。在调用 {@link #open(IconMenu, HumanEntity)} 时设置。
      */
     @Getter
     private int size;
 
     /**
-     * Opens the menu for the given player and renders all options into a fresh Bukkit inventory.
-     * Must be called on the main server thread.
+     * 为指定玩家打开菜单，并将所有选项渲染到一个全新的 Bukkit 物品栏中。
+     * 必须在服务器主线程调用。
      */
     public void open(IconMenu menu, HumanEntity player) {
         this.size = menu.getSize();
@@ -69,8 +69,8 @@ public class IconMenuInventory {
     }
 
     /**
-     * Re-render items in the currently open inventory from the provided model.
-     * No-op if the menu is not open.
+     * 根据提供的模型重新渲染当前已打开物品栏中的物品。
+     * 若菜单未打开则不做任何操作。
      */
     public void update(IconMenu menu) {
         if (this.bukkitInventory == null) return;
@@ -86,7 +86,7 @@ public class IconMenuInventory {
     }
 
     /**
-     * Closes the inventory for all current viewers and clears the backing reference.
+     * 为所有当前查看者关闭物品栏，并清除底层引用。
      */
     public void close() {
         if (this.bukkitInventory == null) return;
@@ -99,14 +99,14 @@ public class IconMenuInventory {
     }
 
     /**
-     * Checks if the given Bukkit inventory instance matches this menu's inventory.
+     * 检查给定的 Bukkit 物品栏实例是否与该菜单的物品栏相同。
      */
     public boolean isMenuInventory(Inventory inv) {
         return this.bukkitInventory != null && this.bukkitInventory.equals(inv);
     }
 
     /**
-     * Current viewers of the backing inventory. Empty if not open.
+     * 底层物品栏的当前查看者。未打开时返回空列表。
      */
     public List<HumanEntity> getViewers() {
         if (this.bukkitInventory == null) {
@@ -116,39 +116,39 @@ public class IconMenuInventory {
     }
 
     /**
-     * Apply a visual glow effect to the item using Bukkit-safe mechanics.
+     * 使用 Bukkit 安全的方式为物品添加视觉发光效果。
      * <p>
-     * Modern servers (1.20.4+) offer {@code setEnchantmentGlintOverride}. However, this API
-     * does not exist on legacy servers, so the default implementation uses a dummy enchant
-     * and hides it. Subclasses may override this method to use the modern API when available.
+     * 现代服务端（1.20.4+）提供 {@code setEnchantmentGlintOverride}。但该 API
+     * 在旧版服务端上并不存在，因此默认实现使用一个虚拟附魔并将其隐藏。
+     * 子类可以覆盖该方法，在可用时使用现代 API。
      *
-     * @param meta base {@link ItemMeta} to modify
-     * @return modified {@link ItemMeta} with glow applied
+     * @param meta 要修改的基础 {@link ItemMeta}
+     * @return 应用发光效果后修改过的 {@link ItemMeta}
      */
     protected ItemMeta addGlint(ItemMeta meta) {
-        // Legacy-safe glow technique: add dummy enchant and hide it from view
+        // 兼容旧版的发光实现：添加虚拟附魔并将其从显示中隐藏
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         meta.addEnchant(Enchantment.LUCK_OF_THE_SEA, 1, true);
         return meta;
     }
 
     /**
-     * Build a GUI-safe ItemStack from a menu item using only Bukkit APIs.
+     * 仅使用 Bukkit API 从菜单项构建适用于 GUI 的 ItemStack。
      */
     protected ItemStack createItemStack(IconMenuItem icon) {
-        // Defensive defaults
+        // 防御性默认值
         ItemStack is = new ItemStack(icon.getMaterial() != null ? icon.getMaterial() : Material.BARRIER,
                 Math.max(1, icon.getAmount()));
         is.setItemMeta(icon.getBukkitMeta());
         ItemMeta meta = is.getItemMeta();
         if (meta == null) return is;
 
-        // Title
+        // 标题
         if (icon.getTitle() != null && !icon.getTitle().isEmpty()) {
             meta.setDisplayName(icon.getTitle());
         }
 
-        // Lore
+        // 描述文本
         if (!icon.getLore().isEmpty()) {
             List<String> lore = new ArrayList<>();
             for (String line : icon.getLore()) {
@@ -157,12 +157,12 @@ public class IconMenuInventory {
             meta.setLore(lore);
         }
 
-        // Glow: prefer setEnchantmentGlintOverride if present, else dummy enchant hidden
+        // 发光：若存在 setEnchantmentGlintOverride 则优先使用，否则使用隐藏的虚拟附魔
         if (icon.isGlowing()) {
             meta = addGlint(meta);
         }
 
-        // Tooltip flags for compact GUI items
+        // 用于精简 GUI 物品的提示信息标志
         try {
             meta.addItemFlags(
                     ItemFlag.HIDE_ATTRIBUTES,
@@ -171,17 +171,17 @@ public class IconMenuInventory {
                     ItemFlag.HIDE_PLACED_ON
             );
         } catch (Throwable ignored) {
-            // Some flags not present on older APIs; safe to ignore
+            // 部分标志在旧版 API 中不存在；可以安全地忽略
         }
 
-        // Clear attribute modifiers where supported
+        // 在支持的情况下清除属性修饰符
         try {
             if (meta.hasAttributeModifiers()) {
-                // Wipe all modifiers to avoid referencing enum constants not present on legacy
+                // 清空所有修饰符，避免引用旧版中不存在的枚举常量
                 meta.setAttributeModifiers(null);
             }
         } catch (Throwable ignored) {
-            // Older APIs do not expose attribute modifiers; nothing to do
+            // 旧版 API 不提供属性修饰符；无需处理
         }
 
         is.setItemMeta(meta);

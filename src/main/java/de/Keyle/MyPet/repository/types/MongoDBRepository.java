@@ -287,7 +287,7 @@ public class MongoDBRepository implements Repository {
         }
     }
 
-    // Pets ------------------------------------------------------------------------------------------------------------
+    // 宠物 ------------------------------------------------------------------------------------------------------------
 
     private StoredMyPet documentToMyPet(MyPetPlayer owner, Document document) {
         try {
@@ -558,7 +558,7 @@ public class MongoDBRepository implements Repository {
         return true;
     }
 
-    // Players ---------------------------------------------------------------------------------------------------------
+    // 玩家 ------------------------------------------------------------------------------------------------------------
 
     private MyPetPlayer documentToPlayer(Document document) {
         try {
@@ -567,7 +567,7 @@ public class MongoDBRepository implements Repository {
             UUID internalUUID = UUID.fromString(document.getString("internal_uuid"));
             String playerName = document.getString("name");
 
-            // raw "get" fixes wrong data type
+            // 改用未泛型的 "get" 可修正数据类型错误
             UUID mojangUUID = document.get("mojang_uuid") != null ? UUID.fromString("" + document.get("mojang_uuid")) : null;
             if (mojangUUID != null) {
                 petPlayer = new MyPetPlayerImpl(internalUUID, mojangUUID);

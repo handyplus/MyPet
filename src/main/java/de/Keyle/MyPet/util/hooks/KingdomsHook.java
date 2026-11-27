@@ -47,7 +47,7 @@ public class KingdomsHook implements PlayerVersusPlayerHook {
 
             KingdomPlayer damaged = GameManagement.getPlayerManager().getSession(defender);
             if (damaged == null) {
-                // no Kingdoms session (e.g. an NPC), so Kingdoms does not protect it
+                // 没有 Kingdoms 会话（例如 NPC），因此 Kingdoms 不保护它
                 return true;
             }
             if (Kingdoms.config.freePvPInWarZone) {

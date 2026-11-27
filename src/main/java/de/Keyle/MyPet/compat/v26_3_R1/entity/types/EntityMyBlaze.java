@@ -90,7 +90,7 @@ public class EntityMyBlaze extends EntityMyPet {
 					try {
 						itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 					} catch (Error e) {
-						// TODO REMOVE
+						// TODO 待移除
 					}
 				}
 				return InteractionResult.CONSUME;
@@ -126,7 +126,7 @@ public class EntityMyBlaze extends EntityMyPet {
 	}
 
 	/**
-	 * -> disable falldamage
+	 * -> 禁用摔落伤害
 	 */
 	@Override
 	public int calculateFallDamage(double f, float f1) {

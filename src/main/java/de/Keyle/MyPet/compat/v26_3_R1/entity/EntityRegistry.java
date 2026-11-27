@@ -127,7 +127,7 @@ public class EntityRegistry extends de.Keyle.MyPet.api.entity.EntityRegistry {
 
 	@Override
 	public void registerEntityTypes() {
-		//Let's prepare the Vanilla-Registry
+		//先准备原版注册表（Vanilla-Registry）
 		DefaultedRegistry<EntityType<?>> entityRegistry = getRegistry(BuiltInRegistries.ENTITY_TYPE);
 		Field frozenDoBe = ReflectionUtil.getField(MappedRegistry.class,"frozen");
 		Field intrusiveHolderCacheField = ReflectionUtil.getField(MappedRegistry.class,"unregisteredIntrusiveHolders");
@@ -137,14 +137,14 @@ public class EntityRegistry extends de.Keyle.MyPet.api.entity.EntityRegistry {
 		Object allTagsSaved = ReflectionUtil.getFieldValue(allTagsField, entityRegistry);
 
 		if(custReg != null) {
-			//Gotta put the original Registry in. Just for a moment
+			//得把原始注册表放回去，只是一小会儿
 			try {
 				ENTITY_REGISTRY_SETTER.invoke(entityRegistry);
 			} catch (Throwable ignored) {
 			}
 		}
 
-		//We are now working with the Vanilla-Registry
+		//现在开始操作原版注册表
 		Class TagSetClass = MappedRegistry.class.getDeclaredClasses()[0];
 		Method unboundMethod = ReflectionUtil.getMethod(TagSetClass, "unbound");
 		ReflectionUtil.setFinalFieldValue(frozenDoBe, entityRegistry, false);
@@ -155,14 +155,14 @@ public class EntityRegistry extends de.Keyle.MyPet.api.entity.EntityRegistry {
             e.printStackTrace();
         }
 
-        //Now lets handle the Bukkit-Registry
-		//First copy the old registrie's map into a new one:
+        //现在处理 Bukkit 注册表
+		//先把旧注册表的 map 复制到一个新的 map 中：
 		org.bukkit.Registry<org.bukkit.entity.EntityType> bukkitRegistry = org.bukkit.Registry.ENTITY_TYPE;
 		Field mapField =  ReflectionUtil.getField(org.bukkit.Registry.SimpleRegistry.class, "map");
 		Map<NamespacedKey, org.bukkit.entity.EntityType> bukkitMap = (Map) ReflectionUtil.getFieldValue(mapField, bukkitRegistry);
 		ImmutableMap.Builder<NamespacedKey, org.bukkit.entity.EntityType> ownMap = ImmutableMap.builder();
-		// Skip stale mypet_* keys so re-registration (e.g. after /reload) is idempotent
-		// and ImmutableMap.Builder does not fail with "Multiple entries with same key".
+		// 跳过遗留的 mypet_* 键，使重复注册（例如 /reload 之后）保持幂等，
+		// 并且 ImmutableMap.Builder 不会因 "Multiple entries with same key" 而失败。
 		bukkitMap.forEach((key, value) -> {
 			if (!key.getKey().startsWith("mypet_")) {
 				ownMap.put(key, value);
@@ -170,43 +170,43 @@ public class EntityRegistry extends de.Keyle.MyPet.api.entity.EntityRegistry {
 		});
 
 		for (MyPetType type : MyPetType.all()) {
-			//The fun part
+			//有趣的部分来了
 			registerEntity(type, entityRegistry);
 
 			/*
-			A Tutorial on how to trick Spigot:
-				Instead of falling back to the "Unknown"-Type, Spigot now does not accept "null" anymore
-				(see https://hub.spigotmc.org/stash/projects/SPIGOT/repos/craftbukkit/commits/02d49078870f39892e7e2ce2916e17a879e9a3f0#src/main/java/org/bukkit/craftbukkit/entity/CraftEntityType.java)
-				This means that Mypet-Entites (aka mypet_pig etc) can't be converted.
-				This means that the "hack" MyPet used at the end of 1.20.1 doesn't work anymore.
-				And just replacing the type of the pet when it spawns doesn't work either.
-				This is bad.
+			关于如何欺骗 Spigot 的教程：
+				Spigot 现在不再回退到 "Unknown" 类型，而是不再接受 "null" 了
+				（参见 https://hub.spigotmc.org/stash/projects/SPIGOT/repos/craftbukkit/commits/02d49078870f39892e7e2ce2916e17a879e9a3f0#src/main/java/org/bukkit/craftbukkit/entity/CraftEntityType.java）
+				这意味着 MyPet 实体（即 mypet_pig 等）无法被转换。
+				这意味着 MyPet 在 1.20.1 末期使用的那个“hack”不再有效。
+				而且仅在宠物生成时替换其类型也不行。
+				这很糟糕。
 
-				Now onto the *trickery*.
-				Basically:
-				We basically tell Bukkit that we are a BlockDisplay. Yep.
-				This means everything will be created properly in the beginning, will be handled (kinda) properly with other plugins
-				and also when the pet dies.
-				It's stupid that we have to do this but it seems to work -> I'm happy.
+				那么就来说说这个*小把戏*。
+				基本上就是：
+				我们直接告诉 Bukkit 我们是一个 BlockDisplay。没错。
+				这意味着所有内容在开始时都会被正确创建，与其他插件交互时能被（大致）正确处理，
+				宠物死亡时也一样。
+				干这种事很蠢，但看起来能用 -> 我很开心。
 			 */
 			ownMap.put(NamespacedKey.fromString("mypet_" + type.getTypeID().toString()), org.bukkit.entity.EntityType.BLOCK_DISPLAY);
 		}
 
-		//Post-Handle Bukkit-Registry
-		//We now have our entities and all the others in there
+		//后处理 Bukkit 注册表
+		//现在我们的实体和其他所有实体都在里面了
 		ReflectionUtil.setFieldValue(mapField, bukkitRegistry, ownMap.build());
 
-		//Post-Handle Vanilla Registry
+		//后处理原版注册表
 		entityRegistry.freeze();
 
-		/* Let me explain what's happening here:
-		Earlier we saved allTags. They contain stuff like special vulnerabilities to enchantments,
-		FallDamage-Resistance and in some instances (namely the Turtle) the ability for a Mob to
-		breath underwater.
-		Through the above code we reset those tags so we now have to do 2 things:
-		First re-add the Tags (that's why we saved them)
-		And then tell Minecraft to reload those values for them to actually take effect.
-		Gotta love MC */
+		/* 解释一下这里发生了什么：
+		之前我们保存了 allTags。它们包含诸如对附魔的特殊脆弱性、
+		摔落伤害抗性，以及在某些情况下（例如海龟）生物在水下
+		呼吸的能力等信息。
+		通过上面的代码我们把那些标签重置了，所以现在必须做两件事：
+		首先把标签重新加回去（这就是我们保存它们的原因）
+		然后告诉 Minecraft 重新加载这些值，它们才能真正生效。
+		真是爱死 MC 了 */
 		ReflectionUtil.setFieldValue(allTagsField, entityRegistry, allTagsSaved);
 		Method refreshMethod = ReflectionUtil.getMethod(MappedRegistry.class, "refreshTagsInHolders");
         try {
@@ -216,7 +216,7 @@ public class EntityRegistry extends de.Keyle.MyPet.api.entity.EntityRegistry {
         }
 
 		if(custReg != null) {
-			//Gotta put the custom Registry back into place
+			//得把自定义注册表放回原位
 			try {
 				ENTITY_REGISTRY_SETTER.invoke(custReg);
 			} catch (Throwable ignored) {

@@ -103,21 +103,21 @@ public class CraftMyPet extends CraftMob implements MyPetBukkitEntity {
 
 	@Override
 	public MyPetType getPetType() {
-		// getMyPet() is null for a leftover Pet entity whose MyPet is already gone.
+		// 对于遗留的 Pet 实体，其 MyPet 已经不存在时 getMyPet() 会返回 null。
 		de.Keyle.MyPet.api.entity.MyPet myPet = getMyPet();
 		return myPet != null ? myPet.getPetType() : null;
 	}
 
-	/* This doesn't work rn as getType was made final...
-		I saw other plugins do it this way - it should be fine and solve problems with p2 and wg
-	//Update - It wasn't! - GriefPrevention didn't like the previous solution!
-	//So now this ugly bs will solve it. Hopefully
+	/* 目前这样不行，因为 getType 被设为了 final……
+		我看到其他插件是这么做的 - 这样应该没问题，还能解决与 p2 和 wg 的问题
+	//更新 - 并不是！GriefPrevention 不喜欢之前的方案！
+	//所以现在用这个丑陋的办法来解决它。但愿有效
 	@Override
 	public EntityType getType() {
 		StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
 		String class1 = stackTraceElements[2].getClassName();
 		String class2 = stackTraceElements[3].getClassName();
-		//all special cases here
+		//所有特殊情况都在这里
 		if(class1.contains("worldedit") || class2.contains("worldedit") ||
 				class1.contains("plotsquared") || class2.contains("plotsquared") ||
 				class1.contains("worldguard") || class2.contains("worldguard")  ||
@@ -128,7 +128,7 @@ public class CraftMyPet extends CraftMob implements MyPetBukkitEntity {
 		return EntityType.UNKNOWN;
 	} */
 
-	/* I have no clue why I need to override these other deprecated methods also don't need to be implemented so yea...*/
+	/* 我完全不清楚为什么还需要重写这些其他的弃用方法，它们本来也不需要实现，所以就这样吧……*/
 	@Override
 	public void setVisibleByDefault(boolean b) {
 	}
@@ -151,8 +151,8 @@ public class CraftMyPet extends CraftMob implements MyPetBukkitEntity {
 
 	@Override
 	public void remove() {
-		// do nothing to prevent other plugins from removing the MyPet
-		// user removeEntity() to remove the MyPet
+		// 什么都不做，以免其他插件移除这个 MyPet
+		// 请使用 removeEntity() 来移除 MyPet
 	}
 
 	@Override

@@ -40,7 +40,7 @@ public class EntityMyBat extends EntityMyFlyingPet {
 	}
 
 	/**
-	 * Returns the sound that is played when the MyPet dies
+	 * 返回 MyPet 死亡时播放的声音
 	 */
 	@Override
 	protected String getMyPetDeathSound() {
@@ -48,7 +48,7 @@ public class EntityMyBat extends EntityMyFlyingPet {
 	}
 
 	/**
-	 * Returns the sound that is played when the MyPet get hurt
+	 * 返回 MyPet 受伤时播放的声音
 	 */
 	@Override
 	protected String getHurtSound() {
@@ -69,7 +69,7 @@ public class EntityMyBat extends EntityMyFlyingPet {
 	@Override
 	protected void defineSynchedData(SynchedEntityData.Builder builder) {
 		super.defineSynchedData(builder);
-		builder.define(HANGING_WATCHER, (byte) 0xFFFFFFFE); // hanging
+		builder.define(HANGING_WATCHER, (byte) 0xFFFFFFFE); // 悬挂
 	}
 
 	@Override

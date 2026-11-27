@@ -58,7 +58,7 @@ public class CommandOptionUpdate implements CommandOption {
 
     @Override
     public boolean onCommandOption(CommandSender sender, String[] args) {
-        // the startup check runs in the background; until it finishes both results are null
+        // 启动检查在后台运行；在它完成之前两个结果都是 null
         Updater.Update latest = Updater.getLatest();
         if (latest != null) {
             sender.sendMessage("A new version is available: " + ChatColor.GOLD + latest);

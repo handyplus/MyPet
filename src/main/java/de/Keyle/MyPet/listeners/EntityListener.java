@@ -79,7 +79,7 @@ public class EntityListener implements Listener {
     public void on(CreatureSpawnEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         if (WorldGroup.getGroupByWorld(event.getLocation().getWorld()).isDisabled()) {
@@ -115,7 +115,7 @@ public class EntityListener implements Listener {
     public void on(EntityShootBowEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         if (WorldGroup.getGroupByWorld(event.getEntity().getWorld()).isDisabled()) {
@@ -180,7 +180,7 @@ public class EntityListener implements Listener {
     public void on(ProjectileLaunchEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         Projectile projectile = event.getEntity();
@@ -198,14 +198,13 @@ public class EntityListener implements Listener {
         }
     }
 
-    // ignoreCancelled: a hit that a protection plugin (region, claim, PvE flag) cancelled
-    // must not capture the mob either, or players could take villagers and animals out of
-    // areas where they are not allowed to hurt them.
+    // ignoreCancelled：被保护插件（区域、领地、PvE 开关）取消的击中同样不能捕捉生物，
+    // 否则玩家就能把村民和动物从禁止伤害它们的区域中带走。
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void on(final EntityDamageByEntityEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         if (WorldGroup.getGroupByWorld(event.getEntity().getWorld()).isDisabled()) {
@@ -283,9 +282,8 @@ public class EntityListener implements Listener {
                             return;
                         }
                     }
-                    // Capturing a mob in someone's claim must be allowed there. A player's own tamed
-                    // animal is skipped: protection hooks stop pets hurting their owner's animals,
-                    // which would otherwise stop owners capturing their own wolf, cat or horse.
+                    // 在他人的领地内捕捉生物必须在该领地内被允许。玩家自己驯服的动物会被跳过：
+                    // 保护钩子会阻止宠物伤害其主人的动物，否则会阻止主人捕捉自己的狼、猫或马。
                     if (!isOwnTamedAnimal(player, leashTarget) && !MyPetApi.getHookHelper().canHurt(player, leashTarget)) {
                         return;
                     }
@@ -343,7 +341,7 @@ public class EntityListener implements Listener {
                         Optional<EntityConverterService> converter = MyPetApi.getServiceManager().getService(EntityConverterService.class);
                         converter.ifPresent(service -> inactiveMyPet.setInfo(service.convertEntity(leashTarget)));
 
-                        // Store the location of the captured entity before removing it
+                        // 在移除被捕捉的实体之前存储其位置
                         final Location capturedEntityLocation = leashTarget.getLocation().clone();
 
                         boolean remove = true;
@@ -400,7 +398,7 @@ public class EntityListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onMonitor(final EntityDamageByEntityEvent event) {
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         Entity target = event.getEntity();
@@ -468,11 +466,11 @@ public class EntityListener implements Listener {
     public void onEntityDamageByEntityResult(final EntityDamageByEntityEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         Entity damagedEntity = event.getEntity();
-        // --  fix unwanted screaming of Endermen --
+        // -- 修复末影人非预期的尖叫 --
         if (damagedEntity instanceof MyPetBukkitEntity && ((MyPetBukkitEntity) damagedEntity).getPetType() == MyPetType.Enderman) {
             ((MyEnderman) ((MyPetBukkitEntity) damagedEntity).getMyPet()).setScreaming(true);
             ((MyEnderman) ((MyPetBukkitEntity) damagedEntity).getMyPet()).setScreaming(false);
@@ -483,7 +481,7 @@ public class EntityListener implements Listener {
     public void on(final EntityDeathEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         LivingEntity deadEntity = event.getEntity();
@@ -620,7 +618,7 @@ public class EntityListener implements Listener {
     public void on(final EntityTargetEvent event) {
         //noinspection ConstantConditions
         if (event.getEntity() == null) {
-            // catch invalid events (i.e. EnchantmentAPI)
+            // 捕获无效事件（例如 EnchantmentAPI）
             return;
         }
         if (WorldGroup.getGroupByWorld(event.getEntity().getWorld()).isDisabled()) {

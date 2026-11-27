@@ -99,7 +99,7 @@ public class EntityMyZombifiedPiglin extends EntityMyPet {
 						try {
 							itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 						} catch (Error e) {
-							// TODO REMOVE
+							// TODO 移除
 						}
 					}
 				}
@@ -138,12 +138,12 @@ public class EntityMyZombifiedPiglin extends EntityMyPet {
 	@Override
 	protected void defineSynchedData(SynchedEntityData.Builder builder) {
 		super.defineSynchedData(builder);
-		builder.define(AGE_WATCHER, false); // is baby
+		builder.define(AGE_WATCHER, false); // 是否为幼年体
 	}
 
 	/**
-	 * Returns the speed of played sounds
-	 * The faster the higher the sound will be
+	 * 返回播放声音的音调
+	 * 值越大，声音音调越高
 	 */
 	@Override
 	public float getSoundSpeed() {

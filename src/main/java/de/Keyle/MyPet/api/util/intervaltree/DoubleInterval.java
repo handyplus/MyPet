@@ -21,15 +21,13 @@
 package de.Keyle.MyPet.api.util.intervaltree;
 
 /**
- * A class representing an interval with Doubles as start and end points.
+ * 以 Double 作为起点和终点的区间。
  * <p>
- * This class doesn't differentiate between -0.0 and 0.0 and treats them
- * as the same value. In particular, the difference between these two
- * Doubles is disregarded in the equals method.
+ * 本类不区分 -0.0 与 0.0，将二者视为同一个值；也就是说，equals 方法会忽略这两个
+ * Double 之间的差异。
  * </p>
  * <p>
- * If an intervals has a Double.NaN as a start or an end point, the interval
- * is considered to be empty.
+ * 如果区间的起点或终点为 Double.NaN，则该区间视为空区间。
  * </p>
  */
 public class DoubleInterval<S> extends Interval<Double, S> {
@@ -37,36 +35,34 @@ public class DoubleInterval<S> extends Interval<Double, S> {
     private static final int OFFSET = 1_000;
 
     /**
-     * Instantiates an interval extending from positive infinity to negative
-     * infinity and thus containing all Doubles.
+     * 实例化一个从正无穷延伸到负无穷、因而包含所有 Double 的区间。
      */
     public DoubleInterval(S value) {
         super(value);
     }
 
     /**
-     * Instantiates a new bounded interval.
+     * 实例化一个新的有界区间。
      *
-     * @param start The start point of the interval
-     * @param end   The end point of the interval.
+     * @param start 区间的起点
+     * @param end   区间的终点。
      * @param value
-     * @param type  Description of whether the interval is open/closed at one or both
-     *              of its ends. See {@link Bounded the documentation of the Bounded enum}
+     * @param type  描述区间在一端或两端是开还是闭。
+     *              参见 {@link Bounded the documentation of the Bounded enum}
      */
     public DoubleInterval(Double start, Double end, S value, Bounded type) {
         super(0.0 + start, 0.0 + end, value, type);
     }
 
     /**
-     * Instantiates a new unbounded interval - an interval that extends to positive or
-     * negative infinity. The interval will be bounded by either the start point
-     * or the end point and unbounded in the other point.
+     * 实例化一个新的无界区间——即延伸到正无穷或负无穷的区间。该区间由起点
+     * 或终点之一界定，而在另一端无界。
      *
-     * @param se    The bounding value for either the start or the end point.
-     * @param value The bounding value for either the start or the end point.
-     * @param type  Describes whether the interval extends to positive or negative infinity,
-     *              as well as if it is open or closed at the bounding point. See {@link Unbounded
-     *              the Unbounded enum} for description of the different possibilities.
+     * @param se    起点或终点的界定值。
+     * @param value 起点或终点的界定值。
+     * @param type  描述区间是延伸到正无穷还是负无穷，
+     *              以及在界定点处是开还是闭。各种可能性的说明参见 {@link Unbounded
+     *              the Unbounded enum}。
      */
     public DoubleInterval(Double se, S value, Unbounded type) {
         super(0.0 + se, value, type);
@@ -78,12 +74,11 @@ public class DoubleInterval<S> extends Interval<Double, S> {
     }
 
     /**
-     * Determines if the interval is empty, meaning it contains no Doubles. Unlike the class
-     * {@link IntegerInterval}, the interval (4.0, 5.0), for example, will <strong>not</strong>
-     * be considered empty, because there are Double values in this interval.
+     * 判断区间是否为空，即不包含任何 Double。与
+     * {@link IntegerInterval} 类不同，例如区间 (4.0, 5.0)
+     * <strong>不会</strong>被视为空，因为该区间内存在 Double 值。
      * <p>
-     * If the start or end point of the interval is Double.NaN, the interval will be
-     * considered empty.
+     * 如果区间的起点或终点为 Double.NaN，则该区间被视为空。
      * </p>
      *
      * @return
@@ -108,20 +103,19 @@ public class DoubleInterval<S> extends Interval<Double, S> {
     }
 
     /**
-     * Determines the center of the interval.
+     * 计算区间的中点。
      * <p>
-     * This is done in a best-effort basis, because in unbounded intervals the center doesn't exist.
-     * This is different from the class {@link IntegerInterval}, where even unbounded intervals
-     * are bounded by Integer.MAX_VALUE and/or Integer.MIN_VALUE. In case the DoubleInterval is
-     * unbounded, the method returns an arbitrary Double, which is within the interval, but makes
-     * no guarantees as to what value it will have exactly. This ensures that unbounded intervals
-     * will still work properly with {@link TreeNode}s. The current implementation returns a value,
-     * which is at a particular {@link #OFFSET} to the bounded point of the interval. However, this
-     * behaviour may change in the future, so don't rely on it.
+     * 这以一种尽力而为的方式进行，因为在无界区间中并不存在中点。
+     * 这与 {@link IntegerInterval} 类不同，后者即使是无界区间
+     * 也以 Integer.MAX_VALUE 和/或 Integer.MIN_VALUE 为界。如果 DoubleInterval 是
+     * 无界的，该方法会返回一个位于区间内的任意 Double，但不保证
+     * 它具体是哪个值。这能确保无界区间
+     * 仍能与 {@link TreeNode} 正常工作。当前实现返回一个
+     * 与区间界定点相距特定 {@link #OFFSET} 的值。不过这一
+     * 行为将来可能改变，因此不要依赖它。
      * </p>
      *
-     * @return The center of the interval, or an arbitrary point within the interval, if it is
-     * unbounded.
+     * @return 区间的中点；如果区间无界，则为区间内的任意一点。
      */
     @Override
     public Double getMidpoint() {
@@ -129,7 +123,7 @@ public class DoubleInterval<S> extends Interval<Double, S> {
             return null;
         }
 
-        // Handle null values
+        // 处理 null 值
         if (getStart() == null && getEnd() == null) {
             return 0.0;
         }
@@ -140,7 +134,7 @@ public class DoubleInterval<S> extends Interval<Double, S> {
             return getStart() + OFFSET;
         }
 
-        // Now we are sure there are no more null values involved
+        // 此时可以确定不再涉及 null 值
         if (getStart() == Double.NEGATIVE_INFINITY && getEnd() == Double.POSITIVE_INFINITY) {
             return 0.0;
         }

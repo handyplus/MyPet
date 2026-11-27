@@ -29,10 +29,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
 
 /**
- * Decides whether a skill may damage an entity that the pet did not hit directly: area
- * damage around the target, or damage over time that lands after the hit. These bypass
- * the checks a normal pet attack goes through, so they ask the same protection hooks
- * (PvP settings, regions, claims) that Stomp uses.
+ * 判断某个技能是否可以对宠物并未直接击中的实体造成伤害：例如目标周围的
+ * 范围伤害，或命中之后才结算的持续伤害。这类伤害绕过了普通宠物攻击所经过的
+ * 检查，因此这里会调用与 Stomp 相同的保护钩子（PvP 设置、区域、领地声明）。
  */
 final class SkillDamageCheck {
 

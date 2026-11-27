@@ -92,7 +92,7 @@ public class EntityMyPig extends EntityMyPet {
 						@Override
 						public void run() {
 							if (entityhuman instanceof ServerPlayer) {
-								entityhuman.setItemInHand(InteractionHand.OFF_HAND, itemStack);//TODO
+								entityhuman.setItemInHand(InteractionHand.OFF_HAND, itemStack);//待办
 								Player p = (Player) entityhuman.getBukkitEntity();
 								if (!p.isOnline()) {
 									p.saveData();
@@ -131,7 +131,7 @@ public class EntityMyPig extends EntityMyPet {
 					try {
 						itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 					} catch (Error e) {
-						// TODO REMOVE
+						// TODO 移除
 					}
 				}
 

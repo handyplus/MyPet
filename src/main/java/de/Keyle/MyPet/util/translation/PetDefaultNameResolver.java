@@ -27,22 +27,19 @@ import de.Keyle.MyPet.api.player.MyPetPlayer;
 import org.bukkit.entity.Player;
 
 /**
- * Resolves the default display name for a freshly-created pet.
+ * 解析新建宠物的默认显示名称。
  *
- * <p>Mojang's vanilla {@code entity.minecraft.<bukkit-name>} translation —
- * resolved against the creator's client locale via
- * {@link VanillaTranslationLoader#resolveEntityName(String, String)} — is the
- * authoritative source. When the vanilla map hasn't loaded yet (offline
- * server, CDN error, async race during plugin enable), the loader internally
- * falls back to English mechanically derived from
- * {@link MyPetType#getBukkitName()}.</p>
+ * <p>Mojang 原版的 {@code entity.minecraft.<bukkit-name>} 翻译——
+ * 通过 {@link VanillaTranslationLoader#resolveEntityName(String, String)}
+ * 按创建者的客户端语言环境解析——是权威来源。当原版映射表尚未加载时（离线
+ * 服务器、CDN 出错、插件启用时的异步竞态），加载器会在内部回退到由
+ * {@link MyPetType#getBukkitName()} 机械推导出的英文名称。</p>
  *
- * <p>The legacy {@code Name.<PetType>} rows in MyPet's locale files are
- * intentionally <strong>not</strong> consulted here. Mojang's translations
- * cover every shipped entity in every supported locale, so a per-locale
- * MyPet override would be a redundant maintenance burden. Owners and admins
- * who want a custom default name use {@code /petname} to rename after
- * creation.</p>
+ * <p>MyPet 语言文件中的旧版 {@code Name.<PetType>} 条目在此处被
+ * 刻意 <strong>不</strong> 使用。Mojang 的翻译覆盖了所有受支持语言环境下的
+ * 每一种随游戏发布的实体，因此为每个语言环境单独写 MyPet 覆盖项只会造成
+ * 多余的维护负担。想要自定义默认名称的服主和管理员可以在创建后用
+ * {@code /petname} 重命名。</p>
  */
 public final class PetDefaultNameResolver {
 
@@ -54,9 +51,9 @@ public final class PetDefaultNameResolver {
 
     public static String resolve(MyPetType type, Player player) {
         if (player == null) return resolve(type, (String) null);
-        // PlatformHelper is null on an unsupported NMS version between onLoad and the onEnable
-        // setEnabled(false) gate — callers from shop/GUI/event paths can still reach this in that
-        // window and would otherwise NPE inside the locale lookup.
+        // 在不支持的 NMS 版本上，PlatformHelper 在 onLoad 与 onEnable 中
+        // setEnabled(false) 这一关卡之间为 null——来自商店/GUI/事件路径的调用方在这个
+        // 时间窗口内仍可能到达这里，否则会在语言环境查询内部抛出 NPE。
         PlatformHelper helper = MyPetApi.getPlatformHelper();
         return resolve(type, helper == null ? null : helper.getPlayerLanguage(player));
     }

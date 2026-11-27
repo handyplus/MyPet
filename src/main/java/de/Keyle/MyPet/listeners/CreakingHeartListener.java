@@ -61,22 +61,21 @@ import org.bukkit.inventory.ItemStack;
 import java.util.Optional;
 
 /**
- * Listener for capturing heart-linked Creaking entities when their Creaking Heart block is destroyed.
+ * 监听器：当与嘎枝之心相连的嘎枝实体所对应的嘎枝之心方块被摧毁时，捕捉该实体。
  * <p>
- * In vanilla Minecraft, heart-linked Creaking are invulnerable to damage and can only be killed
- * by destroying their linked Creaking Heart block. This listener enables MyPet to capture these
- * Creaking by intercepting the heart destruction and converting the linked entity into a pet.
+ * 在原版 Minecraft 中，与之心相连的嘎枝免疫伤害，只能通过摧毁与之相连的嘎枝之心方块来击杀。
+ * 本监听器拦截之心方块的破坏事件，并把与之相连的实体转换为宠物，从而让 MyPet 能够捕捉这些嘎枝。
  */
 public class CreakingHeartListener implements Listener {
 
-    // 32 blocks matches vanilla Creaking heart link range
+    // 32 格与原版嘎枝之心的连接范围一致
     private static final int SEARCH_RADIUS = 32;
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onCreakingHeartBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
 
-        // Check if the broken block is a Creaking Heart
+        // 检查被破坏的方块是否为嘎枝之心
         if (block.getType() != Material.CREAKING_HEART) {
             return;
         }
@@ -87,45 +86,45 @@ public class CreakingHeartListener implements Listener {
             return;
         }
 
-        // Find the linked Creaking entity
+        // 查找与之相连的嘎枝实体
         LivingEntity linkedCreaking = findLinkedCreaking(block);
         if (linkedCreaking == null) {
             return;
         }
 
-        // Player already has an active pet
+        // 玩家已有一只激活的宠物
         if (MyPetApi.getMyPetManager().hasActiveMyPet(player)) {
             return;
         }
 
         MyPetType petType = MyPetType.byEntityTypeName(linkedCreaking.getType().name());
 
-        // Only allow heart-based capture if HeartLinked is a configured leash requirement
+        // 仅当 HeartLinked 被配置为捕捉条件时，才允许基于之心的捕捉
         if (!isHeartLinkedRequired(petType)) {
             return;
         }
 
         ConfigItem neededLeashItem = MyPetApi.getMyPetInfo().getLeashItem(petType);
 
-        // Check permission
+        // 检查权限
         if (!Permissions.has(player, "MyPet.leash." + petType.name())) {
             return;
         }
 
-        // Check leash item in main hand
+        // 检查主手中的捕捉物品
         ItemStack leashItem = player.getInventory().getItemInMainHand();
         if (neededLeashItem != null && !neededLeashItem.compare(leashItem)) {
             return;
         }
 
-        // Run LeashHook checks
+        // 执行 LeashHook 检查
         for (LeashHook hook : MyPetApi.getPluginHookManager().getHooks(LeashHook.class)) {
             if (!hook.canLeash(player, linkedCreaking)) {
                 return;
             }
         }
 
-        // Run LeashFlag checks with damage=0 (heart-based capture)
+        // 以 damage=0 执行 LeashFlag 检查（基于之心的捕捉）
         boolean willBeLeashed = true;
         MyPetPlayer myPetPlayer = null;
         if (MyPetApi.getPlayerManager().isMyPetPlayer(player)) {
@@ -139,7 +138,7 @@ public class CreakingHeartListener implements Listener {
                 MyPetApi.getLogger().warning("\"" + flagName + "\" is not a valid leash requirement!");
                 continue;
             }
-            // Use damage=0 to indicate heart-based capture
+            // 用 damage=0 表示基于之心的捕捉
             if (!flag.check(player, linkedCreaking, 0, flagSettings)) {
                 willBeLeashed = false;
                 if (myPetPlayer != null && myPetPlayer.isCaptureHelperActive()) {
@@ -162,11 +161,11 @@ public class CreakingHeartListener implements Listener {
             return;
         }
 
-        // Cancel the event and handle block break manually to prevent race conditions
-        // This ensures the entity is removed before the heart breaks (preventing vanilla death effects)
+        // 取消事件并手动处理方块破坏，以避免竞态条件
+        // 这样能保证实体在之心被破坏之前先被移除（避免原版死亡特效）
         event.setCancelled(true);
 
-        // Create the pet
+        // 创建宠物
         final MyPetPlayer owner;
         if (MyPetApi.getPlayerManager().isMyPetPlayer(player)) {
             owner = MyPetApi.getPlayerManager().getMyPetPlayer(player);
@@ -185,25 +184,25 @@ public class CreakingHeartListener implements Listener {
         Optional<EntityConverterService> converter = MyPetApi.getServiceManager().getService(EntityConverterService.class);
         converter.ifPresent(service -> inactiveMyPet.setInfo(service.convertEntity(linkedCreaking)));
 
-        // Store the location before removing
+        // 移除前先记录位置
         final Location capturedEntityLocation = linkedCreaking.getLocation().clone();
 
-        // Run LeashEntityHook.prepare() and remove entity before breaking heart
-        // to prevent vanilla death effects
+        // 在破坏之心之前执行 LeashEntityHook.prepare() 并移除实体，
+        // 以避免原版死亡特效
         for (LeashEntityHook hook : MyPetApi.getPluginHookManager().getHooks(LeashEntityHook.class)) {
             hook.prepare(linkedCreaking);
         }
         linkedCreaking.remove();
 
-        // Now break the heart block (we cancelled the event earlier)
-        // In Creative mode, just remove the block without drops (vanilla behavior)
+        // 现在破坏之心方块（前面已取消事件）
+        // 创造模式下直接移除方块且不掉落物品（原版行为）
         if (player.getGameMode() == GameMode.CREATIVE) {
             block.setType(Material.AIR);
         } else {
             block.breakNaturally(leashItem);
         }
 
-        // Consume leash item
+        // 消耗捕捉物品
         if (Configuration.Misc.CONSUME_LEASH_ITEM && player.getGameMode() != GameMode.CREATIVE && leashItem != null) {
             if (leashItem.getAmount() > 1) {
                 leashItem.setAmount(leashItem.getAmount() - 1);
@@ -212,14 +211,14 @@ public class CreakingHeartListener implements Listener {
             }
         }
 
-        // Fire events
+        // 触发事件
         MyPetCreateEvent createEvent = new MyPetCreateEvent(inactiveMyPet, MyPetCreateEvent.Source.Leash);
         Bukkit.getServer().getPluginManager().callEvent(createEvent);
 
         MyPetSaveEvent saveEvent = new MyPetSaveEvent(inactiveMyPet);
         Bukkit.getServer().getPluginManager().callEvent(saveEvent);
 
-        // Save and activate
+        // 保存并激活
         MyPetApi.getPlugin().getRepository().addMyPet(inactiveMyPet, new RepositoryCallback<Boolean>() {
             @Override
             public void callback(Boolean value) {
@@ -241,11 +240,11 @@ public class CreakingHeartListener implements Listener {
     }
 
     /**
-     * Shows capture requirements when a player with capture helper interacts with a Creaking Heart.
+     * 当开启捕捉助手的玩家与嘎枝之心交互时，显示捕捉条件。
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onCreakingHeartInteract(PlayerInteractEvent event) {
-        // Only handle right-click on block
+        // 只处理对方块的右键点击
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
@@ -257,7 +256,7 @@ public class CreakingHeartListener implements Listener {
 
         Player player = event.getPlayer();
 
-        // Check if capture helper is active
+        // 检查捕捉助手是否开启
         if (!MyPetApi.getPlayerManager().isMyPetPlayer(player)) {
             return;
         }
@@ -270,7 +269,7 @@ public class CreakingHeartListener implements Listener {
             return;
         }
 
-        // Find the linked Creaking entity
+        // 查找与之相连的嘎枝实体
         LivingEntity linkedCreaking = findLinkedCreaking(block);
         if (linkedCreaking == null) {
             myPetPlayer.sendMessage(LeashFlag.getMessagePrefix(false) + "No Creaking linked to this heart", 2000);
@@ -279,18 +278,18 @@ public class CreakingHeartListener implements Listener {
 
         MyPetType petType = MyPetType.Creaking;
 
-        // Only show heart-based capture info if HeartLinked is a configured leash requirement
+        // 仅当 HeartLinked 被配置为捕捉条件时，才显示基于之心的捕捉信息
         if (!isHeartLinkedRequired(petType)) {
             return;
         }
 
-        // Check permission
+        // 检查权限
         if (!Permissions.has(player, "MyPet.leash." + petType.name())) {
             myPetPlayer.sendMessage(LeashFlag.getMessagePrefix(false) + Translation.getString("Message.No.Allowed", player), 2000);
             return;
         }
 
-        // Check leash item
+        // 检查捕捉物品
         ConfigItem neededLeashItem = MyPetApi.getMyPetInfo().getLeashItem(petType);
         if (neededLeashItem == null) {
             return;
@@ -303,21 +302,21 @@ public class CreakingHeartListener implements Listener {
             myPetPlayer.sendMessage(LeashFlag.getMessagePrefix(true) + "Holding " + itemName, 2000);
         }
 
-        // Run LeashHook checks
+        // 执行 LeashHook 检查
         for (LeashHook hook : MyPetApi.getPluginHookManager().getHooks(LeashHook.class)) {
             if (!hook.canLeash(player, linkedCreaking)) {
                 return;
             }
         }
 
-        // Show LeashFlag status
+        // 显示 LeashFlag 状态
         for (Settings flagSettings : MyPetApi.getMyPetInfo().getLeashFlagSettings(petType)) {
             String flagName = flagSettings.getName();
             LeashFlag flag = MyPetApi.getLeashFlagManager().getLeashFlag(flagName);
             if (flag == null) {
                 continue;
             }
-            // Use damage=0 to indicate heart-based capture check
+            // 用 damage=0 表示基于之心的捕捉检查
             boolean passed = flag.check(player, linkedCreaking, 0, flagSettings);
             String message = flag.getMissingMessage(player, linkedCreaking, 0, flagSettings);
             if (message != null) {
@@ -325,14 +324,14 @@ public class CreakingHeartListener implements Listener {
             }
         }
 
-        // Player already has an active pet
+        // 玩家已有一只激活的宠物
         if (MyPetApi.getMyPetManager().hasActiveMyPet(player)) {
             myPetPlayer.sendMessage(LeashFlag.getMessagePrefix(false) + Translation.getString("Message.Command.CaptureHelper.HasPet", player), 2000);
         }
     }
 
     /**
-     * Checks if the HeartLinked leash flag is configured as a requirement for the given pet type.
+     * 检查 HeartLinked 捕捉条件是否已配置为指定宠物种类的条件。
      */
     private boolean isHeartLinkedRequired(MyPetType petType) {
         for (Settings flagSettings : MyPetApi.getMyPetInfo().getLeashFlagSettings(petType)) {
@@ -344,29 +343,29 @@ public class CreakingHeartListener implements Listener {
     }
 
     /**
-     * Gets the home location of a Creaking entity.
+     * 获取嘎枝实体的巢穴位置。
      *
-     * @param entity The entity to get the home location from
-     * @return The home Location, or null if not a Creaking or no home set
+     * @param entity 要获取巢穴位置的实体
+     * @return 巢穴位置；若非嘎枝或未设置巢穴则返回 null
      */
     private static Location getCreakingHome(Entity entity) {
         if (entity instanceof Creaking) {
-            try { return ((Creaking) entity).getHome(); } catch (LinkageError ignored) { return null; } // getHome() may be absent on some 1.21.4 builds
+            try { return ((Creaking) entity).getHome(); } catch (LinkageError ignored) { return null; } // 部分 1.21.4 版本的构建中可能没有 getHome()
         }
         return null;
     }
 
     /**
-     * Finds a Creaking entity whose home position matches the given block location.
+     * 查找巢穴位置与给定方块位置匹配的嘎枝实体。
      *
-     * @param heartBlock The Creaking Heart block that was destroyed
-     * @return The linked Creaking entity, or null if not found
+     * @param heartBlock 被破坏的嘎枝之心方块
+     * @return 相连的嘎枝实体；未找到则返回 null
      */
     private LivingEntity findLinkedCreaking(Block heartBlock) {
         Location heartLocation = heartBlock.getLocation();
 
         for (Entity entity : heartBlock.getWorld().getNearbyEntities(heartLocation, SEARCH_RADIUS, SEARCH_RADIUS, SEARCH_RADIUS)) {
-            // Check entity type
+            // 检查实体类型
             if (entity.getType() != EntityType.CREAKING) {
                 continue;
             }

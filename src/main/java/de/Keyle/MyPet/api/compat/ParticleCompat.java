@@ -97,7 +97,7 @@ public class ParticleCompat {
             .search();
 
     /*
-            Block Data
+            方块数据
      */
 
     public static Compat<Object> RED_WOOL_DATA = new Compat<>()

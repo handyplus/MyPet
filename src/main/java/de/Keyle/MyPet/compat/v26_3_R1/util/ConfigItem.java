@@ -58,7 +58,7 @@ public class ConfigItem extends de.Keyle.MyPet.api.util.ConfigItem {
 
     @Override
     public void load(String data) {
-        // Assumption: This is just an item
+        // 前提假设：这里只是一个物品
         try {
             net.minecraft.world.item.ItemStack stack = ItemStackNBTConverter.vanillaCompoundToItemStack(TagParser.parseCompoundFully(data));
             this.item = CompatItemStack.asBukkitMirror(stack);
@@ -73,7 +73,7 @@ public class ConfigItem extends de.Keyle.MyPet.api.util.ConfigItem {
     public void load(MaterialHolder material, String data) {
         Identifier key = Identifier.tryParse(material.getId());
         Item item = BuiltInRegistries.ITEM.get(key).get().value();
-        //TODO AIR now?
+        //TODO 现在 AIR 是什么情况？
         if (item == null) {
             Block block = BuiltInRegistries.BLOCK.get(key).get().value();
             item = block.asItem();

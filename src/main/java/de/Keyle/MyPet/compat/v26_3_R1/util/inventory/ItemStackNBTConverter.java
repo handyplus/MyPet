@@ -63,9 +63,8 @@ public class ItemStackNBTConverter {
     }
 
     public static TagCompound itemStackToCompound(ItemStack itemStack) {
-        // Record which data version wrote this item (see ItemDataVersion). Only the saved
-        // compound is stamped; itemStackToVanillaCompound stays unstamped because item
-        // comparisons and config items use it.
+        // 记录写入该物品的数据版本（见 ItemDataVersion）。只有用于保存的 compound 会被打上标记；
+        // itemStackToVanillaCompound 保持不打标记，因为物品比较和配置物品会使用它。
         return ItemDataVersion.stamp((TagCompound) vanillaCompoundToCompound(itemStackToVanillaCompound(itemStack)), currentDataVersion());
     }
 
@@ -78,15 +77,15 @@ public class ItemStackNBTConverter {
         DataResult<Tag> res = ItemStack.CODEC.encodeStart(ops, itemStack);
         Tag out = res.result().orElseGet(CompoundTag::new);
 
-        // For ItemStack this will be a CompoundTag
+        // 对 ItemStack 而言这会是一个 CompoundTag
         return (out instanceof CompoundTag ct) ? ct : new CompoundTag();
     }
 
     public static ItemStack compoundToItemStack(TagCompound compound) {
         int stored = ItemDataVersion.read(compound);
         if (stored != ItemDataVersion.NONE) {
-            // Stamped item: run the data fixers from the version that saved it, then parse it
-            // without the stamp. If anything goes wrong, use the unchanged path below.
+            // 带标记的物品：从保存它的版本开始运行数据修复器，然后在不带标记的情况下解析它。
+            // 如果出现任何问题，则使用下面未做改动的路径。
             try {
                 CompoundTag tag = (CompoundTag) compoundToVanillaCompound(ItemDataVersion.withoutStamp(compound));
                 int server = currentDataVersion();
@@ -99,7 +98,7 @@ public class ItemStackNBTConverter {
                     return stack;
                 }
             } catch (RuntimeException ignored) {
-                // fall through to the unchanged path below
+                // 回退到下面未做改动的路径
             }
             compound = ItemDataVersion.withoutStamp(compound);
         }
@@ -116,8 +115,8 @@ public class ItemStackNBTConverter {
             return ItemStack.EMPTY;
         }
 
-        // quick air checks (defensive)
-        Optional<String> id = compoundTag.getString("id"); // returns "" if missing
+        // 快速检查是否为空气（防御性）
+        Optional<String> id = compoundTag.getString("id"); // 缺失时返回 ""
         if (id.isEmpty() || "minecraft:air".equals(id.get()) || "air".equals(id.get())) {
             return ItemStack.EMPTY;
         }
@@ -125,13 +124,13 @@ public class ItemStackNBTConverter {
         CompoundTag toParse = compoundTag;
         boolean modified = false;
 
-        // Check if this has the old "tag" format and needs DataFixer conversion
+        // 检查是否带有旧的 "tag" 格式，需要 DataFixer 转换
         if (toParse.contains("tag")) {
             toParse = convertOldVanillaCompound(toParse);
             modified = true;
         }
 
-        // If it has components but with old intermediate formats, fix them
+        // 如果有 components 但使用了旧的中间格式，则修复它们
         else if (toParse.contains("components")) {
             CompoundTag fixed = fixEnchantmentsFormat(toParse);
             if (!fixed.equals(toParse)) {
@@ -140,7 +139,7 @@ public class ItemStackNBTConverter {
             }
         }
 
-        // Output the corrected string if conversion happened
+        // 如果发生了转换，则输出修正后的字符串
         if (modified) {
             MyPetApi.getLogger().warning("Old item format detected! Update your item to the new format (make sure to include the period at the beginning):");
             MyPetApi.getLogger().warning(" . " + toParse);
@@ -159,7 +158,7 @@ public class ItemStackNBTConverter {
     private static CompoundTag fixEnchantmentsFormat(CompoundTag compoundTag) {
         CompoundTag result = compoundTag.copy();
 
-        // Check if components exists and has old-format enchantments
+        // 检查是否存在 components 且其附魔为旧格式
         if (result.contains("components")) {
             Optional<CompoundTag> componentsOpt = result.getCompound("components");
             if (componentsOpt.isEmpty()) {
@@ -168,13 +167,13 @@ public class ItemStackNBTConverter {
             CompoundTag components = componentsOpt.get().copy();
             boolean modified = false;
 
-            // Fix enchantments format
+            // 修复附魔格式
             if (components.contains("minecraft:enchantments")) {
                 Optional<CompoundTag> enchantmentsOpt = components.getCompound("minecraft:enchantments");
                 if (enchantmentsOpt.isPresent()) {
                     CompoundTag enchantments = enchantmentsOpt.get();
 
-                    // Check if it has the old format with "levels" and "show_in_tooltip"
+                    // 检查是否使用包含 "levels" 和 "show_in_tooltip" 的旧格式
                     if (enchantments.contains("levels")) {
                         Optional<CompoundTag> levelsOpt = enchantments.getCompound("levels");
                         if (levelsOpt.isPresent()) {
@@ -186,7 +185,7 @@ public class ItemStackNBTConverter {
                 }
             }
 
-            // Fix text components that are stored as strings (custom_name, lore, etc.)
+            // 修复以字符串形式存储的文本组件（custom_name、lore 等）
             modified |= fixTextComponent(components, "minecraft:custom_name");
             modified |= fixTextComponentList(components, "minecraft:lore");
 
@@ -203,7 +202,7 @@ public class ItemStackNBTConverter {
             Optional<String> textOpt = components.getString(key);
             if (textOpt.isPresent()) {
                 String text = textOpt.get();
-                // Check if it's a JSON string that needs to be parsed
+                // 检查是否为需要解析的 JSON 字符串
                 if (text.startsWith("{") && text.endsWith("}")) {
                     try {
                         CompoundTag parsed = TagParser.parseCompoundFully(text);
@@ -219,7 +218,7 @@ public class ItemStackNBTConverter {
     }
 
     private static boolean fixTextComponentList(CompoundTag components, String key) {
-        // Similar logic for lore (list of text components)
+        // lore 采用类似逻辑（文本组件列表）
         if (components.contains(key)) {
             Tag loreTag = components.get(key);
             if (loreTag instanceof ListTag loreList) {
@@ -356,16 +355,15 @@ public class ItemStackNBTConverter {
     }
 
     /**
-     * Convert Mojang list elements, upgrading bare StringTags to
-     * {@code {text: "..."}} CompoundTags when the list is predominantly
-     * compound.
+     * 转换 Mojang 列表中的元素：当列表以 compound 为主时，
+     * 将裸 StringTags 升级为 {@code {text: "..."}} CompoundTags。
      *
-     * Mojang's text-component codec (used for lore, custom_name, extra arg
-     * lists, etc.) can emit a ListTag that mixes StringTag elements (plain
-     * text components) with CompoundTag elements (styled components). NBT
-     * lists must be homogeneous on the wire, so knbt's TagList rejects mixed
-     * construction. Wrapping stray strings into {text: ...} compounds is the
-     * canonical Minecraft-text-component form and preserves the semantics.
+     * Mojang 的文本组件编解码器（用于 lore、custom_name、extra 参数
+     * 列表等）可能生成混合了 StringTag 元素（纯文本组件）和
+     * CompoundTag 元素（带样式的组件）的 ListTag。NBT 列表在
+     * 传输时必须同质，因此 knbt 的 TagList 会拒绝混合构建。
+     * 将零散字符串包装为 {text: ...} compound 是 Minecraft 文本
+     * 组件的规范形式，且能保持原有语义。
      */
     private static void normalizeMixedListElements(List<?> source, List<TagBase> out) {
         boolean hasCompound = false;

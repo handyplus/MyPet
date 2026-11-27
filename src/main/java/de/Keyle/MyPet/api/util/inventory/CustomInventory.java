@@ -49,46 +49,46 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * API-only inventory implementation
+ * 仅使用 API 的物品栏实现
  * <p>
- * This class provides methods for sizing, naming, persisting (to K-NBT),
- * and opening/closing the GUI for players. It avoids direct CraftBukkit/NMS
- * usage and should work across modern Bukkit/Paper versions.
+ * 该类提供设置大小、命名、持久化（到 K-NBT）以及为玩家打开/关闭 GUI 的
+ * 方法。它避免直接使用 CraftBukkit/NMS，应当能在各种现代
+ * Bukkit/Paper 版本上工作。
  * </p>
  */
 public class CustomInventory implements InventoryHolder {
     /**
-     * Bukkit inventory that stores the actual contents.
+     * 存储实际内容的 Bukkit 物品栏。
      */
     private Inventory bukkitInventory;
 
     /**
-     * Current display name (title) of the inventory GUI.
-     * Defaults to "Inventory".
+     * 物品栏 GUI 当前的显示名称（标题）。
+     * 默认为 "Inventory"。
      */
     @Getter
     private String name = "Inventory";
     /**
-     * Logical size of the inventory in slots. Always a multiple of 9 in the
-     * inclusive range [9, 54].
-     * Defaults to null.
+     * 物品栏的逻辑大小（以槽位计）。始终是 9 的倍数，且位于闭区间
+     * [9, 54] 内。
+     * 默认为 null。
      */
     @Getter
     private int size;
     /**
-     * Max stack size applied to the backing Bukkit inventory.
-     * Defaults to 64.
+     * 应用于底层 Bukkit 物品栏的最大堆叠数量。
+     * 默认为 64。
      */
     private int stackSize = 64;
     /**
-     * Auxiliary viewer list used to track open/close when the backing inventory
-     * may not yet be initialized.
+     * 辅助的查看者列表，用于在底层物品栏可能尚未初始化时
+     * 跟踪打开/关闭状态。
      */
     private final List<HumanEntity> transaction = new ArrayList<>();
 
 
     /**
-     * Track instances and register a single shared shutdown listener (no per-instance listeners)
+     * 跟踪实例并注册一个共享的关闭监听器（不为每个实例单独注册监听器）
      */
     private static final Set<CustomInventory> INSTANCES = Collections.newSetFromMap(new WeakHashMap<>());
     private static boolean LISTENER_REGISTERED = false;
@@ -103,8 +103,8 @@ public class CustomInventory implements InventoryHolder {
     };
 
     /**
-     * Ensures the shared shutdown listener is registered exactly once for the plugin.
-     * Thread-safe to guard against concurrent initialization.
+     * 确保该插件只注册一次共享的关闭监听器。
+     * 线程安全，防止并发初始化。
      */
     private static synchronized void ensureListener() {
         if (!LISTENER_REGISTERED) {
@@ -114,8 +114,8 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Closes all open inventories for all currently tracked CustomInventory instances.
-     * Invoked on plugin disable by the shared shutdown listener.
+     * 关闭当前跟踪的所有 CustomInventory 实例中已打开的物品栏。
+     * 由共享关闭监听器在插件禁用时调用。
      */
     static void closeAllOpen() {
         for (CustomInventory ci : new ArrayList<>(INSTANCES)) {
@@ -124,9 +124,9 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Creates a new CustomInventory instance and ensures the shared shutdown listener
-     * is registered. The instance is also tracked for lifecycle management so that
-     * all open inventories can be closed on plugin disable.
+     * 创建新的 CustomInventory 实例并确保共享关闭监听器
+     * 已完成注册。该实例也会被跟踪以便管理生命周期，从而在
+     * 插件禁用时能够关闭所有已打开的物品栏。
      */
     public CustomInventory() {
         ensureListener();
@@ -134,10 +134,10 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Convenience constructor to initialize size and name.
+     * 便捷构造器，用于初始化大小和名称。
      *
-     * @param size initial size in slots (will be normalized to a multiple of 9 and clamped [9,54])
-     * @param name initial GUI title (will be truncated to 64 chars if longer)
+     * @param size 初始大小（以槽位计，会被归一化为 9 的倍数并限制在 [9,54] 内）
+     * @param name 初始 GUI 标题（超过 64 个字符时会被截断）
      */
     public CustomInventory(int size, String name) {
         this();
@@ -146,20 +146,20 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Sets the inventory size in slots.
+     * 设置物品栏大小（以槽位计）。
      * <p>
-     * The value is clamped to a multiple of 9 between [9, 54]
+     * 该值会被限制为 [9, 54] 之间的 9 的倍数
      *
-     * @param newSize desired slot count
+     * @param newSize 期望的槽位数量
      */
     public void setSize(int newSize) {
         newSize = (int) (newSize / 9.);
         newSize *= 9;
         newSize = Util.clamp(newSize, 9, 54);
 
-        // Close every view of the old inventory before copying it. A viewer left on the
-        // old inventory keeps taking the original items out while the new inventory
-        // holds copies of them, which duplicates the whole backpack.
+        // 在复制旧物品栏之前关闭它的每个视图。若查看者停留在
+        // 旧物品栏上，他会继续取出原始物品，而新物品栏中保存的是
+        // 这些物品的副本，从而把整个背包复制一遍。
         List<HumanEntity> viewers = bukkitInventory != null
                 ? new ArrayList<>(bukkitInventory.getViewers())
                 : Collections.<HumanEntity>emptyList();
@@ -169,7 +169,7 @@ public class CustomInventory implements InventoryHolder {
 
         ItemStack[] old = bukkitInventory != null ? bukkitInventory.getContents() : null;
 
-        // Never shrink below what is needed to keep every stored stack.
+        // 缩小后的容量不得小于保存所有已存堆叠所需的数量。
         if (old != null) {
             int used = 0;
             for (ItemStack item : old) {
@@ -198,7 +198,7 @@ public class CustomInventory implements InventoryHolder {
                     moved.add(item);
                 }
             }
-            // Stacks from removed rows go into the first free slots.
+            // 被移除行中的堆叠会放入最前面的空槽位。
             for (ItemStack item : moved) {
                 int free = this.bukkitInventory.firstEmpty();
                 if (free < 0) {
@@ -216,17 +216,17 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Sets the inventory GUI title.
+     * 设置物品栏 GUI 标题。
      * <p>
-     * Renaming reconstructs the underlying Bukkit inventory to apply the new
-     * title while preserving contents and max stack size.
+     * 重命名会重建底层的 Bukkit 物品栏以应用新标题，
+     * 同时保留内容与最大堆叠数量。
      *
-     * @param name new title (null is ignored)
+     * @param name 新标题（null 会被忽略）
      */
     public void setName(String name) {
         if (name == null) return;
 
-        // Enforce reasonable title bounds and remove control chars
+        // 强制合理的标题长度并移除控制字符
         String cleaned = name.replaceAll("\\p{Cntrl}", "");
         String newName = cleaned.length() > 64 ? cleaned.substring(0, 64) : cleaned;
 
@@ -234,12 +234,12 @@ public class CustomInventory implements InventoryHolder {
 
         this.name = newName;
 
-        // If no backing inventory yet, we only cache the title
+        // 如果还没有底层物品栏，则只缓存标题
         if (bukkitInventory == null) {
             return;
         }
 
-        // Preserve contents and viewers, then rebuild inventory with the new title.
+        // 保留内容与查看者，然后用新标题重建物品栏。
         ItemStack[] contents = bukkitInventory.getContents();
         List<HumanEntity> viewers = new ArrayList<>(bukkitInventory.getViewers());
 
@@ -247,7 +247,7 @@ public class CustomInventory implements InventoryHolder {
         this.bukkitInventory.setMaxStackSize(this.stackSize);
         this.bukkitInventory.setContents(contents);
 
-        // Reopen for all viewers so the new title applies immediately.
+        // 为所有查看者重新打开，使新标题立即生效。
         for (HumanEntity viewer : viewers) {
             if (viewer instanceof Player) {
                 viewer.openInventory(this.bukkitInventory);
@@ -256,7 +256,7 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Creates a Bukkit inventory for this CustomInventory instance if one has not been created already.
+     * 如果尚未创建，则为该 CustomInventory 实例创建一个 Bukkit 物品栏。
      */
     private void createInventoryIfNeeded() {
         if (this.size <= 0) {
@@ -273,10 +273,10 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Gets the item currently stored at the given slot index.
+     * 获取给定槽位索引当前存储的物品。
      *
-     * @param i zero-based slot index
-     * @return the item at the slot or null if out of bounds, uninitialized, or empty
+     * @param i 从 0 开始的槽位索引
+     * @return 该槽位中的物品；若越界、未初始化或为空则返回 null
      */
     public ItemStack getItem(int i) {
         if (this.bukkitInventory == null) return null;
@@ -285,10 +285,10 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Sets the item for the specified slot.
+     * 设置指定槽位的物品。
      *
-     * @param i          zero-based slot index
-     * @param itemStack  the item to set (may be null to clear)
+     * @param i         从 0 开始的槽位索引
+     * @param itemStack  要设置的物品（可以为 null 以清空）
      */
     public void setItem(int i, ItemStack itemStack) {
         createInventoryIfNeeded();
@@ -298,13 +298,13 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Attempts to add the provided item stack to the inventory.
+     * 尝试把给定的物品堆叠加入物品栏。
      * <p>
-     * Delegates to Bukkit's Inventory#addItem and returns the number of items
-     * that could not be inserted due to lack of space.
+     * 委托给 Bukkit 的 Inventory#addItem，并返回因空间不足
+     * 而未能放入的物品数量。
      *
-     * @param itemAdd the stack to add (null or air results in 0 leftover)
-     * @return the amount that could not be added (0 if fully inserted)
+     * @param itemAdd 要添加的堆叠（为 null 或空气时剩余量为 0）
+     * @return 未能添加的数量（全部放入时为 0）
      */
     public int addItem(ItemStack itemAdd) {
         if (itemAdd == null || itemAdd.getType() == Material.AIR) {
@@ -324,20 +324,20 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Returns the underlying Bukkit Inventory instance for integration points
-     * that require direct access.
+     * 返回底层的 Bukkit Inventory 实例，供需要直接访问的
+     * 集成点使用。
      *
-     * @return the backing Bukkit inventory, creating it if needed
+     * @return 底层 Bukkit 物品栏，必要时会创建它
      */
     public Inventory getBukkitInventory() {
         return getInventory();
     }
 
     /**
-     * InventoryHolder contract. Returns the held Bukkit Inventory, creating it
-     * lazily if the size has been set. The holder is always this instance.
+     * InventoryHolder 契约。返回其持有的 Bukkit Inventory，若已设置大小
+     * 则延迟创建。持有者始终是该实例本身。
      *
-     * @return the held Bukkit inventory or null if size has not been set yet
+     * @return 持有的 Bukkit 物品栏；若尚未设置大小则返回 null
      */
     @Override
     public Inventory getInventory() {
@@ -345,10 +345,10 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Drops all non-air contents of this inventory into the world at the given
-     * location and clears the slots.
+     * 将该物品栏中所有非空气内容掉落到世界中给定位置，
+     * 并清空这些槽位。
      *
-     * @param loc the world location where items should be spawned (ignored if null or world missing)
+     * @param loc 物品应生成的世界位置（为 null 或缺少世界时忽略）
      */
     public void dropContentAt(Location loc) {
         createInventoryIfNeeded();
@@ -364,12 +364,12 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Removes up to the requested amount from the specified slot and returns
-     * the removed items as a separate stack.
+     * 从指定槽位中移除最多请求数量的物品，并把移除的物品
+     * 作为独立的堆叠返回。
      *
-     * @param slot     zero-based slot index
-     * @param subtract the maximum number of items to take from the slot
-     * @return a stack representing the removed items, or null if slot was empty/out of bounds
+     * @param slot     从 0 开始的槽位索引
+     * @param subtract 从该槽位取出的最大物品数量
+     * @return 表示被移除物品的堆叠；若槽位为空或越界则返回 null
      */
     public ItemStack removeItem(int slot, int subtract) {
         createInventoryIfNeeded();
@@ -391,9 +391,9 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Returns a copy of the current contents of the inventory.
+     * 返回物品栏当前内容的副本。
      *
-     * @return a mutable list containing the current slot contents (may include nulls)
+     * @return 包含当前槽位内容、可修改的列表（可能包含 null）
      */
     public List<ItemStack> getContents() {
         if (this.bukkitInventory == null) {
@@ -403,13 +403,13 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Serializes the inventory contents into the provided K-NBT compound.
+     * 将物品栏内容序列化到给定的 K-NBT 复合标签中。
      * <p>
-     * Each non-empty slot is stored as a Base64-encoded Bukkit ItemStack under
-     * the key "BukkitItem" along with its slot index.
+     * 每个非空槽位都以 Base64 编码的 Bukkit ItemStack 形式存储在键
+     * "BukkitItem" 下，同时记录其槽位索引。
      *
-     * @param compound destination compound to write into (must not be null)
-     * @return the same compound instance for chaining
+     * @param compound 要写入的目标复合标签（不能为 null）
+     * @return 同一个复合标签实例，便于链式调用
      */
     public TagCompound save(TagCompound compound) {
         createInventoryIfNeeded();
@@ -440,9 +440,9 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Restores inventory contents from the provided K-NBT compound created by {@link #save(TagCompound)}.
+     * 从 {@link #save(TagCompound)} 创建的 K-NBT 复合标签中恢复物品栏内容。
      *
-     * @param nbtTagCompound source compound containing an "Items" list
+     * @param nbtTagCompound 包含 "Items" 列表的源复合标签
      */
     public void load(TagCompound nbtTagCompound) {
         createInventoryIfNeeded();
@@ -454,7 +454,7 @@ public class CustomInventory implements InventoryHolder {
             TagByte slotTag = itemCompound.getAs("Slot", TagByte.class);
             TagString b64Tag = itemCompound.getAs("BukkitItem", TagString.class);
             if (slotTag == null || b64Tag == null) {
-                continue; // Skip items without required tags
+                continue; // 跳过缺少必需标签的物品
             }
             int slot = slotTag.getByteData();
             String b64 = b64Tag.getStringData();
@@ -475,20 +475,20 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Should be called when a player opens this inventory to keep the viewer
-     * list in sync while the underlying inventory may be lazily created.
+     * 当玩家打开该物品栏时应调用此方法，以在底层物品栏可能被延迟创建时
+     * 保持查看者列表同步。
      *
-     * @param who the human entity opening the inventory
+     * @param who 打开该物品栏的人类实体
      */
     public void onOpen(HumanEntity who) {
         this.transaction.add(who);
     }
 
     /**
-     * Should be called when a player closes this inventory to remove them from
-     * the tracked viewer list.
+     * 当玩家关闭该物品栏时应调用此方法，将其从跟踪的查看者列表中
+     * 移除。
      *
-     * @param who the human entity closing the inventory
+     * @param who 关闭该物品栏的人类实体
      */
     public void onClose(HumanEntity who) {
         this.transaction.remove(who);
@@ -496,7 +496,7 @@ public class CustomInventory implements InventoryHolder {
 
 
     /**
-     * Closes this inventory for all current viewers, if any.
+     * 为当前所有查看者关闭该物品栏（若有）。
      */
     public void close() {
         for (HumanEntity viewer : new ArrayList<>(getViewers())) {
@@ -505,9 +505,9 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Opens this inventory GUI for the specified player.
+     * 为指定玩家打开该物品栏 GUI。
      *
-     * @param player the player who should see the inventory
+     * @param player 应当看到该物品栏的玩家
      */
     public void open(Player player) {
         createInventoryIfNeeded();
@@ -518,40 +518,40 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Returns the current viewers of this inventory. If the backing inventory
-     * has not been created yet, falls back to the internally tracked openers.
+     * 返回该物品栏当前的查看者。如果底层物品栏尚未创建，
+     * 则回退到内部跟踪的打开者列表。
      *
-     * @return a list of human entities currently viewing this inventory
+     * @return 当前正在查看该物品栏的人类实体列表
      */
 
     public List<HumanEntity> getViewers() {
         if (bukkitInventory != null) return bukkitInventory.getViewers();
-        return new ArrayList<>(transaction); // soft fallback, no allocation
+        return new ArrayList<>(transaction); // 软回退，不额外分配
     }
 
     /**
-     * Returns the InventoryHolder for the backing inventory. Always {@code this}.
+     * 返回底层物品栏的 InventoryHolder。始终为 {@code this}。
      *
-     * @return this instance
+     * @return 该实例本身
      */
     public InventoryHolder getOwner() {
         return this;
     }
 
     /**
-     * Gets the maximum stack size used by the backing Bukkit inventory.
+     * 获取底层 Bukkit 物品栏使用的最大堆叠数量。
      *
-     * @return the max stack size (defaults to 64 before initialization)
+     * @return 最大堆叠数量（初始化前默认为 64）
      */
     public int getMaxStackSize() {
         return this.bukkitInventory != null ? this.bukkitInventory.getMaxStackSize() : this.stackSize;
     }
 
     /**
-     * Sets the maximum stack size applied to the backing Bukkit inventory and
-     * updates the cached value used before initialization.
+     * 设置应用于底层 Bukkit 物品栏的最大堆叠数量，并更新
+     * 初始化前使用的缓存值。
      *
-     * @param i the new max stack size
+     * @param i 新的最大堆叠数量
      */
     public void setMaxStackSize(int i) {
         this.stackSize = i;
@@ -562,11 +562,11 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Removes and returns the item currently in the specified slot without
-     * triggering any additional logic.
+     * 移除并返回指定槽位中当前的物品，不触发任何
+     * 额外逻辑。
      *
-     * @param i zero-based slot index
-     * @return the previous item in the slot or null if empty/out of bounds
+     * @param i 从 0 开始的槽位索引
+     * @return 该槽位之前的物品；若为空或越界则返回 null
      */
     public ItemStack removeItemNoUpdate(int i) {
         createInventoryIfNeeded();
@@ -578,9 +578,9 @@ public class CustomInventory implements InventoryHolder {
     }
 
     /**
-     * Checks whether the inventory contains no items (all slots null or air).
+     * 检查物品栏是否不包含任何物品（所有槽位为 null 或空气）。
      *
-     * @return true if inventory has no meaningful items; false otherwise
+     * @return 如果物品栏中没有有效物品则返回 true，否则返回 false
      */
     public boolean isEmpty() {
         if (this.bukkitInventory == null) {

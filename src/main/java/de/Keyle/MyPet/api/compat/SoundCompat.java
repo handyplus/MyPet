@@ -28,9 +28,9 @@ import java.lang.reflect.Method;
 
 public class SoundCompat {
 
-    // Resolved once at class load: org.bukkit.Sound keeps a static valueOf(String)
-    // whether it is an enum (<= 1.21.2) or an interface (1.21.3+), so a single
-    // reflective lookup serves every supported server. null only if it is absent.
+    // 在类加载时解析一次：无论 org.bukkit.Sound 是枚举（<= 1.21.2）还是接口（1.21.3+），
+    // 都保留了静态的 valueOf(String)，因此一次反射查找即可服务于所有受支持的服务端。
+    // 仅当该方法不存在时才为 null。
     private static final Method SOUND_VALUE_OF = resolveSoundValueOf();
 
     private static Method resolveSoundValueOf() {
@@ -73,27 +73,26 @@ public class SoundCompat {
             .search();
 
     /**
-     * Plays a sound resolved from a version-specific {@link Sound} constant name
-     * (as produced by the {@code Compat<String>} fields above) without baking a
-     * static reference to {@link Sound#valueOf(String)} into the bytecode.
+     * 播放由与版本相关的 {@link Sound} 常量名解析出的音效
+     * （即上面那些 {@code Compat<String>} 字段生成的值），同时不会把对
+     * {@link Sound#valueOf(String)} 的静态引用固化进字节码中。
      * <p>
-     * {@code org.bukkit.Sound} changed kind across Minecraft versions: it is an
-     * {@code enum} up to ~1.21.2 and an {@code interface} (with a static
-     * {@code valueOf} kept for source-compat) from 1.21.3 on. A compiled
-     * {@code Sound.valueOf} call carries the constant-pool tag of whichever API
-     * it was built against — {@code Methodref} for the enum, {@code
-     * InterfaceMethodref} for the interface. When that tag disagrees with the
-     * {@code Sound} kind on the running server the JVM throws
-     * {@link IncompatibleClassChangeError} while linking the call.
+     * 随着 Minecraft 版本的演进，{@code org.bukkit.Sound} 的类型发生了改变：
+     * 在约 1.21.2 及之前它是 {@code enum}，从 1.21.3 起则是 {@code interface}
+     * （为保持源码兼容而保留了静态的 {@code valueOf}）。编译后的
+     * {@code Sound.valueOf} 调用会携带它编译时所针对的 API 的常量池标签——
+     * 枚举为 {@code Methodref}，接口为 {@code InterfaceMethodref}。当该标签
+     * 与运行中服务端的 {@code Sound} 类型不一致时，JVM 在链接该调用时会抛出
+     * {@link IncompatibleClassChangeError}。
      * <p>
-     * Resolving {@code valueOf} reflectively sidesteps the static call entirely,
-     * so the sound resolves correctly whether {@code Sound} is an enum or an
-     * interface at runtime, on every supported version (1.8 through current).
+     * 通过反射解析 {@code valueOf} 可以完全绕开静态调用，因此无论在运行时
+     * {@code Sound} 是枚举还是接口，在所有受支持版本（1.8 至当前版本）上
+     * 都能正确解析音效。
      *
-     * @param location  where to play the sound (ignored if {@code null} or worldless)
-     * @param soundName the {@link Sound} constant name, e.g. from {@link #LEVEL_UP}
-     * @param volume    the sound volume
-     * @param pitch     the sound pitch
+     * @param location  播放音效的位置（若为 {@code null} 或没有世界则忽略）
+     * @param soundName {@link Sound} 常量名，例如来自 {@link #LEVEL_UP}
+     * @param volume    音效音量
+     * @param pitch     音效音调
      */
     public static void play(Location location, String soundName, float volume, float pitch) {
         if (location == null || location.getWorld() == null || soundName == null || SOUND_VALUE_OF == null) {
@@ -103,9 +102,9 @@ public class SoundCompat {
             Sound sound = (Sound) SOUND_VALUE_OF.invoke(null, soundName);
             location.getWorld().playSound(location, sound, volume, pitch);
         } catch (Throwable t) {
-            // Unknown constant for this version, or an unexpected linkage error:
-            // skip the sound rather than aborting the surrounding event, but keep
-            // a broken Compat mapping diagnosable instead of failing silently.
+            // 该版本中未知的常量，或意外的链接错误：
+            // 跳过该音效而不是中断外层事件，但保留对错误 Compat 映射的可诊断性，
+            // 而不是静默失败。
             MyPetApi.getLogger().warning("Could not play sound '" + soundName + "': " + t);
         }
     }

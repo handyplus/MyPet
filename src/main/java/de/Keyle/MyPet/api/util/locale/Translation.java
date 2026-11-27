@@ -36,8 +36,8 @@ import java.util.jar.JarFile;
 
 public class Translation {
     /**
-     * Locale every other language falls back to when a key is missing.
-     * Only Chinese translations are shipped with this build.
+     * 当某个键缺失时，其他所有语言都会回退到的默认语言。
+     * 该构建版本只附带中文翻译。
      */
     public static final String DEFAULT_LANGUAGE = "zh";
 
@@ -114,7 +114,7 @@ public class Translation {
             }
             return Colorizer.setColors(translatedPhrase);
         }
-        // translations are already colored when the locale is loaded
+        // 语言文件加载时翻译内容已经带有颜色代码
         return translatedPhrase;
     }
 

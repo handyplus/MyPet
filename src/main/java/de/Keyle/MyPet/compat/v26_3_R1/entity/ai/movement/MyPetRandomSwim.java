@@ -31,19 +31,18 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * AI goal that makes aquatic Pets swim randomly near their stationary owner.
+ * AI goal：让水生宠物在静止的主人附近随机游动。
  *
- * <p>This goal extends {@link MyPetRandomStroll} to provide specialized underwater wandering
- * behavior for aquatic Pets (fish, dolphins, axolotls, etc.). Aquatic Pets have a moderate
- * chance of wandering (6% versus 2%) and use water-pathfindable position generation.
+ * <p>该 goal 继承 {@link MyPetRandomStroll}，为水生宠物（鱼、海豚、美西螈等）提供专门的
+ * 水下漫步行为。水生宠物的漫步概率适中（6% 对 2%），并使用可在水中寻路的位置生成方式。
  *
- * <p>Key differences from ground strolling:
+ * <p>与地面漫步的主要区别：
  * <ul>
- *   <li>Uses water-pathfindable position generation when both Pet and owner are in water</li>
- *   <li>Larger wander radius (3-10 blocks horizontal, 2-7 vertical) for natural swimming</li>
- *   <li>Higher wander chance (6%) for more active swimming behavior</li>
- *   <li>Faster speeds (0.25-0.35) to account for water resistance</li>
- *   <li>Falls back to land strolling when Pet is not in water</li>
+ *   <li>当宠物与主人都在水中时，使用可在水中寻路的位置生成方式</li>
+ *   <li>更大的漫步半径（水平 3-10 格、垂直 2-7 格），使游动更自然</li>
+ *   <li>更高的漫步概率（6%），游动更活跃</li>
+ *   <li>更快的速度（0.25-0.35），以抵消水的阻力</li>
+ *   <li>宠物不在水中时回退到地面漫步</li>
  * </ul>
  *
  * @see MyPetRandomStroll
@@ -52,95 +51,95 @@ import net.minecraft.world.phys.Vec3;
 @Compat("v26_3_R1")
 public class MyPetRandomSwim extends MyPetRandomStroll {
 
-	// ==================== TUNABLE CONSTANTS ====================
-	// These values control aquatic Pet random swim behavior.
-	// All distance values are in blocks, speeds are in blocks/tick unless noted.
+	// ==================== 可调常量 ====================
+	// 这些数值控制水生宠物的随机游动行为。
+	// 除非另行说明，所有距离值单位为格，速度单位为格/tick。
 
 	// -------------------------------------------------------------------------
-	// SWIM ACTIVATION - Parameters controlling when swimming starts
+	// 游动激活 - 控制游动何时开始的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Probability (0.0-1.0) of starting a swim each tick when conditions are met.
-	 * Value of 0.06 means 6% chance per tick - 3x higher than ground Pets.
-	 * Creates moderately active swimming appropriate for aquatic creatures.
+	 * 条件满足时，每 tick 开始一次游动的概率（0.0-1.0）。
+	 * 取 0.06 表示每 tick 有 6% 概率 - 是地面宠物的 3 倍。
+	 * 营造适合水生生物的适度活跃游动。
 	 */
 	private static final float SWIM_STROLL_CHANCE = 0.06F;
 
 	// -------------------------------------------------------------------------
-	// SWIM POSITION GENERATION - Parameters for underwater target selection
+	// 游动位置生成 - 水下目标选择的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Horizontal swim radius (blocks) when owner is stationary.
-	 * Aquatic Pets use slightly larger radius than flying Pets since
-	 * water environments tend to be more open.
+	 * 主人静止时的水平游动半径（格）。
+	 * 水生宠物会使用比飞行宠物稍大的半径，因为
+	 * 水域环境通常更为开阔。
 	 */
 	private static final int SWIM_WANDER_RADIUS_STATIONARY = 3;
 
 	/**
-	 * Horizontal swim radius (blocks) when owner is moving.
-	 * Large radius (10 blocks) allows natural long-distance swimming.
+	 * 主人移动时的水平游动半径（格）。
+	 * 较大的半径（10 格）允许自然的长距离游动。
 	 */
 	private static final int SWIM_WANDER_RADIUS_MOVING = 10;
 
 	/**
-	 * Vertical swim radius (blocks) when owner is stationary.
-	 * Controls depth variation during idle swimming.
+	 * 主人静止时的垂直游动半径（格）。
+	 * 控制空闲游动时的深度变化。
 	 */
 	private static final int SWIM_WANDER_VERTICAL_STATIONARY = 2;
 
 	/**
-	 * Vertical swim radius (blocks) when owner is moving.
-	 * Large radius (7 blocks) allows natural depth changes.
+	 * 主人移动时的垂直游动半径（格）。
+	 * 较大的半径（7 格）允许自然的水深变化。
 	 */
 	private static final int SWIM_WANDER_VERTICAL_MOVING = 7;
 
 	/**
-	 * Maximum squared distance (blocks²) from Pet's current position for swim targets when stationary.
-	 * Value of 9.0 = 3 blocks. Keeps swimming contained.
+	 * 静止时，游动目标距宠物当前位置的最大距离平方（格²）。
+	 * 值 9.0 = 3 格。使游动保持在有限范围内。
 	 */
 	private static final double SWIM_WANDER_MAX_DIST_SQ_FROM_PET_STATIONARY = 9.0;
 
 	/**
-	 * Maximum squared distance (blocks²) from Pet's current position when owner is moving.
-	 * Value of 16.0 = 4 blocks. Allows longer swim distances.
+	 * 主人移动时，游动目标距宠物当前位置的最大距离平方（格²）。
+	 * 值 16.0 = 4 格。允许更长的游动距离。
 	 */
 	private static final double SWIM_WANDER_MAX_DIST_SQ_FROM_PET_MOVING = 16.0;
 
 	/**
-	 * Maximum attempts to find a valid swim position before giving up.
-	 * Same as other Pet types for consistency.
+	 * 放弃前寻找有效游动位置的最大尝试次数。
+	 * 为保持一致，与其他宠物类型相同。
 	 */
 	private static final int SWIM_WANDER_MAX_ATTEMPTS = 5;
 
 	/**
-	 * Maximum iterations for water position validation in {@link #makeWaterPos}.
-	 * Higher than wander attempts because water pathfinding is more constrained.
+	 * {@link #makeWaterPos} 中水位置验证的最大迭代次数。
+	 * 比漫步尝试次数更高，因为水中寻路的限制更多。
 	 */
 	private static final int WATER_POS_MAX_ITERATIONS = 10;
 
 	// -------------------------------------------------------------------------
-	// SWIM SPEED - Parameters for underwater movement
+	// 游动速度 - 水下移动的参数
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Movement speed (blocks/tick) for swimming when owner is stationary.
-	 * Higher than ground Pets (0.15) to compensate for water drag.
+	 * 主人静止时的游动速度（格/tick）。
+	 * 高于地面宠物（0.15），以抵消水的阻力。
 	 */
 	private static final double SWIM_SPEED_STATIONARY = 0.25;
 
 	/**
-	 * Movement speed (blocks/tick) for swimming when owner is moving.
-	 * Higher than stationary to keep up, but still relaxed.
+	 * 主人移动时的游动速度（格/tick）。
+	 * 高于静止时的速度以便跟上主人，但依然放松。
 	 */
 	private static final double SWIM_SPEED_MOVING = 0.35;
 
 	/**
-	 * Creates a new random swim AI goal for the specified aquatic Pet.
+	 * 为指定水生宠物创建新的随机游动 AI goal。
 	 *
-	 * @param petEntity     the aquatic Pet entity
-	 * @param startDistance maximum distance from owner for swimming (will be squared by parent)
+	 * @param petEntity     水生宠物实体
+	 * @param startDistance 游动时与主人的最大距离（父类会对其求平方）
 	 */
 	public MyPetRandomSwim(EntityMyPet petEntity, int startDistance) {
 		super(petEntity, startDistance);
@@ -148,20 +147,20 @@ public class MyPetRandomSwim extends MyPetRandomStroll {
 	}
 
 	/**
-	 * Generates a random underwater position for the aquatic Pet to swim toward.
+	 * 为水生宠物生成一个随机水下位置作为游动目标。
 	 *
-	 * <p>When both the Pet and owner are in water, uses specialized water position
-	 * generation with larger radii (3-10 horizontal, 2-7 vertical when owner is moving).
-	 * Falls back to parent's land position generation when not in water.
+	 * <p>当宠物与主人都在水中时，使用专门的水位置生成方式，
+	 * 并采用更大的半径（主人移动时水平 3-10 格、垂直 2-7 格）。
+	 * 不在水中时回退到父类的地面位置生成方式。
 	 *
-	 * @return a valid swim target position, or {@code null} if no suitable position found
+	 * @return 有效的游动目标位置；若找不到合适位置则返回 {@code null}
 	 */
 	@Override
 	protected Vec3 getPosition() {
 		boolean petInWater = petEntity.isInWater() || petEntity.getInBlockState().is(Blocks.BUBBLE_COLUMN);
 		boolean ownerInWater = owner.isInWater() || owner.getInBlockState().is(Blocks.BUBBLE_COLUMN);
 
-		// ownerStationary is already set by parent's updateOwnerMovementTracking() in shouldStart()
+		// ownerStationary 已由父类在 shouldStart() 中的 updateOwnerMovementTracking() 设置
 		int horizontalRadius = ownerStationary ? SWIM_WANDER_RADIUS_STATIONARY : SWIM_WANDER_RADIUS_MOVING;
 		int verticalRadius = ownerStationary ? SWIM_WANDER_VERTICAL_STATIONARY : SWIM_WANDER_VERTICAL_MOVING;
 		double maxDistSqFromOwner = ownerStationary ? STATIONARY_MAX_DIST_SQ : (double) startDistance;
@@ -187,15 +186,15 @@ public class MyPetRandomSwim extends MyPetRandomStroll {
 	}
 
 	/**
-	 * Generates a water-pathfindable position for swimming.
+	 * 生成一个可在水中寻路的游动位置。
 	 *
-	 * <p>Attempts up to 10 iterations to find a position that is pathfindable through water
-	 * and has liquid above it (ensuring the Pet can actually swim there).
+	 * <p>最多迭代 10 次，以寻找一个可通过水寻路且其上方有液体的位置
+	 * （确保宠物确实能游到那里）。
 	 *
-	 * @param mob              the pathfinder mob to generate position for
-	 * @param horizontalRadius horizontal search radius
-	 * @param verticalRadius   vertical search radius
-	 * @return a water-pathfindable position, or the last generated position
+	 * @param mob              要为其生成位置的寻路生物
+	 * @param horizontalRadius 水平搜索半径
+	 * @param verticalRadius   垂直搜索半径
+	 * @return 可在水中寻路的位置；否则返回最后生成的位置
 	 */
 	private Vec3 makeWaterPos(PathfinderMob mob, int horizontalRadius, int verticalRadius) {
 		Vec3 position = generateRandomPosition(mob, horizontalRadius, verticalRadius);
@@ -224,12 +223,12 @@ public class MyPetRandomSwim extends MyPetRandomStroll {
 	}
 
 	/**
-	 * Generates a random position using the NMS random position utilities.
+	 * 使用 NMS 的随机位置工具生成一个随机位置。
 	 *
-	 * @param mob              the pathfinder mob
-	 * @param horizontalRadius horizontal search radius
-	 * @param verticalRadius   vertical search radius
-	 * @return a randomly generated position vector
+	 * @param mob              寻路生物
+	 * @param horizontalRadius 水平搜索半径
+	 * @param verticalRadius   垂直搜索半径
+	 * @return 随机生成的位置向量
 	 */
 	private static Vec3 generateRandomPosition(PathfinderMob mob, int horizontalRadius, int verticalRadius) {
 		return RandomPos.generateRandomPos(mob, () -> {
@@ -239,13 +238,13 @@ public class MyPetRandomSwim extends MyPetRandomStroll {
 	}
 
 	/**
-	 * Validates and returns a position toward the given direction if it meets all constraints.
+	 * 若满足全部约束，则校验并返回朝向给定方向的位置。
 	 *
-	 * @param entitycreature the pathfinder mob
-	 * @param i              search radius
-	 * @param flag           whether the mob is restricted
-	 * @param blockposition  target direction
-	 * @return the validated position, or {@code null} if invalid
+	 * @param entitycreature 寻路生物
+	 * @param i              搜索半径
+	 * @param flag           该生物是否受限
+	 * @param blockposition  目标方向
+	 * @return 校验通过的位置；若无效则返回 {@code null}
 	 */
 	private static BlockPos generateRandomPosTowardDirection(PathfinderMob entitycreature, int i, boolean flag, BlockPos blockposition) {
 		BlockPos lePos = RandomPos.generateRandomPosTowardDirection(entitycreature, i, entitycreature.getRandom(), blockposition);
@@ -253,15 +252,15 @@ public class MyPetRandomSwim extends MyPetRandomStroll {
 	}
 
 	/**
-	 * Applies the movement speed for idle swimming.
+	 * 应用空闲游动时的移动速度。
 	 *
-	 * <p>When in water, uses faster speeds than ground Pets to compensate for water resistance:
+	 * <p>在水中时使用比地面宠物更快的速度，以抵消水的阻力：
 	 * <ul>
-	 *   <li>Stationary owner: 0.25 (calm swimming)</li>
-	 *   <li>Moving owner: 0.35 (active swimming)</li>
+	 *   <li>主人静止：0.25（平缓游动）</li>
+	 *   <li>主人移动：0.35（活跃游动）</li>
 	 * </ul>
 	 *
-	 * <p>Falls back to parent's land speed when the Pet is not in water.
+	 * <p>宠物不在水中时回退到父类的地面速度。
 	 */
 	@Override
 	protected void applySpeed() {

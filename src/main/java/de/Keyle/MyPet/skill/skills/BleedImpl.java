@@ -104,7 +104,7 @@ public class BleedImpl implements Bleed {
 
     @Override
     public boolean trigger() {
-        // A bleed tick is a pet-attributed hit; it must not start or extend a bleed itself.
+        // 流血持续伤害的每一次 tick 都算作宠物造成的攻击；它本身不得触发或延长流血效果。
         if (ticking) {
             return false;
         }
@@ -120,23 +120,23 @@ public class BleedImpl implements Bleed {
         int intervalTicks = interval.getValue() * 20;
 
         if (existing != null) {
-            // Refresh + extend: add remaining duration to new duration
-            // Never more than twice the configured duration, so repeated hits cannot keep
-            // a target bleeding forever.
+            // 刷新并延长：把剩余持续时间加到新的持续时间上
+            // 总时长绝不超过配置持续时间的两倍，从而多次命中也不会让
+            // 目标无限期地持续流血。
             int remainingSeconds = existing.remainingTicks / 20;
             int newDurationSeconds = Math.min(duration.getValue() + remainingSeconds, duration.getValue() * 2);
             existing.refresh(target, damageValue, intervalTicks, newDurationSeconds * 20);
         } else {
-            // Create new bleed effect and apply first damage immediately
+            // 创建新的流血效果并立即造成第一次伤害
             BleedEffect effect = new BleedEffect(target, damageValue, intervalTicks, duration.getValue() * 20);
             activeEffects.put(targetId, effect);
 
-            // Apply first bleed damage immediately on hit
+            // 命中时立即造成第一次流血伤害
             LivingEntity petEntity = myPet.getEntity().map(e -> (LivingEntity) e).orElse(null);
             effect.applyDamage(petEntity);
         }
 
-        // Start the bleed task if not already running
+        // 若流血任务尚未启动则启动它
         startBleedTask();
     }
 
@@ -150,7 +150,7 @@ public class BleedImpl implements Bleed {
             public void run() {
                 processBleedEffects();
 
-                // Stop task if no more effects
+                // 若已无任何流血效果则停止任务
                 if (activeEffects.isEmpty()) {
                     stopBleedTask();
                 }
@@ -166,7 +166,7 @@ public class BleedImpl implements Bleed {
     }
 
     private void processBleedEffects() {
-        // Get pet entity if available (may be null if pet died)
+        // 获取宠物实体（若宠物已死亡则可能为 null）
         LivingEntity petEntity = myPet.getEntity().map(e -> (LivingEntity) e).orElse(null);
 
         Iterator<Map.Entry<UUID, BleedEffect>> iterator = activeEffects.entrySet().iterator();
@@ -175,26 +175,26 @@ public class BleedImpl implements Bleed {
             Map.Entry<UUID, BleedEffect> entry = iterator.next();
             BleedEffect effect = entry.getValue();
 
-            // Check if the target is still valid
+            // 检查目标是否仍然有效
             if (!effect.isTargetValid()) {
                 iterator.remove();
                 continue;
             }
 
-            // Check if the effect has expired
+            // 检查该效果是否已过期
             if (effect.isExpired()) {
                 iterator.remove();
                 continue;
             }
 
-            // Re-check protection every tick: the target may have moved into a PvP-off or
-            // protected area since the hit, where the pet could not attack it.
+            // 每个 tick 都要重新检查保护状态：目标可能在命中之后进入了关闭 PvP 的或
+            // 受保护的区域，在那里宠物无法攻击它。
             if (!SkillDamageCheck.canDamage(myPet, effect.target)) {
                 iterator.remove();
                 continue;
             }
 
-            // Process tick (petEntity may be null if pet died - damage continues without attribution)
+            // 处理一次 tick（若宠物已死亡则 petEntity 可能为 null —— 此时伤害继续但不归属宠物）
             ticking = true;
             try {
                 effect.tick(petEntity);
@@ -206,8 +206,8 @@ public class BleedImpl implements Bleed {
 
     @Override
     public void schedule() {
-        // Bleed uses its own Bukkit task for persistence through pet death
-        // This method is kept for interface compliance but does nothing
+        // 流血使用自己的 Bukkit 任务，以便在宠物死亡后仍能持续
+        // 此方法仅为满足接口要求而保留，不做任何事
     }
 
     @Override
@@ -222,7 +222,7 @@ public class BleedImpl implements Bleed {
     }
 
     /**
-     * Inner class representing an active bleed effect on a target entity
+     * 内部类，表示目标实体上正在生效的流血效果
      */
     private static class BleedEffect {
         private LivingEntity target;
@@ -236,7 +236,7 @@ public class BleedImpl implements Bleed {
             this.damagePerTick = damagePerTick;
             this.intervalTicks = intervalTicks;
             this.remainingTicks = durationTicks;
-            this.ticksSinceLastDamage = 0; // First damage applied in apply(), start interval fresh
+            this.ticksSinceLastDamage = 0; // 首次伤害在 apply() 中施加，因此重置间隔计时
         }
 
         public void refresh(LivingEntity target, double newDamage, int newIntervalTicks, int newDurationTicks) {
@@ -244,11 +244,11 @@ public class BleedImpl implements Bleed {
             this.damagePerTick = newDamage;
             this.intervalTicks = newIntervalTicks;
             this.remainingTicks = newDurationTicks;
-            // Don't reset ticksSinceLastDamage to maintain damage rhythm
+            // 不重置 ticksSinceLastDamage，以维持伤害节奏
         }
 
         public void tick(LivingEntity petEntity) {
-            remainingTicks -= 20; // Called every second (20 ticks)
+            remainingTicks -= 20; // 每秒调用一次（20 ticks）
             ticksSinceLastDamage += 20;
 
             if (ticksSinceLastDamage >= intervalTicks) {
@@ -262,14 +262,14 @@ public class BleedImpl implements Bleed {
                 return;
             }
 
-            // Apply damage - with pet attribution if available, otherwise just raw damage
+            // 施加伤害 - 若有宠物则归属到宠物，否则只造成无归属的原始伤害
             if (petEntity != null) {
                 target.damage(damagePerTick, petEntity);
             } else {
                 target.damage(damagePerTick);
             }
 
-            // Play red block particles for blood effect
+            // 播放红色方块粒子以模拟血液效果
             MyPetApi.getPlatformHelper().playParticleEffect(
                     target.getLocation().add(0, 1, 0),
                     ParticleCompat.BLOCK_CRACK.get(),

@@ -25,32 +25,32 @@ import de.Keyle.MyPet.util.nbt.*;
 import java.util.Map;
 
 /**
- * The {@code DataVersion} stamp on saved item compounds.
+ * 保存在已保存物品复合标签上的 {@code DataVersion} 标记。
  * <p>
- * Vanilla item NBT carries no version of its own, so a reader cannot tell which Minecraft
- * version wrote it and has to guess from the compound's shape before running the data
- * fixers. MyPet therefore writes the server's data version next to the item, as a top-level
- * int {@code DataVersion} (the same key vanilla uses on chunks and entities), and uses it as
- * the start version for the data fixers when the item is loaded again. MyPet 4's MyPet 3
- * importer reads the same key.
+ * 原版物品 NBT 本身不携带版本信息，因此读取方无法判断是哪个 Minecraft
+ * 版本写入的，只能在运行数据修复器（data fixers）之前根据复合标签的
+ * 结构去猜测。MyPet 因此把服务器的数据版本与物品一起写入，作为顶层
+ * int 类型的 {@code DataVersion}（与原版用于区块和实体的键相同），并在
+ * 再次加载该物品时把它用作数据修复器的起始版本。MyPet 4 的 MyPet 3
+ * 导入器也会读取同一个键。
  * <p>
- * Only items saved by Minecraft 1.13 or newer are stamped; older items are recognised by
- * their shape. Air is never stamped.
+ * 只有 Minecraft 1.13 或更高版本保存的物品才会被标记；更早的物品按其
+ * 结构识别。空气永远不会被标记。
  */
 public final class ItemDataVersion {
 
     public static final String KEY = "DataVersion";
 
-    /** Returned by {@link #read} when an item carries no stamp. */
+    /** 当物品不带标记时由 {@link #read} 返回。 */
     public static final int NONE = -1;
 
     private ItemDataVersion() {
     }
 
     /**
-     * Writes {@code dataVersion} onto a saved, non-empty item compound.
+     * 将 {@code dataVersion} 写入一个已保存的非空物品复合标签。
      *
-     * @return the same compound
+     * @return 同一个复合标签
      */
     public static TagCompound stamp(TagCompound item, int dataVersion) {
         if (item == null || dataVersion <= 0 || isAir(item)) {
@@ -61,7 +61,7 @@ public final class ItemDataVersion {
     }
 
     /**
-     * @return the stored data version, or {@link #NONE} if the item has no usable stamp
+     * @return 存储的数据版本；如果物品没有可用的标记则返回 {@link #NONE}
      */
     public static int read(TagCompound item) {
         if (item == null) {
@@ -85,15 +85,15 @@ public final class ItemDataVersion {
     }
 
     /**
-     * The version to start the data fixers from: the stored one, but never past the running
-     * server, whose fixers cannot run backwards.
+     * 数据修复器应使用的起始版本：取已存储的版本，但不会超过当前运行的
+     * 服务器版本，因为服务器的修复器无法向后运行。
      */
     public static int startVersion(int stored, int serverDataVersion) {
         return Math.min(stored, serverDataVersion);
     }
 
     /**
-     * @return a shallow copy of the item without the stamp, ready for the vanilla parser
+     * @return 该物品的浅拷贝，不含标记，可直接交给原版解析器
      */
     public static TagCompound withoutStamp(TagCompound item) {
         TagCompound copy = new TagCompound();
@@ -108,8 +108,8 @@ public final class ItemDataVersion {
     private static boolean isAir(TagCompound item) {
         TagBase id = item.getCompoundData().get("id");
         if (!(id instanceof TagString)) {
-            // Pre-1.13 numeric ids never reach here; a compound without a string id is not
-            // an item the codec wrote, so leave it alone.
+            // 1.13 之前的数字 ID 不会走到这里；没有字符串 id 的复合标签并非
+            // 编解码器写入的物品，因此保持原样。
             return true;
         }
         String value = ((TagString) id).getStringData();

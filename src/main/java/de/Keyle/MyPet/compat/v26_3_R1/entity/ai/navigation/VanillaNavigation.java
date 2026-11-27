@@ -78,7 +78,7 @@ public class VanillaNavigation extends AbstractNavigation {
 
 	@Override
 	public void tick() {
-		//This switches between movesets enabling the pet to move naturally on land and water
+		//在陆地与水中切换移动模式（movesets），让宠物的移动更自然
 		EntityMyPet petEntity = (EntityMyPet) this.entityMyPet;
 		if((petEntity.isInWater() || petEntity.getInBlockState().is(Blocks.BUBBLE_COLUMN)) && this.entityMyPet instanceof EntityMyAquaticPet
 				&& !(petEntity.getMoveControl() instanceof MyPetAquaticMoveControl)) {

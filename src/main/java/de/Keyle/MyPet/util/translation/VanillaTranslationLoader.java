@@ -53,19 +53,17 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * Fetches Mojang's vanilla translation files at runtime from launcher meta +
- * the asset CDN, parses out the {@code entity.minecraft.*} rows, and keeps an
- * in-memory locale-tag &rarr; key &rarr; translated-string map that
- * {@link #resolveEntityName(String, String)} reads.
+ * 在运行时从启动器 meta + 资源 CDN 获取 Mojang 的原版翻译文件，
+ * 解析出 {@code entity.minecraft.*} 条目，并维护一个内存中的
+ * 语言标签 &rarr; 键 &rarr; 翻译字符串 映射，供
+ * {@link #resolveEntityName(String, String)} 读取。
  *
- * <p>Failure modes (offline server, Mojang CDN down, MC version missing from
- * the manifest, malformed JSON) are absorbed: the loader logs a warning and
- * the resolver falls through to {@link #englishFromBukkitName(String)} which
- * mechanically derives an English string from the Bukkit entity name.</p>
+ * <p>各种失败情形（离线服务器、Mojang CDN 宕机、清单中缺少 MC 版本、
+ * JSON 格式错误）都会被吸收处理：加载器记录一条警告，解析器则回退到
+ * {@link #englishFromBukkitName(String)}，由它从 Bukkit 实体名称机械推导出英文名称。</p>
  *
- * <p>No data is ever bundled with the plugin JAR. The plugin acts as an
- * asset-fetching agent on behalf of the running server, using the same public
- * endpoints the official launcher uses.</p>
+ * <p>插件 JAR 中从不打包任何数据。插件代表正在运行的服务器充当
+ * 资源获取代理，使用的是官方启动器所用的同一批公开接口。</p>
  */
 public final class VanillaTranslationLoader {
 
@@ -85,12 +83,12 @@ public final class VanillaTranslationLoader {
     private static final Pattern MC_VERSION_RE = Pattern.compile("\\d+\\.\\d+(?:\\.\\d+)?");
     private static final Pattern SHA1_HEX_RE = Pattern.compile("[0-9a-fA-F]{40}");
 
-    // locale-tag (e.g. "de_de") -> translation-key -> translated string.
-    // Replaced wholesale via volatile write so callers never observe a half-built map.
+    // 语言标签（例如 "de_de"）-> 翻译键 -> 翻译字符串。
+    // 通过 volatile 写入整体替换，使调用方永远不会观察到构建到一半的映射。
     private static volatile Map<String, Map<String, String>> translations = new HashMap<>();
 
-    // Tracks the in-flight async load so MyPetPlugin#onDisable can interrupt it before any
-    // straggling volatile publish lands on the static field after the plugin has been disabled.
+    // 跟踪正在进行的异步加载，使 MyPetPlugin#onDisable 能在插件被禁用后任何滞后的
+    // volatile 发布落到静态字段之前中断它。
     private static volatile CompletableFuture<Void> currentFuture = null;
 
     public static CompletableFuture<Void> loadAsync(Plugin plugin) {
@@ -108,10 +106,9 @@ public final class VanillaTranslationLoader {
     }
 
     /**
-     * Cancels any in-flight {@link #loadAsync(Plugin)} task. Safe to call when no load is running.
-     * Intended for invocation from {@code MyPetPlugin#onDisable} so a long-running CDN fetch on the
-     * common ForkJoinPool does not survive past plugin shutdown and clobber a successor plugin
-     * instance's translation map via the shared static field.
+     * 取消任何正在进行的 {@link #loadAsync(Plugin)} 任务。在没有加载进行时调用是安全的。
+     * 设计用于从 {@code MyPetPlugin#onDisable} 调用，以免运行在公共 ForkJoinPool 上的
+     * 长时间 CDN 拉取越过插件关闭而继续存在，并通过共享的静态字段覆盖后继插件实例的翻译映射。
      */
     public static void cancelLoad() {
         CompletableFuture<Void> future = currentFuture;
@@ -132,7 +129,7 @@ public final class VanillaTranslationLoader {
             String hit = locale.get(key);
             if (hit != null) return hit;
         }
-        // Fall back to language-only (e.g. "de" if "de_de" wasn't published), then English.
+        // 先回退到仅语言（例如未发布 "de_de" 时使用 "de"），再回退到英文。
         int underscore = normalizedLocale.indexOf('_');
         if (underscore > 0) {
             Map<String, String> langOnly = snapshot.get(normalizedLocale.substring(0, underscore));
@@ -169,9 +166,9 @@ public final class VanillaTranslationLoader {
 
     private static void loadInternal(Plugin plugin) throws Exception {
         String mcVersion = MyPetApi.getCompatUtil().getMinecraftVersion();
-        // Skip the entire CDN dance when CompatUtil could not parse Bukkit's version banner — the
-        // default "0.0.0" never matches a Mojang manifest entry, so the manifest fetch + scan would
-        // run on every startup just to fail.
+        // 当 CompatUtil 无法解析 Bukkit 的版本横幅时跳过整套 CDN 操作——
+        // 默认值 "0.0.0" 永远匹配不上 Mojang 清单条目，否则清单拉取 + 扫描会在每次启动时
+        // 白白运行一遍然后失败。
         if (mcVersion == null || "0.0.0".equals(mcVersion) || !MC_VERSION_RE.matcher(mcVersion).matches()) {
             MyPetApi.getLogger().warning("Skipping vanilla translation load: unrecognized Minecraft version '"
                     + mcVersion + "'");
@@ -210,10 +207,9 @@ public final class VanillaTranslationLoader {
     }
 
     private static Path cacheDirFor(Plugin plugin, String mcVersion) throws IOException {
-        // Normalize so the path-traversal guard in downloadLocalesFromAssetIndex (which compares a
-        // normalized target against this base) does not produce false negatives on data-folder paths
-        // that contain '.' segments — common when the server is launched from a container or via a
-        // wrapper script that resolves the working directory loosely.
+        // 进行规范化，使 downloadLocalesFromAssetIndex 中的路径穿越防护（将规范化后的目标
+        // 与此基准进行比较）不会在包含 '.' 路径段的数据文件夹路径上误判为不匹配——
+        // 当服务器从容器中启动，或通过宽松解析工作目录的包装脚本启动时，这种情况很常见。
         Path dir = plugin.getDataFolder().toPath()
                 .resolve("cache")
                 .resolve("vanilla-lang")
@@ -300,9 +296,9 @@ public final class VanillaTranslationLoader {
             return false;
         }
 
-        // Stream the client jar (~30-60 MB on modern MC) to a temp file in the cache directory
-        // while computing SHA-1 incrementally. Keeps the full jar body out of the heap and lets us
-        // verify integrity against Mojang's manifest hash before trusting the extracted en_us.json.
+        // 将客户端 jar（现代 MC 上约 30-60 MB）流式写入缓存目录中的临时文件，
+        // 同时增量计算 SHA-1。这样可避免把整个 jar 内容放进堆中，并让我们在信任
+        // 提取出的 en_us.json 之前，用 Mojang 清单中的哈希校验其完整性。
         HttpURLConnection conn = (HttpURLConnection) new URL(clientUrl).openConnection();
         conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
         conn.setReadTimeout(READ_TIMEOUT_MS);
@@ -334,9 +330,9 @@ public final class VanillaTranslationLoader {
                     Path target = cacheDir.resolve("en_us.json");
                     Path stage = cacheDir.resolve("en_us.json.tmp");
                     Files.write(stage, buf.toByteArray());
-                    // ATOMIC_MOVE guarantees the cache target is never observed mid-write across
-                    // crashes; pair with REPLACE_EXISTING so a re-fetch on a different MC version
-                    // string can overwrite an old en_us.json in the same cache dir.
+                    // ATOMIC_MOVE 保证即使发生崩溃，缓存目标也不会被观察到写入到一半的状态；
+                    // 配合 REPLACE_EXISTING 使用，以便针对不同 MC 版本字符串的重新拉取可以覆盖
+                    // 同一缓存目录中旧的 en_us.json。
                     Files.move(stage, target, StandardCopyOption.ATOMIC_MOVE,
                             StandardCopyOption.REPLACE_EXISTING);
                     hashes.put(CLIENT_JAR_SHA1_KEY, manifestSha1);
@@ -361,11 +357,11 @@ public final class VanillaTranslationLoader {
             String key = e.getKey().toLowerCase(Locale.ROOT);
             if (!key.startsWith("minecraft/lang/") || !key.endsWith(".json")) continue;
             String locale = key.substring("minecraft/lang/".length(), key.length() - ".json".length());
-            if ("en_us".equals(locale)) continue; // already pulled from the client jar
+            if ("en_us".equals(locale)) continue; // 已从客户端 jar 中提取
 
-            // Defensive: a missing "hash" field, a non-string value, or a malformed hex string would
-            // otherwise NPE / throw inside the substring/URL construction below and abort the whole
-            // load via the outer catch — silently dropping every other locale.
+            // 防御性检查：缺少 "hash" 字段、值不是字符串或十六进制字符串格式错误，
+            // 否则会在下面的 substring/URL 构建中抛出 NPE / 异常，并通过外层 catch 中止
+            // 整个加载——从而静默丢弃其它所有语言环境。
             JsonElement hashElem = e.getValue().getAsJsonObject().get("hash");
             if (hashElem == null || hashElem.isJsonNull()
                     || !hashElem.isJsonPrimitive() || !hashElem.getAsJsonPrimitive().isString()) {
@@ -378,7 +374,7 @@ public final class VanillaTranslationLoader {
                 continue;
             }
             Path target = cacheDir.resolve(locale + ".json").normalize();
-            // Guard against a crafted index key whose normalized resolution escapes the cache directory.
+            // 防止构造的索引键在规范化解析后逃逸出缓存目录。
             if (!target.startsWith(cacheDir)) {
                 MyPetApi.getLogger().warning("Skipping suspicious locale key from asset index: " + locale);
                 continue;
@@ -387,9 +383,9 @@ public final class VanillaTranslationLoader {
 
             String url = RESOURCES_URL + hash.substring(0, 2) + "/" + hash;
             byte[] bytes = fetchBytes(url);
-            // Verify byte integrity against the asset-index declared hash before writing or
-            // recording the cache key. A MITM or transient corruption that produces a 200 OK with
-            // wrong bytes would otherwise be silently persisted and trusted on every future start.
+            // 在写入或记录缓存键之前，用资源索引声明的哈希校验字节完整性。
+            // 否则，中间人攻击或临时损坏造成返回 200 OK 但内容错误的情况会被静默持久化，
+            // 并在之后每次启动时被信任。
             String actual = sha1Hex(bytes);
             if (!actual.equalsIgnoreCase(hash)) {
                 MyPetApi.getLogger().warning("Locale " + locale + " SHA-1 mismatch: expected " + hash
@@ -423,9 +419,9 @@ public final class VanillaTranslationLoader {
                 }
             }
         }
-        // If the plugin has been disabled while this fetch was in flight (e.g. /reload or rapid
-        // restart), do not publish — under a classloader-preserving reloader the static field is
-        // shared across plugin instances and a late write would clobber the successor's map.
+        // 如果此次拉取进行期间插件已被禁用（例如 /reload 或快速重启），就不要发布——
+        // 在使用保留类加载器的重载器时，静态字段会在插件实例之间共享，迟到的写入
+        // 会覆盖后继实例的映射。
         if (plugin != null && !plugin.isEnabled()) {
             return;
         }
@@ -446,9 +442,9 @@ public final class VanillaTranslationLoader {
                 out.put(k, v.getAsString());
             }
         } catch (IOException | RuntimeException ex) {
-            // RuntimeException covers JsonSyntaxException (corrupt JSON) and IllegalStateException
-            // (root is not a JSON object) — both would otherwise propagate out of loadAllLocalesIntoMap
-            // and abort the entire load, discarding every other locale that parsed cleanly.
+            // RuntimeException 涵盖了 JsonSyntaxException（JSON 损坏）和 IllegalStateException
+            // （根不是 JSON 对象）——否则两者都会从 loadAllLocalesIntoMap 中向外传播，
+            // 中止整个加载，丢弃其它所有解析成功的语言环境。
             MyPetApi.getLogger().warning("Skipping malformed vanilla lang file "
                     + file.getFileName() + ": " + ex.getMessage());
         }

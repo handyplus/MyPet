@@ -49,7 +49,7 @@ public class HeroesHook implements PlayerVersusPlayerHook, PartyHook {
             Hero heroAttacker = heroes.getCharacterManager().getHero(attacker);
             Hero heroDefender = heroes.getCharacterManager().getHero(defender);
             if (heroAttacker == null || heroDefender == null) {
-                // not a Heroes character (e.g. an NPC), so Heroes' level range does not apply
+                // 不是 Heroes 角色（例如 NPC），因此 Heroes 的等级范围限制不适用
                 return true;
             }
             int attackerLevel = heroAttacker.getTieredLevel(false);

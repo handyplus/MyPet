@@ -24,32 +24,32 @@ import org.bukkit.entity.Player;
 
 public interface HelpProvider {
 
-    /** Translation key for help text (e.g. "Message.Command.Help.Call"). Return null to hide from help. */
+    /** 帮助文本的翻译键（例如 "Message.Command.Help.Call"）。返回 null 表示在帮助中隐藏。 */
     default String getHelpTranslationKey() {
         return null;
     }
 
-    /** Command string shown in help (e.g. "/petcall"). Return null to hide from help. */
+    /** 在帮助中显示的命令字符串（例如 "/petcall"）。返回 null 表示在帮助中隐藏。 */
     default String getHelpCommand() {
         return null;
     }
 
-    /** Whether this command should be visible to the given player in help. */
+    /** 该命令是否应在帮助中对指定玩家可见。 */
     default boolean isVisibleTo(Player player) {
         return true;
     }
 
-    /** Display order in the help list (lower values appear first). */
+    /** 在帮助列表中的显示顺序（数值越小越靠前）。 */
     default int getHelpOrder() {
         return Integer.MAX_VALUE;
     }
 
-    /** The category this command belongs to in the help listing. */
+    /** 该命令在帮助列表中所属的分类。 */
     default CommandCategory getHelpCategory() {
         return CommandCategory.PET;
     }
 
-    /** Direct help description, used when no translation key is set. */
+    /** 直接的帮助说明，在未设置翻译键时使用。 */
     default String getHelpDescription() {
         return null;
     }

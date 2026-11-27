@@ -199,7 +199,7 @@ public class MonsterExperience {
         if (MyPetApi.getCompatUtil().isCompatible("1.8")) {
             name = entity.getCustomName();
         } else if (entity instanceof LivingEntity) {
-            // casting for 1.7.10
+            // 为 1.7.10 做类型转换
             name = ((LivingEntity) entity).getCustomName();
         }
 

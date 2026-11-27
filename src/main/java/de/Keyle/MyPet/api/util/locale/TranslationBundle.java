@@ -46,7 +46,7 @@ public class TranslationBundle {
             e.printStackTrace();
         }
 
-        // Colors are applied once here so lookups don't have to convert them every time
+        // 在此处一次性应用颜色，这样每次查找时就不必再转换
         for (Object o : properties.keySet()) {
             translations.put(o.toString().toLowerCase(), Colorizer.setColors(properties.get(o).toString()));
         }

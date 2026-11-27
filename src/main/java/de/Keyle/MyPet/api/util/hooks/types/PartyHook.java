@@ -26,21 +26,21 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 /**
- * This interface defines that the hook handles party checks
+ * 此接口表示该 Hook 负责处理队伍检查
  */
 public interface PartyHook extends PluginHook {
     /**
-     * Returns if a player is in a party (Ancient, mcMMO, Heroes)
+     * 返回玩家是否处于某个队伍中 (Ancient, mcMMO, Heroes)
      *
-     * @param player checked player
-     * @return if a player is in a party
+     * @param player 被检查的玩家
+     * @return 玩家是否处于某个队伍中
      */
     boolean isInParty(Player player);
 
     /**
-     * Returns all members of a party if the player is in one (Ancient, mcMMO, Heroes)
-     * @param player members of the party
-     * @return all members of the party
+     * 若玩家处于某个队伍中，则返回该队伍的所有成员 (Ancient, mcMMO, Heroes)
+     * @param player 队伍成员
+     * @return 该队伍的所有成员
      */
     List<Player> getPartyMembers(Player player);
 }

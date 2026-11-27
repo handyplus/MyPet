@@ -190,7 +190,7 @@ public class StorageTrait extends Trait {
                                     if (store) {
                                         StoredMyPet storedMyPet = myPetPlayer.getMyPet();
                                         if (MyPetApi.getMyPetManager().deactivateMyPet(myPetPlayer, true)) {
-                                            // remove pet from world groups
+                                            // 将宠物从各个世界组中移除
                                             String wg1 = myPetPlayer.getWorldGroupForMyPet(storedMyPet.getUUID());
                                             myPetPlayer.setMyPetForWorldGroup(wg1, null);
                                             MyPetApi.getRepository().updateMyPetPlayer(myPetPlayer, null);

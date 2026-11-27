@@ -24,35 +24,35 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Listener;
 
 /**
- * Plugin hooks are used to create a wrapper for functionality used from another plugin.
+ * 插件钩子用于封装从其他插件使用的功能。
  */
 public interface PluginHook extends Listener {
 
     /**
-     * Method that is called when the hook gets enabled
+     * 钩子被启用时调用的方法
      *
-     * @return if activation was successfull
+     * @return 激活是否成功
      */
     default boolean onEnable() {
         return true;
     }
 
     /**
-     * Method that is called when the hook gets disabled
+     * 钩子被禁用时调用的方法
      */
     default void onDisable() {
     }
 
     /**
-     * Method that is called before the hook gets enabled to load the config
+     * 钩子被启用之前调用以加载配置的方法
      */
     default void loadConfig(ConfigurationSection config) {
     }
 
     /**
-     * Returns the name of the hooked plugin
+     * 返回被钩插件的名称
      *
-     * @return name of the plugin
+     * @return 插件名称
      */
     default String getPluginName() {
         if (this.getClass().isAnnotationPresent(PluginHookName.class)) {

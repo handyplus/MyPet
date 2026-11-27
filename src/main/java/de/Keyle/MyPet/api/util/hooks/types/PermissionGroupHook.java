@@ -24,24 +24,24 @@ import de.Keyle.MyPet.api.util.hooks.PluginHook;
 import org.bukkit.entity.Player;
 
 /**
- * This interface defines that the hook handles party checks
+ * 此接口表示该 Hook 负责处理队伍检查
  */
 public interface PermissionGroupHook extends PluginHook {
 
     /**
-     * Returns if a player is in a group (Vault compatible)
+     * 返回玩家是否处于某个权限组中 (Vault compatible)
      *
-     * @param player checked player
-     * @return if a player is in a group
+     * @param player 被检查的玩家
+     * @return 玩家是否处于某个权限组中
      */
     boolean isInGroup(Player player, String group);
 
     /**
-     * Returns if a player is in a group in a world (Vault compatible)
+     * 返回玩家是否在某个世界中处于某个权限组中 (Vault compatible)
      *
-     * @param player checked player
-     * @param world  world to check in
-     * @return if a player is in a group in a world
+     * @param player 被检查的玩家
+     * @param world  要检查的世界
+     * @return 玩家是否在该世界中处于某个权限组中
      */
     boolean isInGroup(Player player, String group, String world);
 }

@@ -53,7 +53,7 @@ import static de.Keyle.MyPet.compat.v26_3_R1.util.HandSlot.getSlotForHand;
 @EntitySize(width = 0.6F, height = 1.9F)
 public class EntityMyPiglin extends EntityMyPet {
 	
-	//Funnily enough this one hasn't got the age_watcher before the No_Shake
+	//有趣的是，这个类中 age_watcher 排在 No_Shake 之前
 	private static final EntityDataAccessor<Boolean> NO_SHAKE_WATCHER = SynchedEntityData.defineId(EntityMyPiglin.class, EntityDataSerializers.BOOLEAN);
 	private static final EntityDataAccessor<Boolean> AGE_WATCHER = SynchedEntityData.defineId(EntityMyPiglin.class, EntityDataSerializers.BOOLEAN);
 
@@ -101,7 +101,7 @@ public class EntityMyPiglin extends EntityMyPet {
 						try {
 							itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 						} catch (Error e) {
-							// TODO REMOVE
+							// TODO 移除
 						}
 					}
 				}
@@ -141,12 +141,12 @@ public class EntityMyPiglin extends EntityMyPet {
 	protected void defineSynchedData(SynchedEntityData.Builder builder) {
 		super.defineSynchedData(builder);
 		builder.define(NO_SHAKE_WATCHER, false);
-		builder.define(AGE_WATCHER, false); // is baby
+		builder.define(AGE_WATCHER, false); // 是否为幼崽
 	}
 
 	/**
-	 * Returns the speed of played sounds
-	 * The faster the higher the sound will be
+	 * 返回播放声音时的速度
+	 * 速度越快，声音音调越高
 	 */
 	@Override
 	public float getSoundSpeed() {

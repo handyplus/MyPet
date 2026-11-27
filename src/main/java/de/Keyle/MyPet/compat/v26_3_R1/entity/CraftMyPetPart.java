@@ -67,7 +67,7 @@ public class CraftMyPetPart extends CraftEntity implements MyPetBukkitPart {
     public void setPersistent(boolean b) {
     }
 
-    /* This doesn't work rn as getType was made final...
+    /* 目前这样不行，因为 getType 被设为了 final……
     @NotNull
     @Override
     public EntityType getType() {
@@ -80,7 +80,7 @@ public class CraftMyPetPart extends CraftEntity implements MyPetBukkitPart {
         return SpawnCategory.MISC;
     }
 
-    /* I have no clue why I need to override these other deprecated methods also don't need to be implemented so yea...*/
+    /* 我完全不清楚为什么还需要重写这些其他的弃用方法，它们本来也不需要实现，所以就这样吧……*/
     @Override
     public void setVisibleByDefault(boolean b) {
     }

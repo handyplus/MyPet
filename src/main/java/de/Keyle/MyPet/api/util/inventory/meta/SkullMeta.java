@@ -32,31 +32,30 @@ public class SkullMeta implements IconMeta {
     String texture = null;
 
     /**
-     * Gets the owner of the skull.
+     * 获取该头颅的所有者。
      *
-     * @return the owner if the skull
+     * @return 该头颅的所有者
      */
     public String getOwner() {
         return name;
     }
 
     /**
-     * Checks to see if the skull has an owner.
+     * 检查该头颅是否设置了所有者。
      *
-     * @return true if the skull has an owner
+     * @return 如果该头颅有所有者则返回 true
      */
     public boolean hasOwner() {
         return name != null;
     }
 
     /**
-     * Sets the owner of the skull.
+     * 设置该头颅的所有者。
      * <p/>
-     * Plugins should check that hasOwner() returns true before calling this
-     * plugin.
+     * 插件在调用此方法前应先检查 hasOwner() 是否返回 true。
      *
-     * @param name the new owner of the skull
-     * @return true if the owner was successfully set
+     * @param name 该头颅的新所有者
+     * @return 如果所有者设置成功则返回 true
      */
     public boolean setOwner(String name) {
         if (name != null && name.length() > 16) {
@@ -68,31 +67,30 @@ public class SkullMeta implements IconMeta {
     }
 
     /**
-     * Gets the texture URL of the skull.
+     * 获取该头颅的材质 URL。
      *
-     * @return the texture URL if the skull
+     * @return 该头颅的材质 URL
      */
     public String getTexture() {
         return texture;
     }
 
     /**
-     * Checks to see if the skull has a texture URL.
+     * 检查该头颅是否设置了材质 URL。
      *
-     * @return true if the skull has a texture URL
+     * @return 如果该头颅有材质 URL 则返回 true
      */
     public boolean hasTexture() {
         return texture != null;
     }
 
     /**
-     * Sets the texture URL of the skull.
+     * 设置该头颅的材质 URL。
      * <p/>
-     * Plugins should check that hasTexture() returns true before calling this
-     * plugin.
+     * 插件在调用此方法前应先检查 hasTexture() 是否返回 true。
      *
-     * @param url the URL to the texture of the skull
-     * @return true if the URL was successfully set
+     * @param url 该头颅材质的 URL
+     * @return 如果 URL 设置成功则返回 true
      */
     public boolean setTexture(String url) {
         if (hasOwner()) {

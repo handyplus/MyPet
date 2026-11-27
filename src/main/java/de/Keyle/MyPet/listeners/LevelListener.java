@@ -187,11 +187,10 @@ public class LevelListener implements Listener {
         MyPet myPet = event.getPet();
         int lvl = event.getLevel();
 
-        // Snapshot backpack contents before the reset-reapply cycle. The reset
-        // phase temporarily shrinks the inventory to its minimum size, which
-        // would discard items beyond the first row. This must be handled here
-        // rather than in BackpackImpl because the UpgradeComputer callback fires
-        // incrementally during reapply and cannot determine the final row count.
+        // 在重置-重新应用循环开始前先备份背包内容。重置阶段会临时把
+        // 背包缩减到最小容量，从而丢弃第一行以外的物品。这必须在这里处理，
+        // 而不能放在 BackpackImpl 中，因为 UpgradeComputer 的回调在重新应用
+        // 过程中是增量触发的，无法确定最终的行数。
         Backpack backpack = myPet.getSkills().get(Backpack.class);
         ItemStack[] savedBackpackContents = null;
         if (backpack != null && backpack.getInventory().getBukkitInventory() != null) {
@@ -224,9 +223,9 @@ public class LevelListener implements Listener {
             }
         }
 
-        // Restore items that still fit and drop overflow as world items.
-        // The clear pass prevents duplication when the new skilltree has no
-        // backpack at all (inventory clamped to 9 slots still holds old items).
+        // 恢复仍然放得下的物品，并把溢出的部分作为掉落物丢到世界中。
+        // 清理流程可防止新技能树完全没有背包时出现物品复制
+        // （被钳制到 9 格的背包中仍然保留着旧物品）。
         if (savedBackpackContents != null) {
             Inventory inv = backpack.getInventory().getBukkitInventory();
             if (inv != null) {

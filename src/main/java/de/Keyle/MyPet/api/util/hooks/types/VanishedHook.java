@@ -24,15 +24,15 @@ import de.Keyle.MyPet.api.util.hooks.PluginHook;
 import org.bukkit.entity.Player;
 
 /**
- * This interface defines that the hook handles party checks
+ * 此接口表示该 Hook 负责处理隐身（vanish）检查
  */
 public interface VanishedHook extends PluginHook {
 
     /**
-     * Returns wether the player is vanished or not
+     * 返回玩家是否处于隐身状态
      *
-     * @param player the player to be checked
-     * @return wether the player is vanished
+     * @param player 要被检查的玩家
+     * @return 玩家是否处于隐身状态
      */
     boolean isVanished(Player player);
 }

@@ -69,13 +69,13 @@ public class BeaconImpl implements Beacon {
         hungerDecreaseTimer = Configuration.Skilltree.Skill.Beacon.HUNGER_DECREASE_TIME;
 
         if (!Configuration.Skilltree.Skill.Beacon.DISABLE_HEAD_TEXTURE) {
-            // stone
+            // 石头
             disabledMeta.setOwner("NeverUsed0000001");
             disabledMeta.setTexture("http://textures.minecraft.net/texture/de9b8aae7f9cc76d625ccb8abc686f30d38f9e6c42533098b9ad577f91c333c");
-            // globe
+            // 地球仪
             everyoneMeta.setOwner("NeverUsed0000002");
             everyoneMeta.setTexture("http://textures.minecraft.net/texture/b1dd4fe4a429abd665dfdb3e21321d6efa6a6b5e7b956db9c5d59c9efab25");
-            // beachball
+            // 沙滩球
             partyMeta.setOwner("NeverUsed0000003");
             partyMeta.setTexture("http://textures.minecraft.net/texture/5a5ab05ea254c32e3c48f3fdcf9fd9d77d3cba04e6b5ec2e68b3cbdcfac3fd");
         }
@@ -478,8 +478,8 @@ public class BeaconImpl implements Beacon {
     }
 
     /**
-     * HealthBoost is saved with id -1 because it has no slot in the beacon menu, so it can't be
-     * looked up by id. Every other buff's id is its vanilla effect id.
+     * HealthBoost 以 id -1 保存，因为它在信标菜单中没有对应槽位，无法按 id 查找。
+     * 其他所有 buff 的 id 就是其原版药水效果 id。
      */
     private static PotionEffectType getEffectType(Buff buff) {
         if (buff == Buff.HealthBoost) {
@@ -515,13 +515,13 @@ public class BeaconImpl implements Beacon {
         if (myPet.getStatus() == MyPet.PetState.Here && isActive() && active && !selectedBuffs.isEmpty() && --beaconTimer <= 0) {
             beaconTimer = 2;
 
-            // Safety check - pet could despawn between status check and location retrieval
+            // 安全检查 - 宠物可能在状态检查与位置获取之间被移除
             if (!this.myPet.getLocation().isPresent()) {
                 return;
             }
             Location myPetLocation = this.myPet.getLocation().get();
 
-            // Check if beacon is allowed at pet's location
+            // 检查宠物所在位置是否允许使用信标
             if (!MyPetApi.getHookHelper().isBeaconAllowed(myPetLocation)) {
                 return;
             }
@@ -532,7 +532,7 @@ public class BeaconImpl implements Beacon {
                 range *= (Math.log10(myPet.getSaturation()) / 2);
             }
 
-            // Apply region range multiplier
+            // 应用区域范围倍率
             range *= MyPetApi.getHookHelper().getBeaconRangeMultiplier(myPetLocation);
 
             if (range < 0.7) {
@@ -555,10 +555,10 @@ public class BeaconImpl implements Beacon {
                 members = MyPetApi.getHookHelper().getPartyMembers(getMyPet().getOwner().getPlayer());
             }
 
-            // Apply region duration multiplier
+            // 应用区域持续时间倍率
             int duration = (int) (this.duration.getValue() * 20 * MyPetApi.getHookHelper().getBeaconDurationMultiplier(myPetLocation));
 
-            // Get region amplifier modifier
+            // 获取区域等级修正值
             int amplifierMod = MyPetApi.getHookHelper().getBeaconAmplifierModifier(myPetLocation);
 
             List<PotionEffect> potionEffects = new ArrayList<>();
@@ -584,12 +584,12 @@ public class BeaconImpl implements Beacon {
 
                 boolean isOwner = myPet.getOwner().getPlayer().equals(player);
 
-                // Check self-deny for owner
+                // 检查拥有者自身的拒绝设置
                 if (isOwner && !MyPetApi.getHookHelper().isBeaconSelfAllowed(player.getLocation())) {
                     continue;
                 }
 
-                // Check share-deny for non-owners (both pet location and target location)
+                // 检查非拥有者的共享拒绝设置（宠物位置与目标位置都要检查）
                 if (!isOwner) {
                     if (!MyPetApi.getHookHelper().isBeaconShareAllowed(myPetLocation) ||
                         !MyPetApi.getHookHelper().isBeaconShareAllowed(player.getLocation())) {

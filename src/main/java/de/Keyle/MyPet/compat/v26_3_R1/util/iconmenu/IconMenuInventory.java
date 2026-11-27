@@ -24,30 +24,30 @@ import de.Keyle.MyPet.api.util.Compat;
 import org.bukkit.inventory.meta.ItemMeta;
 
 /**
- * Version-specific IconMenuInventory for Minecraft v26_3_R1.
+ * Minecraft v26_3_R1 专用的 IconMenuInventory。
  * <p>
- * This class inherits all GUI logic from the API-level {@code IconMenuInventory}
- * and only overrides {@link #addGlint(ItemMeta)} to use the native modern glow API.
+ * 本类从 API 层的 {@code IconMenuInventory} 继承全部 GUI 逻辑，
+ * 仅重写 {@link #addGlint(ItemMeta)} 以使用原生的现代发光 API。
  * <p>
- * Intended behavior:
+ * 预期行为：
  * <ul>
- *   <li>No NMS usage</li>
- *   <li>Defer most functionality to the shared parent implementation</li>
- *   <li>Use modern glint override</li>
+ *   <li>不使用 NMS</li>
+ *   <li>大部分功能交由共享的父类实现</li>
+ *   <li>使用现代的发光覆盖</li>
  * </ul>
  */
 @Compat("v26_3_R1")
 public class IconMenuInventory extends de.Keyle.MyPet.api.gui.IconMenuInventory {
     /**
-     * Apply a glow effect using the modern server API when available on 1.20.4+,
-     * bypassing the dummy-enchantment fallback used on legacy versions.
+     * 在 1.20.4+ 上使用现代服务器 API 应用发光效果，
+     * 绕过旧版本使用的虚拟附魔回退方案。
      *
-     * @param meta ItemMeta to modify
-     * @return ItemMeta with glow flag applied
+     * @param meta 要修改的 ItemMeta
+     * @return 已应用发光标记的 ItemMeta
      */
     @Override
     protected ItemMeta addGlint(ItemMeta meta) {
-        // Modern Spigot/Paper API call; safe on 1.20.4+ environments
+        // 现代 Spigot/Paper API 调用；在 1.20.4+ 环境中安全
         meta.setEnchantmentGlintOverride(true);
         return meta;
     }

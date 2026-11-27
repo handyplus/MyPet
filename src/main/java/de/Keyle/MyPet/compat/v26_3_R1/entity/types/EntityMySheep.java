@@ -126,7 +126,7 @@ public class EntityMySheep extends EntityMyPet {
 					try {
 						itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 					} catch (Error e) {
-						// TODO REMOVE
+						// TODO 移除
 					}
 				}
 				return InteractionResult.CONSUME;
@@ -149,7 +149,7 @@ public class EntityMySheep extends EntityMyPet {
 		super.defineSynchedData(builder);
 		builder.define(AGE_WATCHER, false);
 		builder.define(AGE_LOCKED_WATCHER, false);
-		builder.define(COLOR_WATCHER, (byte) 0); // color/sheared
+		builder.define(COLOR_WATCHER, (byte) 0); // 颜色/是否剪毛
 	}
 
 	@Override

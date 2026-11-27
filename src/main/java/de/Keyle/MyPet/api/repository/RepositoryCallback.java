@@ -36,9 +36,8 @@ public abstract class RepositoryCallback<T> extends BukkitRunnable {
         try {
             return scheduler.get();
         } catch (IllegalStateException alreadyScheduled) {
-            // This one-shot callback was already scheduled (e.g. the async repository task fired more
-            // than once with the same instance). The pending run still delivers the callback, so
-            // swallow the duplicate "Already scheduled" instead of throwing.
+            // 该一次性回调已被调度过（例如异步存储库任务使用同一实例触发了多次）。
+            // 待执行的运行仍会交付回调，因此吞掉重复的 "Already scheduled" 而不是抛出异常。
             return null;
         }
     }
@@ -56,8 +55,8 @@ public abstract class RepositoryCallback<T> extends BukkitRunnable {
     }
 
     /**
-     * The count queries set the value first and then call this plain Bukkit overload, which skipped
-     * the duplicate-schedule guard and threw "Already scheduled" (MYPET-CCC).
+     * 计数查询会先设置值，然后调用这个普通的 Bukkit 重载，而它跳过了
+     * 重复调度的防护检查并抛出 "Already scheduled"（MYPET-CCC）。
      */
     @Override
     public synchronized BukkitTask runTask(Plugin plugin) throws IllegalArgumentException, IllegalStateException {

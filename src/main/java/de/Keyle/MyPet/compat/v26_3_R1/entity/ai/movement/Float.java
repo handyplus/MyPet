@@ -47,7 +47,7 @@ public class Float implements AIGoal {
 
 	@Override
 	public boolean shouldStart() {
-		if(entityMyPet.floatsInLava()) { //Some entities do that
+		if(entityMyPet.floatsInLava()) { //有些实体会这样
 			return entityMyPet.isInWater() || entityMyPet.isInLava();
 		}
 		return entityMyPet.isInWater();
@@ -60,7 +60,7 @@ public class Float implements AIGoal {
 
 	@Override
 	public void tick() {
-		if(entityMyPet.specialFloat()) return;	//Check if the entity has some special floating-behaviour for the liquid it is in right now
+		if(entityMyPet.specialFloat()) return;	//检查该实体对当前所处液体是否有特殊的漂浮行为
 		
 		entityMyPet.setDeltaMovement(entityMyPet.getDeltaMovement().add(0, 0.05D, 0));
 

@@ -78,8 +78,8 @@ public class CompatUtil {
                         Class.forName(classPath);
                         break;
                     } catch (ClassNotFoundException | LinkageError ignored) {
-                        // LinkageError (e.g. NoClassDefFoundError): the probed compat class references
-                        // an NMS symbol missing on this server - skip it and try the next candidate.
+                        // LinkageError（例如 NoClassDefFoundError）：被探测的兼容类引用了
+                        // 本服务器上缺失的 NMS 符号 —— 跳过它并尝试下一个候选。
                     }
             } else {
                 classPath = "de.Keyle.MyPet.compat." + internalVersion + "." + path + (path != null && !path.isEmpty() ? "." : "") + className;
@@ -108,10 +108,10 @@ public class CompatUtil {
         } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         } catch (LinkageError e) {
-            // The compat class links against an NMS symbol that is missing on this server (version or
-            // mapping mismatch, e.g. NoClassDefFoundError: net/minecraft/world/level/World). Treat it
-            // as "no compat module available" so onLoad/onEnable can disable MyPet cleanly instead of
-            // crashing with an uncaught error during plugin load.
+            // 该兼容类链接到了本服务器上缺失的 NMS 符号（版本或
+            // 映射不匹配，例如 NoClassDefFoundError: net/minecraft/world/level/World）。将其视为
+            // “没有可用的兼容模块”，以便 onLoad/onEnable 能够干净地禁用 MyPet，而不是
+            // 在插件加载期间因未捕获的错误而崩溃。
             MyPetApi.getLogger().warning("Could not load MyPet compatibility class " + classPath + " on this server (" + minecraftVersion + "): " + e);
         }
 

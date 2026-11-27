@@ -626,10 +626,10 @@ public class CommandOptionCreate implements CommandOptionTabCompleter {
                         compound.getCompoundData().put("Variant", new TagInt(variant));
                     }
                 } else if (petType == MyPetType.Wolf) {
-                    // Wolf Variants are handled as (lowercase) Strings.
+                    // 狼的变种以（小写）字符串形式处理。
                     compound.getCompoundData().put("Variant", new TagString(variantString.toLowerCase()));
                 } else if (petType == MyPetType.Cow || petType == MyPetType.Chicken || petType == MyPetType.Pig) {
-                    // Cow/chicken/pig Variants are handled as (lowercase) Strings.
+                    // 牛/鸡/猪的变种以（小写）字符串形式处理。
                     compound.getCompoundData().put("Variant", new TagString(variantString.toLowerCase()));
                 }
             } else if (arg.startsWith("cat:")) {

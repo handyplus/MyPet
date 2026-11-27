@@ -69,7 +69,7 @@ public class BehaviorFarmTarget implements AIGoal {
 		if (petEntity.hasTarget()) {
 			return false;
 		}
-		// Only look for a new target every few ticks, every candidate triggers protection plugin queries
+		// 每隔几个 tick 才寻找一次新目标，因为每个候选目标都会触发保护插件的查询
 		int ticksLived = petEntity.getBukkitEntity().getTicksLived();
 		if (ticksLived >= lastTargetSearch && ticksLived - lastTargetSearch < TARGET_SEARCH_COOLDOWN) {
 			return false;

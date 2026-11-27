@@ -46,7 +46,7 @@ public class CommandCall implements CommandTabCompleter {
                 MyPet myPet = MyPetApi.getMyPetManager().getMyPet(petOwner);
 
                 if(myPet.getEntity().isPresent()) {
-                    //Only let it respawn if it actually was there before
+                    // 只有它之前确实在场时才允许复活
                     myPet.removePet(true);
                 }
 

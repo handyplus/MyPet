@@ -17,9 +17,9 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 
 /**
- * 1.21_R5-specific riding compatibility:
- * - On 1.21+, Mojang has made changes to lead logic. We handle riding here using NMS startRiding.
- * - Kept entirely within the v26_3_R1 module to avoid legacy API issues on 1.8.8.
+ * 1.21_R5 专用的骑乘兼容处理：
+ * - 在 1.21+ 上，Mojang 修改了拴绳逻辑。我们在这里使用 NMS 的 startRiding 处理骑乘。
+ * - 完全保留在 v26_3_R1 模块内，以避免 1.8.8 上的旧版 API 问题。
  */
 public class RideInteractListener implements Listener {
 
@@ -31,13 +31,13 @@ public class RideInteractListener implements Listener {
         if (!(event.getRightClicked() instanceof MyPetBukkitEntity)) {
             return;
         }
-        // Only consider main-hand interactions
+        // 只处理主手交互
         try {
             if (event.getHand() != org.bukkit.inventory.EquipmentSlot.HAND) {
                 return;
             }
         } catch (NoSuchMethodError ignored) {
-            // Not applicable on legacy, but this class is only loaded on 1.21_R5
+            // 旧版本上不适用，但此类只在 1.21_R5 上加载
         }
 
         final Player player = event.getPlayer();
@@ -60,7 +60,7 @@ public class RideInteractListener implements Listener {
             return;
         }
 
-        // Use NMS directly for riding in this version module
+        // 在此版本模块中直接使用 NMS 进行骑乘
         try {
             ServerPlayer nmsPlayer = ((CraftPlayer) player).getHandle();
             Entity nmsPet = ((CraftMyPet) petEntity).getHandle();

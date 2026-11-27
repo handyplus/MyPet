@@ -97,8 +97,8 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
     public void onDisable() {
         isDisabling = true;
 
-        // Interrupt any in-flight vanilla translation download so it cannot publish a stale
-        // translation map to the shared static field after the plugin instance is gone.
+        // 中断任何正在进行的原版翻译下载，以免在插件实例销毁后
+        // 仍向共享静态字段写入过期的翻译映射。
         VanillaTranslationLoader.cancelLoad();
 
         if (isReady) {
@@ -132,7 +132,7 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
             return true;
         });
 
-        // load version from manifest
+        // 从 manifest 中加载版本号
         MyPetVersion.reset();
 
         compatUtil = new CompatUtil();
@@ -159,9 +159,9 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
 
         compatManager = compatUtil.getCompatInstance(CompatManager.class, "", "CompatManager");
         if (petInfo == null || platformHelper == null || entityRegistry == null || compatManager == null) {
-            // A compat class could not be loaded on this server (getCompatInstance already logged
-            // which one). onEnable disables MyPet with an explanation, so stop here instead of
-            // crashing on the missing piece (MYPET-E84, MYPET-D57).
+            // 该服务器上无法加载某个兼容类（getCompatInstance 已经记录了是哪个类）。
+            // onEnable 会带着说明禁用 MyPet，因此在此停止，而不是因为缺失的部分崩溃
+            // （MYPET-E84、MYPET-D57）。
             return;
         }
         compatManager.init();
@@ -172,9 +172,9 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
     }
 
     /**
-     * Checks whether the server runs a Minecraft version newer than the last supported version.
+     * 检查服务器运行的 Minecraft 版本是否比最后受支持的版本更新。
      *
-     * @return true if the server version is newer than 26.3 and has no supported compatibility module
+     * @return 如果服务器版本比 26.3 更新且没有受支持的兼容模块，则返回 true
      */
     private boolean isNewerThanMyPet3() {
         String minecraftVersion = compatUtil.getMinecraftVersion();
@@ -186,7 +186,7 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
     public void onEnable() {
         this.isReady = false;
 
-        // MyPet 3 ends at Minecraft 26.3. On anything newer, stop before initializing the plugin.
+        // MyPet 3 止于 Minecraft 26.3。在更新的版本上，请在初始化插件之前停止。
         if (isNewerThanMyPet3()) {
             String minecraftVersion = compatUtil.getMinecraftVersion();
             getLogger().warning("This version of MyPet is not compatible with Minecraft " + minecraftVersion + ".");
@@ -197,7 +197,7 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
         Updater updater = new Updater("MyPet");
         printSplashScreen(Configuration.Update.CHECK ? "Checking for updates..." : null);
 
-        // The update check may block on the network, so it runs in the background.
+        // 更新检查可能因网络而阻塞，因此在后台线程中运行。
         Thread startupChecks = new Thread(() -> {
             try {
                 String updateStatus = updater.update();
@@ -205,18 +205,18 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
                     getLogger().info(updateStatus);
                 }
             } catch (Throwable t) {
-                // MyPet may have been disabled or reloaded while the check was still running
+                // 检查仍在运行时 MyPet 可能已被禁用或重新加载
                 getLogger().fine("Update check stopped: " + t);
             }
         }, "MyPet Update Check");
-        // Not a daemon thread: an update download started from here must be allowed to finish
-        // writing its file before the JVM exits, as it was before the check moved off the main thread.
+        // 不是守护线程：从这里启动的更新下载必须能在 JVM 退出前写完文件，
+        // 这与检查移到主线程之外之前的行为一致。
         startupChecks.setDaemon(false);
         startupChecks.start();
 
         if (compatUtil.getInternalVersion() == null || !MyPetVersion.isValidBukkitPacket(compatUtil.getInternalVersion())) {
             getLogger().warning("This version of MyPet is not compatible with \"" + compatUtil.getInternalVersion() + " on " + compatUtil.getMinecraftVersion() + "\". Is MyPet up to date?");
-            // MyPet can't run here, so give the update check the chance to fetch a compatible version
+            // MyPet 无法在此运行，因此给更新检查一个获取兼容版本的机会
             try {
                 startupChecks.join();
             } catch (InterruptedException e) {
@@ -227,9 +227,9 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
             return;
         }
 
-        // isValidBukkitPacket() can pass on a brand-new server build for which no compat module
-        // actually loaded, leaving these null (set in onLoad via getCompatInstance). Bail cleanly
-        // instead of NPEing in registerEntityTypes() / compatManager.enable() below.
+        // 在全新的服务端构建上，isValidBukkitPacket() 可能通过，但实际并未加载任何兼容模块，
+        // 导致这些字段为 null（在 onLoad 中通过 getCompatInstance 设置）。请干净地退出，
+        // 而不是在下面的 registerEntityTypes() / compatManager.enable() 中抛出 NPE。
         if (entityRegistry == null || platformHelper == null || petInfo == null || compatManager == null) {
             getLogger().severe("No MyPet compatibility module could be loaded for " + compatUtil.getMinecraftVersion() + " (internal version " + compatUtil.getInternalVersion() + "). MyPet cannot run on this server version - disabling.");
             setEnabled(false);
@@ -241,10 +241,10 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
         try {
             entityRegistry.registerEntityTypes();
         } catch (LinkageError e) {
-            // The entity-registration hack reflects into vanilla/Spigot registry internals. On
-            // Forge-Bukkit hybrids (Arclight, Mohist, ...) those internals are remapped, so the
-            // field/method access throws NoSuchFieldError/NoSuchMethodError/etc. (LinkageError).
-            // These platforms are not supported - disable cleanly instead of half-enabling.
+            // 实体注册的 hack 会反射访问原版/Spigot 注册表的内部实现。在
+            // Forge-Bukkit 混合端（Arclight、Mohist 等）上，这些内部实现被重映射，因此
+            // 字段/方法访问会抛出 NoSuchFieldError/NoSuchMethodError 等（LinkageError）。
+            // 这些平台不受支持——请干净地禁用，而不是半启用。
             getLogger().severe("Failed to register MyPet's entities on this server (" + compatUtil.getMinecraftVersion() + "). " +
                     "This usually means an unsupported server platform - MyPet does not support Forge-Bukkit hybrids such as Arclight or Mohist. Disabling.");
             getLogger().severe("Reason: " + e);
@@ -256,20 +256,20 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
 
         compatManager.enable();
 
-        // Fetch Mojang's vanilla translations from the official asset CDN so we can
-        // give freshly-created pets a real localized default name instead of literal
-        // "Name.HappyGhast"-style keys when MyPet's own locale files have no row.
+        // 从官方资源 CDN 获取 Mojang 的原版翻译，以便在 MyPet 自身的语言文件中
+        // 没有对应条目时，为新创建的宠物提供真正本地化的默认名称，
+        // 而不是直接显示 "Name.HappyGhast" 这样的键名。
         VanillaTranslationLoader.loadAsync(this);
 
         ConfigurationLoader.loadCompatConfiguration();
 
-        //register leash flags
+        // 注册捕捉标志
         registerLeashFlags();
 
-        //register skilltree requirementSettings
+        // 注册技能树需求设置
         registerSkilltreeRequirements();
 
-        //register exp calculators
+        // 注册经验计算器
         if (!new File(getDataFolder(), "exp.js").exists()) {
             platformHelper.copyResource(this, "exp.js", new File(getDataFolder(), "exp.js"));
         }
@@ -279,7 +279,7 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
             calculatorManager.switchCalculator(Configuration.LevelSystem.CALCULATION_MODE.toLowerCase());
         });
 
-        // register event listener
+        // 注册事件监听器
         PlayerListener playerListener = new PlayerListener();
         getServer().getPluginManager().registerEvents(playerListener, this);
         VehicleListener vehicleListener = new VehicleListener();
@@ -292,13 +292,13 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
         getServer().getPluginManager().registerEvents(levelupListener, this);
         WorldListener worldListener = new WorldListener();
         getServer().getPluginManager().registerEvents(worldListener, this);
-        // Register CreakingHeartListener for 1.21.4+ (when Creaking Heart was added)
+        // 为 1.21.4+ 注册 CreakingHeartListener（该版本加入 Creaking Heart 之时）
         if (MyPetApi.getCompatUtil().compareWithMinecraftVersion("1.21.4") >= 0) {
             CreakingHeartListener creakingHeartListener = new CreakingHeartListener();
             getServer().getPluginManager().registerEvents(creakingHeartListener, this);
         }
 
-        // register commands
+        // 注册命令
         getCommand("petname").setExecutor(new CommandName());
         getCommand("petcall").setExecutor(new CommandCall());
         getCommand("petsendaway").setExecutor(new CommandSendAway());
@@ -322,13 +322,13 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
         getCommand("pettrade").setExecutor(new CommandTrade());
         getCommand("petshop").setExecutor(new CommandShop());
 
-        // load worldgroups
+        // 加载世界组
         WorldGroup.loadGroups(new File(getDataFolder().getPath(), "worldgroups.yml"));
 
-        // register skills
+        // 注册技能
         registerSkills();
 
-        // create folders
+        // 创建文件夹
         File skilltreeFolder = new File(getDataFolder().getPath(), "skilltrees");
         getDataFolder().mkdirs();
         boolean createDefaultSkilltree = skilltreeFolder.mkdirs();
@@ -369,7 +369,7 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
             MyPetApi.getLogger().info("Default skilltree files created.");
         }
 
-        // load skilltrees
+        // 加载技能树
         MyPetApi.getSkilltreeManager().clearSkilltrees();
         SkillTreeLoaderJSON.loadSkilltrees(new File(getDataFolder(), "skilltrees"));
 
@@ -391,7 +391,7 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
             }
         }
 
-        // init repository
+        // 初始化存储库
         if (Configuration.Repository.REPOSITORY_TYPE.equalsIgnoreCase("NBT")) {
             Configuration.Repository.REPOSITORY_TYPE = "SQLite";
             Configuration.Repository.CONVERT_FROM = "NBT";
@@ -461,7 +461,7 @@ public final class MyPetPlugin extends JavaPlugin implements de.Keyle.MyPet.api.
 
         serviceManager.activate(Load.State.OnReady);
 
-        // load pets for online players
+        // 为在线玩家加载宠物
         new BukkitRunnable() {
             @Override
             public void run() {

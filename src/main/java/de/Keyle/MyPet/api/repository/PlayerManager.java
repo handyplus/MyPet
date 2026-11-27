@@ -80,11 +80,11 @@ public abstract class PlayerManager {
     }
 
     public boolean isMyPetPlayer(Player player) {
-        // Require the loaded MyPetPlayer to actually be present, not just the
-        // uuid->internalUUID mapping. During the async join/load window the mapping
-        // can exist before onlinePlayers is populated; without this check,
-        // isMyPetPlayer() returns true while getMyPetPlayer() returns null, which
-        // NPEs every "if (isMyPetPlayer(p)) { getMyPetPlayer(p).hasMyPet()... }" site.
+        // 要求已加载的 MyPetPlayer 确实存在，而不仅仅是存在
+        // uuid->internalUUID 映射。在异步加入/加载期间，映射可能先于
+        // onlinePlayers 被填充而存在；如果不做此检查，
+        // isMyPetPlayer() 会返回 true 而 getMyPetPlayer() 返回 null，
+        // 从而导致每个 "if (isMyPetPlayer(p)) { getMyPetPlayer(p).hasMyPet()... }" 调用点抛出 NPE。
         UUID internalUUID = uuidToInternalUUID.get(player.getUniqueId());
         return internalUUID != null && onlinePlayers.containsKey(internalUUID);
     }

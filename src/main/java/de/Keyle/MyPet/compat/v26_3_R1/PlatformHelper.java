@@ -90,14 +90,14 @@ public class PlatformHelper extends de.Keyle.MyPet.api.PlatformHelper {
 
 
     /**
-     * @param location   the {@link Location} around which players must be to see the effect
-     * @param effectName list of effects: https://gist.github.com/riking/5759002
-     * @param offsetX    the amount to be randomly offset by in the X axis
-     * @param offsetY    the amount to be randomly offset by in the Y axis
-     * @param offsetZ    the amount to be randomly offset by in the Z axis
-     * @param speed      the speed of the particles
-     * @param count      the number of particles
-     * @param radius     the radius around the location
+     * @param location   玩家必须处于其附近的 {@link Location} 才能看到该效果
+     * @param effectName 效果列表：https://gist.github.com/riking/5759002
+     * @param offsetX    在 X 轴上随机偏移的量
+     * @param offsetY    在 Y 轴上随机偏移的量
+     * @param offsetZ    在 Z 轴上随机偏移的量
+     * @param speed      粒子的速度
+     * @param count      粒子的数量
+     * @param radius     围绕该位置的半径
      */
     @Override
     public void playParticleEffect(Location location, String effectName, float offsetX, float offsetY, float offsetZ, float speed, int count, int radius, de.Keyle.MyPet.api.compat.Compat<Object> data) {
@@ -141,14 +141,14 @@ public class PlatformHelper extends de.Keyle.MyPet.api.PlatformHelper {
     }
 
     /**
-     * @param location   the {@link Location} around which players must be to see the effect
-     * @param effectName list of effects: https://gist.github.com/riking/5759002
-     * @param offsetX    the amount to be randomly offset by in the X axis
-     * @param offsetY    the amount to be randomly offset by in the Y axis
-     * @param offsetZ    the amount to be randomly offset by in the Z axis
-     * @param speed      the speed of the particles
-     * @param count      the number of particles
-     * @param radius     the radius around the location
+     * @param location   玩家必须处于其附近的 {@link Location} 才能看到该效果
+     * @param effectName 效果列表：https://gist.github.com/riking/5759002
+     * @param offsetX    在 X 轴上随机偏移的量
+     * @param offsetY    在 Y 轴上随机偏移的量
+     * @param offsetZ    在 Z 轴上随机偏移的量
+     * @param speed      粒子的速度
+     * @param count      粒子的数量
+     * @param radius     围绕该位置的半径
      */
     @Override
     public void playParticleEffect(Player player, Location location, String effectName, float offsetX, float offsetY, float offsetZ, float speed, int count, int radius, de.Keyle.MyPet.api.compat.Compat<Object> data) {
@@ -242,10 +242,10 @@ public class PlatformHelper extends de.Keyle.MyPet.api.PlatformHelper {
         net.minecraft.world.entity.Entity entity = ((CraftEntity) bukkitEntity).getHandle();
         CompoundTag vanillaNBT = new CompoundTag();
 
-        // For villagers and wandering traders we need to use the special NBT IO helpers
+        // 对于村民和流浪商人，需要使用专门的 NBT IO 辅助方法
         try {
             if (bukkitEntity instanceof Villager || bukkitEntity instanceof WanderingTrader) {
-                // VillagerNbtIO.writeFrom returns a CompoundTag -> use it
+                // VillagerNbtIO.writeFrom 返回 CompoundTag -> 直接使用它
                 CompoundTag written = VillagerNbtIO.writeFrom(bukkitEntity);
                 if (written != null) {
                     vanillaNBT = written;
@@ -272,7 +272,7 @@ public class PlatformHelper extends de.Keyle.MyPet.api.PlatformHelper {
             if (bukkitEntity instanceof Villager) {
                 VillagerNbtIO.readInto(bukkitEntity, nbtData);
             } else if (bukkitEntity instanceof WanderingTrader) {
-                // Wandering traders are handled the same way as villagers for NBT read
+                // 读取 NBT 时，流浪商人与村民的处理方式相同
                 VillagerNbtIO.readInto(bukkitEntity, nbtData);
             }
         }
@@ -324,8 +324,8 @@ public class PlatformHelper extends de.Keyle.MyPet.api.PlatformHelper {
                     return true;
                 }
 
-                // 26.3 dropped AxeItem/ShovelItem/HoeItem; those items all carry the TOOL component checked above
-                // 26.3 dropped SignItem and made signs plain BlockItems, so test the block instead
+                // 26.3 移除了 AxeItem/ShovelItem/HoeItem；这些物品都带有上面已检查的 TOOL 组件
+                // 26.3 移除了 SignItem 并把告示牌变成普通 BlockItem，因此改为检查方块类型
                 if (itemstack.getItem() instanceof BlockItem && ((BlockItem) itemstack.getItem()).getBlock() instanceof SignBlock) {
                     return true;
                 } else if (itemstack.getItem() instanceof BowItem) {

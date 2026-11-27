@@ -59,7 +59,7 @@ public class ItemDatabase implements ServiceContainer {
     }
 
     protected void loadFile() {
-        // source: https://minecraftitemids.com/
+        // 来源：https://minecraftitemids.com/
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(MyPetApi.getPlugin().getResource("items.json"), StandardCharsets.UTF_8))) {
             Gson gson = new Gson();

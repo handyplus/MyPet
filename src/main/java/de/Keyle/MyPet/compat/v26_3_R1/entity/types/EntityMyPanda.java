@@ -111,8 +111,8 @@ public class EntityMyPanda extends EntityMyPet {
 	/*
 	 *  1   =
 	 *  2   =
-	 *  4   =  roll foward
-	 *  8   =  sitting
+	 *  4   =  向前翻滚
+	 *  8   =  坐下
 	 */
 	public void updateActionsWatcher(int i, boolean flag) {
 		if (flag) {

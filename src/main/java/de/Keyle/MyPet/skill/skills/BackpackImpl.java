@@ -40,80 +40,76 @@ import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 /**
- * Backpack Pet Skill
+ * 背包宠物技能
  * <p>
- * This skill provides a per-Pet expandable inventory that can be opened by the
- * owner. The size of the inventory is driven by the number of configured rows
- * (each row represents 9 slots). Additional features include persisting the
- * inventory via NBT, reacting to environment and permission constraints when
- * opening the inventory, and optional drop behavior on player death.
+ * 该技能为每只宠物提供一个可由主人打开的可扩展背包。背包容量由配置的行数
+ * 决定（每行代表 9 个槽位）。其他特性包括：通过 NBT 持久化背包内容、
+ * 打开背包时响应环境与权限限制，以及可选的玩家死亡时掉落行为。
  * <p>
- * Robustness: All open operations validate environmental constraints (sleeping,
- * creative-mode limitations, location restrictions) and honor plugin events so
- * other components can veto the action. The inventory size is automatically
- * recalculated when the row-upgrade changes via a callback.
+ * 健壮性：所有打开操作都会校验环境约束（睡眠中、创造模式限制、位置限制），
+ * 并遵循插件事件，使其他组件可以否决该操作。当行数升级通过回调发生变化时，
+ * 背包容量会自动重新计算。
  */
 public class BackpackImpl implements de.Keyle.MyPet.api.skill.skills.Backpack {
 
     /**
-     * Number of inventory rows available to the Pet. Each row equals 9 slots.
-     * This is controlled by the skill system and can change over time.
+     * 宠物可用的背包行数。每行等于 9 个槽位。
+     * 该值由技能系统控制，可能随时间变化。
      */
     @Getter
     protected UpgradeComputer<Number> rows = new UpgradeComputer<>(0);
 
     /**
-     * Determines whether the backpack contents should drop when the Pet dies.
-     * The semantics are applied by listeners outside this class.
+     * 决定宠物死亡时是否掉落背包内的物品。
+     * 具体的语义由本类之外的监听器实现。
      */
     @Getter
     protected UpgradeComputer<Boolean> dropOnDeath = new UpgradeComputer<>(false);
 
     /**
-     * Backing inventory implementation, provided by a version-dependent compat layer.
-     * Returns the underlying CustomInventory for direct interactions (e.g., drop,
-     * set/get items, or querying the Bukkit inventory).
+     * 底层背包实现，由与版本相关的兼容层提供。
+     * 返回底层的 CustomInventory，以便直接交互（例如掉落、
+     * 设置/获取物品，或查询 Bukkit 物品栏）。
      */
     @Getter
     protected CustomInventory inventory;
 
-    /** The owning Pet. */
+    /** 所属宠物。 */
     @Getter
     protected MyPet myPet;
 
     /**
-     * Creates a new Backpack skill instance for the given Pet and wires the size
-     * callback so that inventory capacity follows the number of configured rows.
+     * 为指定宠物创建一个新的背包技能实例，并挂接容量回调，
+     * 使背包容量跟随配置的行数。
      *
-     * @param myPet owning Pet
+     * @param myPet 所属宠物
      */
     public BackpackImpl(MyPet myPet) {
         this.myPet = myPet;
         inventory = MyPetApi.getCompatUtil().getCompatInstance(CustomInventory.class, "util.inventory", "CustomInventory");
-        // Ensure inventory reflects current row count immediately
+        // 确保背包立即反映当前的行数
         if(rows.getValue().intValue() > 0) {
             inventory.setSize(rows.getValue().intValue() * 9);
         }
-        // Keep size in sync with future row changes (always register callback)
+        // 保持容量与将来的行数变化同步（始终注册回调）
         rows.addCallback((newValue, reason) -> this.inventory.setSize(newValue.intValue() * 9));
     }
 
     /**
-     * Player-friendly string describing the number of rows, localized for the
-     * provided locale code.
+     * 描述行数的、对玩家友好的字符串，并按给定的语言代码本地化。
      *
-     * @param locale the language/region code used for translations
-     * @return a pretty, localized representation of the row count
+     * @param locale 用于翻译的语言/地区代码
+     * @return 美观的、本地化的行数表示
      */
     public String toPrettyString(String locale) {
         return "" + ChatColor.GOLD + rows.getValue() + ChatColor.RESET + " " + Translation.getString("Name.Rows", locale);
     }
 
     /**
-     * Message presented to the player when the backpack has been upgraded.
-     * Includes the new slot count (rows * 9).
+     * 背包升级后展示给玩家的消息。
+     * 包含新的槽位数量（行数 * 9）。
      *
-     * @return an array of lines forming the upgrade message
+     * @return 组成升级消息的若干行文本
      */
     @Override
     public String[] getUpgradeMessage() {
@@ -123,15 +119,14 @@ public class BackpackImpl implements de.Keyle.MyPet.api.skill.skills.Backpack {
     }
 
     /**
-     * Tries to open the backpack for the owning player. This performs multiple
-     * checks:
-     * - The backpack must have at least one row.
-     * - The owner must not be sleeping.
-     * - Creative mode may be restricted by configuration/permissions.
-     * - The current location must allow opening (not inside liquid blocks).
-     * - Other plugins may cancel via MyPetInventoryActionEvent.
+     * 尝试为拥有者打开背包。该操作会执行多项检查：
+     * - 背包必须至少有一行。
+     * - 拥有者不能处于睡眠状态。
+     * - 创造模式可能受配置/权限限制。
+     * - 当前位置必须允许打开（不能在液体方块内）。
+     * - 其他插件可通过 MyPetInventoryActionEvent 取消该操作。
      *
-     * @return true if the backpack was opened; false otherwise
+     * @return 若成功打开背包则返回 true；否则返回 false
      */
     public boolean activate() {
         if (rows.getValue().intValue() > 0) {
@@ -163,10 +158,9 @@ public class BackpackImpl implements de.Keyle.MyPet.api.skill.skills.Backpack {
     }
 
     /**
-     * Opens the underlying inventory GUI for the given player, after setting the
-     * inventory title to the Pet's current name.
+     * 先把物品栏标题设为宠物的当前名称，再为给定玩家打开底层物品栏 GUI。
      *
-     * @param p the player for whom to open the inventory
+     * @param p 要为其打开物品栏的玩家
      */
     public void openInventory(Player p) {
         inventory.setName(myPet.getPetName());
@@ -174,21 +168,21 @@ public class BackpackImpl implements de.Keyle.MyPet.api.skill.skills.Backpack {
     }
 
     /**
-     * Closes the backpack inventory if it is currently open.
+     * 若背包物品栏当前处于打开状态则将其关闭。
      */
     public void closeInventory() {
         inventory.close();
     }
 
     /**
-     * Restores the inventory state from the provided NBT tag.
+     * 从给定的 NBT 标签恢复物品栏状态。
      *
-     * @param tag the tag to load from
+     * @param tag 要加载的标签
      */
     public void load(TagCompound tag) {
-        // Ensure the underlying inventory exists with correct capacity before loading items. A
-        // backpack that shrank while it was full is saved with more slots than its rows, so make
-        // room for every saved slot instead of dropping the ones past the last row.
+        // 在加载物品前确保底层物品栏存在且容量正确。处于满仓状态时被缩小过的背包
+        // 会以多于其行数的槽位数保存，因此要为每个已保存的槽位留出空间，
+        // 而不是丢弃最后一行之后的那些槽位中的物品。
         int size = rows.getValue().intValue() * 9;
         int highestSlot = highestSavedSlot(tag);
         if (highestSlot >= size) {
@@ -217,9 +211,9 @@ public class BackpackImpl implements de.Keyle.MyPet.api.skill.skills.Backpack {
     }
 
     /**
-     * Serializes the current inventory state into a new NBT tag.
+     * 将当前物品栏状态序列化进一个新的 NBT 标签。
      *
-     * @return an NBT tag containing the inventory contents and metadata
+     * @return 包含物品栏内容与元数据的 NBT 标签
      */
     public TagCompound save() {
         TagCompound nbtTagCompound = new TagCompound();
@@ -228,18 +222,17 @@ public class BackpackImpl implements de.Keyle.MyPet.api.skill.skills.Backpack {
     }
 
     /**
-     * Indicates whether this skill is currently usable (i.e., at least one row
-     * is available).
+     * 指示该技能当前是否可用（即至少有一行可用）。
      *
-     * @return true if the backpack has capacity; false otherwise
+     * @return 若背包有容量则返回 true；否则返回 false
      */
     public boolean isActive() {
         return rows.getValue().intValue() > 0;
     }
 
     /**
-     * Resets all upgrades applied to this skill (row count and drop-on-death).
-     * Does not clear the inventory contents.
+     * 重置应用到该技能上的所有升级（行数与死亡掉落）。
+     * 不会清空物品栏内容。
      */
     @Override
     public void reset() {
@@ -248,7 +241,7 @@ public class BackpackImpl implements de.Keyle.MyPet.api.skill.skills.Backpack {
     }
 
     /**
-     * Debug-friendly representation of the current skill state.
+     * 便于调试的当前技能状态表示。
      */
     @Override
     public String toString() {

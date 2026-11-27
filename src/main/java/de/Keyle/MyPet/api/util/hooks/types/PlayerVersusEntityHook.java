@@ -25,7 +25,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 /**
- * This interface defines that the hook checks if players can attack an entity
+ * 此接口表示该 Hook 负责检查玩家能否攻击实体
  */
 public interface PlayerVersusEntityHook extends PluginHook {
     boolean canHurt(Player attacker, Entity defender);

@@ -137,13 +137,13 @@ public class HookHelper extends de.Keyle.MyPet.api.util.hooks.HookHelper {
 
     @Override
     public boolean isVanished(Player player) {
-        // commonly shared method of vanish plugins to mark a player as vanished
+        // vanish 类插件标记玩家已隐身的通用做法
         for (MetadataValue meta : player.getMetadata("vanished")) {
             if (meta.asBoolean()) {
                 return true;
             }
         }
-        // allow hooks to vanish players too
+        // 也允许各钩子将玩家设为隐身
         List<VanishedHook> vanishedHooks = MyPetApi.getPluginHookManager().getHooks(VanishedHook.class);
         for (VanishedHook hook : vanishedHooks) {
             if (hook.isVanished(player)) {
@@ -163,7 +163,7 @@ public class HookHelper extends de.Keyle.MyPet.api.util.hooks.HookHelper {
         return economyHook != null && economyHook.checkEconomy();
     }
 
-    // Beacon region checks
+    // 信标区域检查
 
     @Override
     public boolean isBeaconAllowed(Location location) {

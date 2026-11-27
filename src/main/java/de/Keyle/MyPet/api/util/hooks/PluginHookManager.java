@@ -35,9 +35,8 @@ import java.io.File;
 import java.util.*;
 
 /**
- * The {@link PluginHookManager} manages all interactions with other plugins. Hooks are stored by class and by the
- * interfaces they implement so they can also be retrieved by them. You can get instances of other plugins and check if
- * other plugins are active.
+ * {@link PluginHookManager} 管理与其他插件的所有交互。钩子按类和它们所实现的接口存储，
+ * 因此也可以通过这些接口获取。你可以获取其他插件的实例，并检查其他插件是否处于启用状态。
  */
 public class PluginHookManager {
 
@@ -61,10 +60,10 @@ public class PluginHookManager {
     }
 
     /**
-     * Register new hooks here. A hook needs the {@link PluginHookName} annotation to be accepted.
-     * Registered hooks will not enabled after MyPet has loaded. Use enableHook instead.
+     * 在这里注册新的钩子。钩子需要带有 {@link PluginHookName} 注解才会被接受。
+     * MyPet 加载完成后注册的钩子不会被启用，请改用 enableHook。
      *
-     * @param hookClass the hook class
+     * @param hookClass 钩子类
      */
     public void registerHook(Class<? extends PluginHook> hookClass) {
         if (hookClass.isAnnotationPresent(PluginHookName.class)) {
@@ -91,11 +90,11 @@ public class PluginHookManager {
     }
 
     /**
-     * Adds a hook for MyPet.
-     * A hook needs the {@link PluginHookName} annotation to be accepted.
+     * 为 MyPet 添加一个钩子。
+     * 钩子需要带有 {@link PluginHookName} 注解才会被接受。
      *
-     * @param hook the hook
-     * @return true if the hook was enabled successfully
+     * @param hook 钩子
+     * @return 钩子是否成功启用
      */
     @SuppressWarnings("unchecked")
     public boolean enableHook(PluginHook hook) {
@@ -159,8 +158,8 @@ public class PluginHookManager {
     }
 
     /**
-     * Enables all registered hooks.
-     * Not needed after MyPet has loaded.
+     * 启用所有已注册的钩子。
+     * MyPet 加载完成后无需调用。
      */
     public void enableHooks() {
         while (!registeredHooks.isEmpty()) {
@@ -170,8 +169,8 @@ public class PluginHookManager {
     }
 
     /**
-     * Disables all enabled hooks.
-     * Only used to disable MyPet.
+     * 禁用所有已启用的钩子。
+     * 仅用于禁用 MyPet。
      */
     public void disableHooks() {
         for (PluginHook hook : hooks.values()) {
@@ -183,9 +182,9 @@ public class PluginHookManager {
     }
 
     /**
-     * Disables one specific enabled hook.
+     * 禁用某个指定的已启用钩子。
      *
-     * @param hook the hook to be disabled
+     * @param hook 要禁用的钩子
      */
     public void disableHook(PluginHook hook) {
         hook.onDisable();
@@ -200,9 +199,9 @@ public class PluginHookManager {
     }
 
     /**
-     * returns all enabled hooks
+     * 返回所有已启用的钩子
      *
-     * @return list of instances of the hook class
+     * @return 钩子类实例的列表
      */
     @SuppressWarnings("unchecked")
     public <T extends PluginHook> List<T> getHooks() {
@@ -210,10 +209,10 @@ public class PluginHookManager {
     }
 
     /**
-     * returns all hooks that inherit from a specific class/interface
+     * 返回所有继承自指定类/接口的钩子
      *
-     * @param hookClass class that implements from {@link PluginHook}
-     * @return list of instances of the hook class
+     * @param hookClass 实现了 {@link PluginHook} 的类
+     * @return 钩子类实例的列表
      */
     @SuppressWarnings("unchecked")
     public <T extends PluginHook> List<T> getHooks(Class<? extends T> hookClass) {
@@ -221,20 +220,20 @@ public class PluginHookManager {
     }
 
     /**
-     * returns if hooks that inherit from a specific class/interface are available
+     * 返回是否存在继承自指定类/接口的钩子
      *
-     * @param hookClass class that implements from {@link PluginHook}
-     * @return if any hook was found
+     * @param hookClass 实现了 {@link PluginHook} 的类
+     * @return 是否找到了任何钩子
      */
     public boolean hasHooks(Class<? extends PluginHook> hookClass) {
         return hooks.containsKey(hookClass);
     }
 
     /**
-     * returns the hooks of a specific class
+     * 返回指定类的钩子
      *
-     * @param hookClass class that implements from {@link PluginHook}
-     * @return instance of the hook class
+     * @param hookClass 实现了 {@link PluginHook} 的类
+     * @return 钩子类的实例
      */
     @SuppressWarnings("unchecked")
     public <T extends PluginHook> T getHook(Class<? extends T> hookClass) {
@@ -242,40 +241,40 @@ public class PluginHookManager {
     }
 
     /**
-     * returns the hooks with a specific {@link PluginHookName}
+     * 返回带有指定 {@link PluginHookName} 的钩子
      *
-     * @param name name of the plugin
-     * @return instance of a hook class associated with the plugin name
+     * @param name 插件名称
+     * @return 与该插件名称关联的钩子类实例
      */
     public PluginHook getHook(String name) {
         return hookByName.get(name);
     }
 
     /**
-     * returns if a hooks with a specific {@link PluginHookName} is available
+     * 返回带有指定 {@link PluginHookName} 的钩子是否可用
      *
-     * @param name name of the plugin
-     * @return if any hook was found
+     * @param name 插件名称
+     * @return 是否找到了任何钩子
      */
     public boolean isHookActive(String name) {
         return hookByName.containsKey(name);
     }
 
     /**
-     * returns if a hook that inherit from a specific class/interface is available
+     * 返回是否存在继承自指定类/接口的钩子
      *
-     * @param hookClass class that implements from {@link PluginHook}
-     * @return if any hook was found
+     * @param hookClass 实现了 {@link PluginHook} 的类
+     * @return 是否找到了任何钩子
      */
     public boolean isHookActive(Class<? extends PluginHook> hookClass) {
         return hookByClass.containsKey(hookClass);
     }
 
     /**
-     * searches for an instance of a plugin
+     * 查找插件实例
      *
-     * @param clazz class of the plugin
-     * @return instance of the plugin
+     * @param clazz 插件的类
+     * @return 插件的实例
      */
     public <T extends JavaPlugin> Optional<T> getPluginInstance(Class<T> clazz) {
         try {
@@ -295,10 +294,10 @@ public class PluginHookManager {
     }
 
     /**
-     * searches for an instance of a plugin
+     * 查找插件实例
      *
-     * @param pluginName name of the plugin
-     * @return instance of the plugin
+     * @param pluginName 插件名称
+     * @return 插件的实例
      */
     @SuppressWarnings("unchecked")
     public <T extends JavaPlugin> Optional<T> getPluginInstance(String pluginName) {
@@ -315,10 +314,10 @@ public class PluginHookManager {
     }
 
     /**
-     * checks if a plugin is enabled
+     * 检查插件是否已启用
      *
-     * @param pluginName name of the plugin
-     * @return if the plugin is enabled
+     * @param pluginName 插件名称
+     * @return 插件是否已启用
      */
     public boolean isPluginUsable(String pluginName) {
         JavaPlugin plugin = (JavaPlugin) Bukkit.getPluginManager().getPlugin(pluginName);
@@ -326,11 +325,11 @@ public class PluginHookManager {
     }
 
     /**
-     * checks if a plugin with a specific class name is enabled
+     * 检查具有指定类名的插件是否已启用
      *
-     * @param pluginName name of the plugin
-     * @param className  class name
-     * @return if the plugin is enabled
+     * @param pluginName 插件名称
+     * @param className  类名
+     * @return 插件是否已启用
      */
     public static boolean isPluginUsable(String pluginName, String className) {
         JavaPlugin plugin = (JavaPlugin) Bukkit.getPluginManager().getPlugin(pluginName);
@@ -338,10 +337,10 @@ public class PluginHookManager {
     }
 
     /**
-     * checks if a plugin is available
+     * 检查插件是否可用
      *
-     * @param pluginName name of the plugin
-     * @return if the plugin is available
+     * @param pluginName 插件名称
+     * @return 插件是否可用
      */
     public boolean isPluginAvailable(String pluginName) {
         JavaPlugin plugin = (JavaPlugin) Bukkit.getPluginManager().getPlugin(pluginName);
@@ -349,11 +348,11 @@ public class PluginHookManager {
     }
 
     /**
-     * checks if a plugin with a specific class name is available
+     * 检查具有指定类名的插件是否可用
      *
-     * @param pluginName name of the plugin
-     * @param className  class name
-     * @return if the plugin is available
+     * @param pluginName 插件名称
+     * @param className  类名
+     * @return 插件是否可用
      */
     public static boolean isPluginAvailable(String pluginName, String className) {
         JavaPlugin plugin = (JavaPlugin) Bukkit.getPluginManager().getPlugin(pluginName);

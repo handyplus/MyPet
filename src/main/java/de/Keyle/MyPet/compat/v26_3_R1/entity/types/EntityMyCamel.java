@@ -42,7 +42,7 @@ import de.Keyle.MyPet.compat.v26_3_R1.util.CompatItemStack;
 
 import static de.Keyle.MyPet.compat.v26_3_R1.util.HandSlot.getSlotForHand;
 
-// TODO add jumping mechanic and second passenger (potentially)
+// TODO 添加跳跃机制，以及（可能的）第二名乘客
 @EntitySize(width = 0.9F, height = 1.7F)
 public class EntityMyCamel extends EntityMyPet {
 
@@ -124,7 +124,7 @@ public class EntityMyCamel extends EntityMyPet {
 					try {
 						itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 					} catch (Error e) {
-						// TODO REMOVE
+						// TODO 移除
 					}
 				}
 
@@ -176,9 +176,9 @@ public class EntityMyCamel extends EntityMyPet {
 		return (MyCamel) myPet;
 	}
 
-	/** Saddle things
-	 * Possible visual camel effects:
-	 * 4 saddle
+	/** 马鞍相关
+	 * 骆驼可能的视觉效果：
+	 * 4 表示马鞍
 	 */
 	protected void applyVisual(int value, boolean flag) {
 		int i = this.getEntityData().get(SADDLE_CHEST_WATCHER);

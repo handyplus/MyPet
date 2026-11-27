@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ContributorCheck {
     private static final Map<String, Character> contributorMap = new ConcurrentHashMap<>();
     private static volatile boolean contributorMapLoaded = false;
-    private static final long REFRESH_INTERVAL_TICKS = 10 * 60 * 20L; // 10 minutes in ticks
+    private static final long REFRESH_INTERVAL_TICKS = 10 * 60 * 20L; // 10 分钟对应的刻数
 
     public static void startRefreshTask() {
         org.bukkit.Bukkit.getScheduler().runTaskTimerAsynchronously(
@@ -102,16 +102,16 @@ public class ContributorCheck {
 
     public static ContributorRank getContributorRank(MyPetPlayer player) {
         try {
-            // Check whether this player has contributed to MyPet
-            // returns
-            //   0 for nothing
-            //   1 for donator
-            //   2 for developer
-            //   3 for translator
-            //   4 for helper
-            //   5 for creator
-            //   6 for premium
-            // no data will be saved on the server
+            // 检查该玩家是否曾为 MyPet 作出贡献
+            // 返回值
+            //   0 表示无
+            //   1 表示捐赠者
+            //   2 表示开发者
+            //   3 表示翻译者
+            //   4 表示帮助者
+            //   5 表示创建者
+            //   6 表示高级用户
+            // 不会在服务器上保存任何数据
             String check;
             if (player.getMojangUUID() != null) {
                 check = player.getName()+","+player.getMojangUUID()+",";

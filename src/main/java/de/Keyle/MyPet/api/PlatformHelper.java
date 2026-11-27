@@ -47,14 +47,14 @@ import java.util.UUID;
 public abstract class PlatformHelper {
 
     /**
-     * @param location the {@link Location} around which players must be to see the effect
-     * @param effect   list of effects: https://gist.github.com/riking/5759002
-     * @param offsetX  the amount to be randomly offset by in the X axis
-     * @param offsetY  the amount to be randomly offset by in the Y axis
-     * @param offsetZ  the amount to be randomly offset by in the Z axis
-     * @param speed    the speed of the particles
-     * @param count    the number of particles
-     * @param radius   the radius around the location
+     * @param location 玩家必须在 {@link Location} 附近才能看到该效果
+     * @param effect   效果列表：https://gist.github.com/riking/5759002
+     * @param offsetX  在 X 轴上的随机偏移量
+     * @param offsetY  在 Y 轴上的随机偏移量
+     * @param offsetZ  在 Z 轴上的随机偏移量
+     * @param speed    粒子的速度
+     * @param count    粒子数量
+     * @param radius   该位置周围的半径
      */
     public abstract void playParticleEffect(Location location, String effect, float offsetX, float offsetY, float offsetZ, float speed, int count, int radius, Compat<Object> data);
 
@@ -63,14 +63,14 @@ public abstract class PlatformHelper {
     }
 
     /**
-     * @param location the {@link Location} around which players must be to see the effect
-     * @param effect   list of effects: https://gist.github.com/riking/5759002
-     * @param offsetX  the amount to be randomly offset by in the X axis
-     * @param offsetY  the amount to be randomly offset by in the Y axis
-     * @param offsetZ  the amount to be randomly offset by in the Z axis
-     * @param speed    the speed of the particles
-     * @param count    the number of particles
-     * @param radius   the radius around the location
+     * @param location 玩家必须在 {@link Location} 附近才能看到该效果
+     * @param effect   效果列表：https://gist.github.com/riking/5759002
+     * @param offsetX  在 X 轴上的随机偏移量
+     * @param offsetY  在 Y 轴上的随机偏移量
+     * @param offsetZ  在 Z 轴上的随机偏移量
+     * @param speed    粒子的速度
+     * @param count    粒子数量
+     * @param radius   该位置周围的半径
      */
     public abstract void playParticleEffect(Player player, Location location, String effect, float offsetX, float offsetY, float offsetZ, float speed, int count, int radius, Compat<Object> data);
 
@@ -109,9 +109,9 @@ public abstract class PlatformHelper {
     public boolean copyResource(Plugin plugin, String ressource, File destination) {
         InputStream template = plugin.getResource(ressource);
         if (template == null) {
-            // getResource() returns null (rather than throwing) when the entry is missing from the
-            // jar - e.g. a corrupted download, a host that repackages/strips the jar, or an
-            // incomplete build. Fail gracefully instead of NPEing out of onEnable and disabling MyPet.
+            // 当 jar 中缺少该条目时（例如下载损坏、托管方重新打包或精简了 jar、构建不完整），
+            // getResource() 会返回 null 而不是抛出异常。
+            // 这里优雅地失败，避免在 onEnable 中抛出 NPE 导致 MyPet 被禁用。
             plugin.getLogger().warning("Could not copy bundled resource \"" + ressource + "\": it is missing from the MyPet jar.");
             return false;
         }
@@ -136,8 +136,8 @@ public abstract class PlatformHelper {
     public abstract void sendMessageActionBar(Player player, String message);
 
     /**
-     * Builds the action bar message for pet health updates so it can be reused by all NMS modules.
-     * This method only constructs the message; caller is responsible for sending and for any gating (e.g., config flags).
+     * 构建用于宠物血量更新的动作栏消息，以便所有 NMS 模块复用。
+     * 该方法只负责构造消息；发送以及对条件限制（例如配置开关）的判断由调用方负责。
      */
     public String buildPetHealthActionBar(MyPet myPet, double health, double maxHealth) {
         if (myPet == null) {
@@ -145,11 +145,11 @@ public abstract class PlatformHelper {
         }
         double deltaHealth = maxHealth - health;
 
-        String healthColor = "§c"; // Red
+        String healthColor = "§c"; // 红色
         if (health > maxHealth / 3 * 2) {
-            healthColor = "§a"; // Green
+            healthColor = "§a"; // 绿色
         } else if (health > maxHealth / 3) {
-            healthColor = "§e"; // Yellow
+            healthColor = "§e"; // 黄色
         }
 
         StringBuilder message = new StringBuilder();

@@ -85,7 +85,7 @@ public class ShopManager implements ShopService {
 
     @Override
     public void onDisable() {
-        //TODO close all shops
+        //TODO 关闭所有商店
     }
 
     public void open(String name, Player player) {

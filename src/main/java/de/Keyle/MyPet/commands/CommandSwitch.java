@@ -186,7 +186,7 @@ public class CommandSwitch implements CommandTabCompleter {
                     petCount[0]++;
                 }
             });
-            // Tab as many pages as 54 slots might fit
+            // 按 54 个槽位能容纳的数量生成页码补全项
             int maxPages = (int) Math.ceil((double) petCount[0] / 54);
             for (int i = 1; i <= maxPages; i++) {
                 if (!storeList.contains(String.valueOf(i))) {

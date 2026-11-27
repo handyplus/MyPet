@@ -72,11 +72,11 @@ public class EntityMyHorse extends EntityMyPet{
 	}
 
 	/**
-	 * Possible visual horse effects:
-	 * 4 saddle
-	 * 8 chest
-	 * 32 head down
-	 * 64 rear
+	 * 马匹可能的视觉效果：
+	 * 4 马鞍
+	 * 8 箱子
+	 * 32 低头
+	 * 64 后腿抬起（尥蹶子）
 	 */
 	protected void applyVisual(int value, boolean flag) {
 		int i = this.getEntityData().get(SADDLE_CHEST_WATCHER);
@@ -172,7 +172,7 @@ public class EntityMyHorse extends EntityMyPet{
 					try {
 						itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 					} catch (Error e) {
-						// TODO REMOVE
+						// TODO 移除
 					}
 				}
 

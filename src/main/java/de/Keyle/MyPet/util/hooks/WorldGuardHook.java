@@ -77,7 +77,7 @@ public class WorldGuardHook implements PlayerVersusPlayerHook, PlayerVersusEntit
     public static final DoubleFlag EXP_ADD_FLAG = new DoubleFlag("mypet-exp-add");
     public static final DoubleFlag EXP_MULT_FLAG = new DoubleFlag("mypet-exp-mult");
 
-    // Beacon flags
+    // 信标标志
     public static final StateFlag BEACON_FLAG = new StateFlag("mypet-beacon", true);
     public static final StateFlag BEACON_SHARE_FLAG = new StateFlag("mypet-beacon-share", true);
     public static final StateFlag BEACON_SELF_FLAG = new StateFlag("mypet-beacon-self", true);
@@ -104,9 +104,9 @@ public class WorldGuardHook implements PlayerVersusPlayerHook, PlayerVersusEntit
                     return;
                 }
             } catch (Throwable e) {
-                // Some server builds bundle a bytecode rewriter (e.g. Paper's Commodore) whose ASM
-                // version can't parse WorldEdit/WorldGuard classes compiled for a newer Java release,
-                // throwing here on first class-load instead of a normal ClassNotFoundException.
+                // 某些服务端版本会捆绑一个字节码重写器（例如 Paper 的 Commodore），其 ASM
+                // 版本无法解析为更高 Java 版本编译的 WorldEdit/WorldGuard 类，
+                // 从而在首次加载类时直接抛出异常，而不是抛出正常的 ClassNotFoundException。
                 MyPetApi.getLogger().warning("Failed to inspect WorldEdit/WorldGuard classes - disabling the WorldGuard hook: " + e);
                 return;
             }
@@ -140,17 +140,17 @@ public class WorldGuardHook implements PlayerVersusPlayerHook, PlayerVersusEntit
 
                 if (flagRegistry != null) {
                     try {
-                        // Register core flags
+                        // 注册核心标志
                         registerFlag(flagRegistry, FLY_FLAG);
                         registerFlag(flagRegistry, DAMAGE_FLAG);
                         registerFlag(flagRegistry, DENY_FLAG);
                         registerFlag(flagRegistry, LEASH_FLAG);
 
-                        // Register experience flags
+                        // 注册经验标志
                         registerFlag(flagRegistry, EXP_ADD_FLAG);
                         registerFlag(flagRegistry, EXP_MULT_FLAG);
 
-                        // Register beacon flags
+                        // 注册信标标志
                         registerFlag(flagRegistry, BEACON_FLAG);
                         registerFlag(flagRegistry, BEACON_SHARE_FLAG);
                         registerFlag(flagRegistry, BEACON_SELF_FLAG);
@@ -174,7 +174,7 @@ public class WorldGuardHook implements PlayerVersusPlayerHook, PlayerVersusEntit
         try {
             flagRegistry.register(flag);
         } catch (IllegalStateException e) {
-            // Flag may already be registered (e.g., server reload) - this is OK
+            // 该标志可能已经注册过（例如服务器重载）——这没关系
             MyPetApi.getLogger().info("WorldGuard flag '" + flag.getName() + "' already registered or could not be registered: " + e.getMessage());
         }
     }
@@ -223,16 +223,16 @@ public class WorldGuardHook implements PlayerVersusPlayerHook, PlayerVersusEntit
         try {
             return queryState(loc, player, flags);
         } catch (Throwable ignored) {
-            // WorldGuard may be mid-reload or its jar already closed (e.g. via PlugManX) -> the lazy
-            // class load throws "zip file closed" / NoClassDefFoundError. Fail open (ALLOW) instead of
-            // propagating into the caller (BeaconImpl.schedule, pet-allowed checks, etc.).
+            // WorldGuard 可能正在重载中，或其 jar 已被关闭（例如通过 PlugManX）-> 延迟类加载
+            // 会抛出 "zip file closed" / NoClassDefFoundError。此时按失败即放行（ALLOW）处理，
+            // 而不是把异常抛给调用方（BeaconImpl.schedule、宠物许可检查等）。
         }
         return StateFlag.State.ALLOW;
     }
 
     /**
-     * Like {@link #getState(Location, Player, StateFlag...)} but lets WorldGuard errors propagate,
-     * so damage checks can fail closed. Returns ALLOW when there are no regions to ask.
+     * 类似 {@link #getState(Location, Player, StateFlag...)}，但会让 WorldGuard 的异常向上传播，
+     * 以便伤害检查按失败即拒绝处理。当没有可查询的区域时返回 ALLOW。
      */
     public StateFlag.State queryState(Location loc, Player player, StateFlag... flags) throws Exception {
         if (is7) {
@@ -267,7 +267,7 @@ public class WorldGuardHook implements PlayerVersusPlayerHook, PlayerVersusEntit
                 return set.queryAllValues(player != null ? wgp.wrapPlayer(player) : null, flag);
             }
         } catch (Throwable ignored) {
-            // see getState(): WorldGuard may be mid-reload / its jar closed -> fail safe.
+            // 参见 getState()：WorldGuard 可能正在重载 / 其 jar 已关闭 -> 安全地失败。
         }
         return Collections.emptyList();
     }
@@ -292,8 +292,8 @@ public class WorldGuardHook implements PlayerVersusPlayerHook, PlayerVersusEntit
     }
 
     /**
-     * WorldGuard guards every non-hostile creature with the damage-animals flag, not just animals.
-     * Villagers, wandering traders and iron/snow golems are not {@link Animals} in the Bukkit API.
+     * WorldGuard 用 damage-animals 标志保护所有非敌对生物，而不只是动物。
+     * 在 Bukkit API 中，村民、流浪商人以及铁傀儡/雪傀儡都不是 {@link Animals}。
      */
     protected static boolean isPassiveMob(Entity entity) {
         return entity instanceof NPC || entity instanceof IronGolem || entity instanceof Snowman;
@@ -334,7 +334,7 @@ public class WorldGuardHook implements PlayerVersusPlayerHook, PlayerVersusEntit
         return true;
     }
 
-    // BeaconHook implementation
+    // BeaconHook 实现
 
     @Override
     public boolean isBeaconAllowed(Location location) {
@@ -441,7 +441,7 @@ public class WorldGuardHook implements PlayerVersusPlayerHook, PlayerVersusEntit
                 Block block = event.getBlock();
                 String blockTypeName = block.getType().name();
 
-                // Check all pressure plate variants (modern + legacy names)
+                // 检查所有压力板变体（现代名称 + 旧版名称）
                 if (blockTypeName.contains("PRESSURE_PLATE") ||
                     blockTypeName.equals("WOOD_PLATE") ||
                     blockTypeName.equals("STONE_PLATE") ||
@@ -460,7 +460,7 @@ public class WorldGuardHook implements PlayerVersusPlayerHook, PlayerVersusEntit
 
     @Override
     public boolean playerCanMount(MyPetPlayer player, Entity pet) {
-        //TODO implement
+        //TODO 待实现
         return true;
     }
 

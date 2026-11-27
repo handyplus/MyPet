@@ -49,21 +49,21 @@ public class MyPetApi {
     }
 
     /**
-     * @return the main plugin instance
+     * @return 主插件实例
      */
     public static MyPetPlugin getPlugin() {
         return plugin;
     }
 
     /**
-     * @return the repository where pets and their owners are stored
+     * @return 存储宠物及其主人的存储库
      */
     public static Repository getRepository() {
         return plugin.getRepository();
     }
 
     /**
-     * @return the pluginlogger or a logger instance called MyPet
+     * @return 插件日志记录器，或名为 MyPet 的日志记录器实例
      */
     public static Logger getLogger() {
         if (plugin != null) {
@@ -74,84 +74,84 @@ public class MyPetApi {
     }
 
     /**
-     * @return instance of the Bukkit plattform helper
+     * @return Bukkit 平台辅助类的实例
      */
     public static PlatformHelper getPlatformHelper() {
         return plugin.getPlatformHelper();
     }
 
     /**
-     * @return you can find info about pet types here
+     * @return 可在此获取宠物类型信息
      */
     public static MyPetInfo getMyPetInfo() {
         return plugin.getMyPetInfo();
     }
 
     /**
-     * @return register and create entities here
+     * @return 在此注册和创建实体
      */
     public static EntityRegistry getEntityRegistry() {
         return plugin.getEntityRegistry();
     }
 
     /**
-     * @return bukkit version compatibility manager
+     * @return Bukkit 版本兼容管理器
      */
     public static CompatUtil getCompatUtil() {
         return plugin.getCompatUtil();
     }
 
     /**
-     * @return MyPet player manager
+     * @return MyPet 玩家管理器
      */
     public static PlayerManager getPlayerManager() {
         return plugin.getPlayerManager();
     }
 
     /**
-     * @return MyPet manager
+     * @return MyPet 管理器
      */
     public static MyPetManager getMyPetManager() {
         return plugin.getMyPetManager();
     }
 
     /**
-     * @return you can find plugin hook helper functions here
+     * @return 可在此找到插件 Hook 辅助函数
      */
     public static HookHelper getHookHelper() {
         return plugin.getHookHelper();
     }
 
     /**
-     * @return instance of the plugin hook manager
+     * @return 插件 Hook 管理器的实例
      */
     public static PluginHookManager getPluginHookManager() {
         return plugin.getPluginHookManager();
     }
 
     /**
-     * @return instance of the plugin hook manager
+     * @return 插件 Hook 管理器的实例
      */
     public static ServiceManager getServiceManager() {
         return plugin.getServiceManager();
     }
 
     /**
-     * @return instance of the skilltree manager
+     * @return 技能树管理器的实例
      */
     public static SkilltreeManager getSkilltreeManager() {
         return getServiceManager().getService(SkilltreeManager.class).get();
     }
 
     /**
-     * @return instance of the skill manager
+     * @return 技能管理器的实例
      */
     public static SkillManager getSkillManager() {
         return getServiceManager().getService(SkillManager.class).get();
     }
 
     /**
-     * @return instance of the leashflag manager
+     * @return 捕捉标志（LeashFlag）管理器的实例
      */
     public static LeashFlagManager getLeashFlagManager() {
         return getServiceManager().getService(LeashFlagManager.class).get();

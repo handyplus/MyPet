@@ -51,7 +51,7 @@ public class EntityMyBee extends EntityMyFlyingPet {
 	}
 
 	/**
-	 * Returns the sound that is played when the MyPet dies
+	 * 返回 MyPet 死亡时播放的声音
 	 */
 	@Override
 	protected String getMyPetDeathSound() {
@@ -59,7 +59,7 @@ public class EntityMyBee extends EntityMyFlyingPet {
 	}
 
 	/**
-	 * Returns the sound that is played when the MyPet get hurt
+	 * 返回 MyPet 受伤时播放的声音
 	 */
 	@Override
 	protected String getHurtSound() {
@@ -88,17 +88,17 @@ public class EntityMyBee extends EntityMyFlyingPet {
 	@Override
 	public void updateVisuals() {
 		this.getEntityData().set(AGE_WATCHER, getMyPet().isBaby());
-		// In 1.21.11+, anger is stored as an end time (Long). Use -1L for not angry, positive value for angry.
+		// 在 1.21.11+ 中，愤怒值以结束时间（Long）存储。不愤怒时用 -1L，愤怒时用正值。
 		this.getEntityData().set(ANGER_WATCHER, (getMyPet().isAngry() || isAngry) ? Long.MAX_VALUE : -1L);
 		this.setBeeStatus(8, getMyPet().hasNectar());
 		this.setBeeStatus(4, getMyPet().hasStung());
 	}
 
 	/**
-	 * Possible status flags:
-	 * 8: Nectar
-	 * 4: Stung
-	 * 2: ?
+	 * 可能的状态标志：
+	 * 8：花蜜（Nectar）
+	 * 4：被蛰（Stung）
+	 * 2：？
 	 */
 	private void setBeeStatus(int status, boolean flag) {
 		if (flag) {

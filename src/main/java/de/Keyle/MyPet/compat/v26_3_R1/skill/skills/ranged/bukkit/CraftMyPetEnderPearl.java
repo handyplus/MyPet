@@ -70,7 +70,7 @@ public class CraftMyPetEnderPearl extends CraftEnderPearl implements CraftMyPetP
         return SpawnCategory.MISC;
     }
 
-    /* I have no clue why I need to override these other deprecated methods also don't need to be implemented so yea...*/
+    /* 我不清楚为什么还需要重写这些其他已废弃的方法，它们同样不需要实现，就这样吧……*/
     @Override
     public void setVisibleByDefault(boolean b) {
     }

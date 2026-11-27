@@ -78,9 +78,9 @@ public class WorldGroup {
     }
 
     /**
-     * Checks whether a world group contains the world
+     * 检查某个世界组是否包含该世界
      *
-     * @param worldName The name of the checked world
+     * @param worldName 被检查的世界名称
      * @return boolean
      */
     public boolean containsWorld(String worldName) {
@@ -88,7 +88,7 @@ public class WorldGroup {
     }
 
     /**
-     * Returns all available world groups
+     * 返回所有可用的世界组
      *
      * @return Collection<WorldGroup>
      */
@@ -97,9 +97,9 @@ public class WorldGroup {
     }
 
     /**
-     * Returns the group the world is in
+     * 返回该世界所属的世界组
      *
-     * @param name World
+     * @param name 世界
      * @return WorldGroup
      */
     public static WorldGroup getGroupByWorld(String name) {
@@ -111,9 +111,9 @@ public class WorldGroup {
     }
 
     /**
-     * Returns the group the world is in
+     * 返回该世界所属的世界组
      *
-     * @param world World
+     * @param world 世界
      * @return WorldGroup
      */
     public static WorldGroup getGroupByWorld(World world) {
@@ -125,9 +125,9 @@ public class WorldGroup {
     }
 
     /**
-     * Returns the group by name
+     * 按名称返回世界组
      *
-     * @param name World
+     * @param name 世界
      * @return WorldGroup
      */
     public static WorldGroup getGroupByName(String name) {
@@ -139,7 +139,7 @@ public class WorldGroup {
     }
 
     /**
-     * Removes all worlds from the groups and then deletes the groups
+     * 从各组中移除所有世界，然后删除这些组
      */
     public static void clearGroups() {
         allGroups.clear();

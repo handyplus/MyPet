@@ -42,7 +42,7 @@ import java.util.Optional;
 public class MyPetManager extends de.Keyle.MyPet.api.repository.MyPetManager {
 
 
-    // Inactive -----------------------------------------------------------------
+    // 非激活状态 ---------------------------------------------------------------
 
     public StoredMyPet getInactiveMyPetFromMyPet(StoredMyPet myPet) {
         InactiveMyPet inactiveMyPet = new InactiveMyPet(myPet.getOwner());
@@ -63,7 +63,7 @@ public class MyPetManager extends de.Keyle.MyPet.api.repository.MyPetManager {
         return inactiveMyPet;
     }
 
-    // All ----------------------------------------------------------------------
+    // 全部 ---------------------------------------------------------------------
 
     public Optional<MyPet> activateMyPet(StoredMyPet storedMyPet) {
         if (storedMyPet == null) {
@@ -77,8 +77,8 @@ public class MyPetManager extends de.Keyle.MyPet.api.repository.MyPetManager {
             return Optional.empty();
         }
 
-        // A pet can only be active for one player. Activating a pet that another player
-        // already has active would give both of them the same pet and its backpack.
+        // 一只宠物只能对一名玩家处于激活状态。激活一只已被其他玩家激活的宠物，
+        // 会让两人共享同一只宠物及其背包。
         for (Map.Entry<MyPet, MyPetPlayer> active : mActivePetsPlayer.entrySet()) {
             if (active.getKey().getUUID().equals(storedMyPet.getUUID()) && !active.getValue().getInternalUUID().equals(storedMyPet.getOwner().getInternalUUID())) {
                 return Optional.empty();

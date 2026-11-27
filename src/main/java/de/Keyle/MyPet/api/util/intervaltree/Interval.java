@@ -23,27 +23,23 @@ package de.Keyle.MyPet.api.util.intervaltree;
 import java.util.Comparator;
 
 /**
- * A representation of a generic interval. The interval can be open or closed (the start
- * and end points may be inclusive or exclusive), as well as bounded and unbounded (it can
- * extend to positive or negative infinity).
+ * 通用区间的表示。区间可以是开区间或闭区间（起点和终点可以包含或排除），
+ * 也可以是有界或无界的（可以延伸到正无穷或负无穷）。
  * <p>
- * The class doesn't assume that the intervals are numeric, instead it is generalized to
- * represent a contiguous subset of elements, where contiguity is defined with respect to
- * an arbitrary total order function. These elements can be for example {@link java.util.Date}s
- * or basically any type, the elements of which can be compared to one another. Since the
- * class requires its generic variable to implement the {@link Comparable} interface, all
- * comparisons in the internals of the {@code Interval} class are done via the interface method.
+ * 该类并不假定区间是数值型的，而是泛化为表示元素的连续子集，
+ * 此处“连续”是相对于任意全序函数定义的。例如这些元素可以是 {@link java.util.Date}，
+ * 或者基本上任何其元素之间可以相互比较的类型。由于该类要求其泛型变量
+ * 实现 {@link Comparable} 接口，{@code Interval} 类内部的所有
+ * 比较都通过该接口方法完成。
  * <p>
- * When subclassing the {@code Interval} class, note that the start and end points of the
- * interval <strong>can</strong> be {@code null}. A {@code null} start point represents
- * the negative infinity and a {@code null} end point represents positive infinity. This
- * fact needs to be kept in mind in particular when overwriting methods with default
- * implementations in the {@code Interval} class, such as {@link #contains(Comparable)},
- * {@link #isLeftOf(Comparable)}, and in particular {@link #equals(Object)} and
- * {@link #hashCode()}.
+ * 在为 {@code Interval} 类编写子类时请注意，区间的起点和终点
+ * <strong>可以</strong>为 {@code null}。起点的 {@code null} 表示
+ * 负无穷，终点的 {@code null} 表示正无穷。在覆盖 {@code Interval} 类中
+ * 已有默认实现的方法时尤其要记住这一点，例如 {@link #contains(Comparable)}、
+ * {@link #isLeftOf(Comparable)}，特别是 {@link #equals(Object)} 和
+ * {@link #hashCode()}。
  *
- * @param <T> The type that represents a single point from the domain of definition of the
- *            interval.
+ * @param <T> 表示区间定义域中单个点的类型。
  */
 @SuppressWarnings("ALL")
 public abstract class Interval<T extends Comparable<? super T>, S> {
@@ -53,59 +49,55 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     private boolean isStartInclusive, isEndInclusive;
 
     /**
-     * An enum representing all possible types of bounded intervals.
+     * 表示有界区间所有可能类型的枚举。
      */
     public enum Bounded {
         /**
-         * An interval, in which both start and end point are exclusive.
+         * 起点和终点都不包含的区间。
          */
         OPEN,
 
         /**
-         * An interval, in which both start and end point are inclusive.
+         * 起点和终点都包含的区间。
          */
         CLOSED,
 
         /**
-         * An interval, in which the start is exclusive and the end is inclusive.
+         * 起点不包含、终点包含的区间。
          */
         CLOSED_RIGHT,
 
         /**
-         * An interval, in which the start is inclusive and the end is exclusive.
+         * 起点包含、终点不包含的区间。
          */
         CLOSED_LEFT
     }
 
     public enum Unbounded {
         /**
-         * An interval extending to positive infinity and having an exclusive start
-         * point as a lower bound. For example, (5, +inf)
+         * 延伸到正无穷、以下界（不包含的起点）为界的区间。例如 (5, +inf)
          */
         OPEN_LEFT,
 
         /**
-         * An interval extending to positive infinity and having an inclusive start
-         * point as a lower bound. For example, [5, +inf)
+         * 延伸到正无穷、以下界（包含的起点）为界的区间。例如 [5, +inf)
          */
         CLOSED_LEFT,
 
         /**
-         * An interval extending to negative infinity and having an exclusive end
-         * point as an upper bound. For example, (-inf, 5)
+         * 延伸到负无穷、以上界（不包含的终点）为界的区间。例如 (-inf, 5)
          */
         OPEN_RIGHT,
 
         /**
-         * An interval extending to negative infinity and having an inclusive end
-         * point as an upper bound. For example, (-inf, 5]
+         * 延伸到负无穷、以上界（包含的终点）为界的区间。例如 (-inf, 5]
          */
         CLOSED_RIGHT
     }
 
     /**
-     * Instantiates a new interval representing all points in the domain of definition,
-     * i.e. this will instantiate the interval (-inf, +inf).
+     * 实例化一个表示定义域中所有点的新区间，
+     * 即实例化区间 (-inf, +inf)。
      *
      * @param value
      */
@@ -116,13 +108,13 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * Instantiates a new bounded interval.
+     * 实例化一个新的有界区间。
      *
-     * @param start The start point of the interval
-     * @param end   The end point of the interval.
+     * @param start 区间的起点
+     * @param end   区间的终点。
      * @param value
-     * @param type  Description of whether the interval is open/closed at one or both
-     *              of its ends. See {@link Bounded the documentation of the Bounded enum}
+     * @param type  描述区间在一端或两端是开还是闭。
+     *              参见 {@link Bounded the documentation of the Bounded enum}
      */
     public Interval(T start, T end, S value, Bounded type) {
         this.value = value;
@@ -148,15 +140,14 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * Instantiates a new unbounded interval - an interval that extends to positive or
-     * negative infinity. The interval will be bounded by either the start point
-     * or the end point and unbounded in the other point.
+     * 实例化一个新的无界区间——即延伸到正无穷或负无穷的区间。该区间由起点
+     * 或终点之一界定，而在另一端无界。
      *
-     * @param se    The bounding value for either the start or the end point.
+     * @param se    起点或终点的界定值。
      * @param value
-     * @param type  Describes, if the interval extends to positive or negative infinity,
-     *              as well as if it is open or closed at the bounding point. See {@link Unbounded
-     *              the Unbounded enum} for description of the different possibilities.
+     * @param type  描述区间是延伸到正无穷还是负无穷，
+     *              以及在界定点处是开还是闭。各种可能性的说明参见 {@link Unbounded
+     *              the Unbounded enum}。
      */
     public Interval(T se, S value, Unbounded type) {
         this.value = value;
@@ -188,17 +179,16 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * Checks if the current interval contains no points.
+     * 检查当前区间是否不包含任何点。
      *
-     * <p>In particular, if the end point is less than the start point, then the interval is
-     * considered to be empty. There are, however other instances, in which an interval is empty.
-     * For example, in the class {@link IntegerInterval}, an open interval, whose start and end
-     * points differ by one, for example the interval (4, 5), is empty, because it contains no integers
-     * in it. The same interval, however, will <strong>not</strong> be considered empty in the
-     * {@link DoubleInterval} class, because there are Double numbers within this interval.
+     * <p>特别地，如果终点小于起点，则该区间被视为空。不过还存在其他
+     * 区间为空的情形。例如在 {@link IntegerInterval} 类中，起点和终点
+     * 相差 1 的开区间（例如区间 (4, 5)）是空的，因为它不包含任何整数。
+     * 然而同一个区间在 {@link DoubleInterval} 类中<strong>不会</strong>
+     * 被视为空，因为该区间内存在 Double 数值。
      * </p>
      *
-     * @return {@code true}, if the current interval is empty or {@code false} otherwise.
+     * @return 如果当前区间为空则返回 {@code true}，否则返回 {@code false}。
      */
     public boolean isEmpty() {
         if (start == null || end == null) {
@@ -215,44 +205,43 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * Used to create new instances of a specific {@code Interval} subclass.
+     * 用于创建特定 {@code Interval} 子类的新实例。
      * <p>
-     * The {@code Interval} class aims to avoid reflexion. On several occasions, however, the class
-     * needs to create new instances of the {@code Interval} class. To be able to guarantee that they
-     * will have the desired runtime type, the {@link #create(Object)} method of a specific reference object
-     * is called.
+     * {@code Interval} 类力求避免使用反射。不过在某些场合，该类
+     * 仍需要创建 {@code Interval} 类的新实例。为保证它们
+     * 具有期望的运行时类型，会调用特定引用对象的 {@link #create(Object)} 方法。
      * </p>
      * <p>
-     * Generally, the only thing you need to do in your implementation of this abstract method is
-     * to call the default constructor of your subclass and return the new interval.
+     * 通常，实现该抽象方法时你只需要
+     * 调用子类的默认构造器并返回新区间。
      * </p>
      *
      * @param value
-     * @return A new instance of the particular {@code Interval} class.
+     * @return 特定 {@code Interval} 类的新实例。
      */
     protected abstract Interval<T, S> create(S value);
 
     /**
-     * Returns the center of the current interval. If the center of the interval exists, but can't
-     * be determined, return any point inside the interval. This method will be used only to
-     * instantiate the midpoint of a new {@link TreeNode} inside a {@link IntervalTree}, which is why
-     * it is not necessary to return exactly the center of the interval, but it will help the
-     * {@link IntervalTree} perform slightly better.
+     * 返回当前区间的中心。如果区间中心存在但无法
+     * 确定，则返回区间内的任意一点。该方法仅用于
+     * 实例化 {@link IntervalTree} 中新 {@link TreeNode} 的中点，因此
+     * 不必返回区间的精确中心，但返回它有助于
+     * {@link IntervalTree} 获得略好的性能。
      *
-     * @return The center point of the current interval, if it exists or {@code null} otherwise. If the
-     * center exists but can't be determined correctly, return any point inside the interval.
+     * @return 当前区间的中心点（如果存在），否则返回 {@code null}。如果
+     * 中心存在但无法正确确定，则返回区间内的任意一点。
      */
     public abstract T getMidpoint();
 
     /**
-     * Creates a new instance of the particular {@code Interval} subclass.
+     * 创建特定 {@code Interval} 子类的新实例。
      *
-     * @param start            The start point of the interval
-     * @param isStartInclusive {@code true}, if the start is inclusive or false otherwise
-     * @param end              The end point of the interval
-     * @param isEndInclusive   {@code true}, if the end is inclusive or false otherwise
+     * @param start            区间的起点
+     * @param isStartInclusive 如果起点包含则为 {@code true}，否则为 false
+     * @param end              区间的终点
+     * @param isEndInclusive   如果终点包含则为 {@code true}，否则为 false
      * @param value
-     * @return The newly created interval.
+     * @return 新创建的区间。
      */
     protected Interval<T, S> create(T start, boolean isStartInclusive, T end, boolean isEndInclusive, S value) {
         Interval<T, S> interval = create(value);
@@ -264,28 +253,28 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * Returns the start point of the interval.
+     * 返回区间的起点。
      */
     public T getStart() {
         return start;
     }
 
     /**
-     * Returns the end point of the interval.
+     * 返回区间的终点。
      */
     public T getEnd() {
         return end;
     }
 
     /**
-     * Returns {@code true}, if the start point is a part of the interval, or false otherwise.
+     * 如果起点属于区间则返回 {@code true}，否则返回 false。
      */
     public boolean isStartInclusive() {
         return isStartInclusive;
     }
 
     /**
-     * Returns {@code true}, if the end point is a part of the interval, or false otherwise.
+     * 如果终点属于区间则返回 {@code true}，否则返回 false。
      */
     public boolean isEndInclusive() {
         return isEndInclusive;
@@ -296,9 +285,9 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * Determines if the current interval is a single point.
+     * 判断当前区间是否为单个点。
      *
-     * @return {@code true}, if the current interval represents a single point.
+     * @return 如果当前区间表示单个点则返回 {@code true}。
      */
     public boolean isPoint() {
         if (start == null || end == null) {
@@ -308,10 +297,10 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * Determines if the current interval contains a query point.
+     * 判断当前区间是否包含查询点。
      *
-     * @param query The point.
-     * @return {@code true}, if the current interval contains the {@code query} point or false otherwise.
+     * @param query 该点。
+     * @return 如果当前区间包含 {@code query} 点则返回 {@code true}，否则返回 false。
      */
     public boolean contains(T query) {
         if (isEmpty() || query == null) {
@@ -327,19 +316,19 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * Returns an interval, representing the intersection of two intervals. More formally, for every
-     * point {@code x} in the returned interval, {@code x} will belong in both the current interval
-     * and the {@code other} interval.
+     * 返回表示两个区间交集的新区间。更正式地说，对于返回区间中的
+     * 每个点 {@code x}，{@code x} 都同时属于当前区间
+     * 和 {@code other} 区间。
      *
-     * @param other The other interval
-     * @return The intersection of the current interval wih the {@code other} interval.
+     * @param other 另一个区间
+     * @return 当前区间与 {@code other} 区间的交集。
      */
     public Interval<T, S> getIntersection(Interval<T, S> other) {
         if (other == null || isEmpty() || other.isEmpty()) {
             return null;
         }
-        // Make sure that the one with the smaller starting point gets intersected with the other.
-        // If necessary, swap the intervals
+        // 确保起点较小的区间与另一个区间求交。
+        // 如有必要则交换两个区间
         if ((other.start == null && start != null) || (start != null && start.compareTo(other.start) > 0)) {
             return other.getIntersection(this);
         }
@@ -350,8 +339,8 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
         T newStart, newEnd;
         boolean isNewStartInclusive, isNewEndInclusive;
 
-        // If other.start is null, this means my start is also null, because we made sure
-        // that the caller object hast the smaller start point => the new start is null
+        // 如果 other.start 为 null，说明我的起点也为 null，因为我们已经确保
+        // 调用方对象的起点更小 => 新起点为 null
         if (other.start == null) {
             newStart = null;
             isNewStartInclusive = true;
@@ -388,13 +377,13 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * Checks if the current interval contains the entirety of another interval. More formally,
-     * this method returns {@code true}, if for every point {@code x} from the interval {@code another}
-     * this point {@code x} also belongs to the current interval.
+     * 检查当前区间是否完整包含另一个区间。更正式地说，
+     * 如果 {@code another} 区间中的每个点 {@code x}
+     * 也都属于当前区间，该方法返回 {@code true}。
      *
-     * @param another Another interval.
-     * @return {@code true}, if the interval {@code another} is contained in the current interval in
-     * its entirety, or {@code false} otherwise.
+     * @param another 另一个区间。
+     * @return 如果 {@code another} 区间被当前区间完整包含则返回 {@code true}，
+     * 否则返回 {@code false}。
      */
     public boolean contains(Interval<T, S> another) {
         if (another == null || isEmpty() || another.isEmpty()) {
@@ -405,12 +394,11 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * Checks if the current interval intersects another interval. More formally, this method
-     * returns {@code true} if there is at least one point the current interval, that also
-     * belongs to the {@code query} interval.
+     * 检查当前区间是否与另一个区间相交。更正式地说，如果当前区间中
+     * 至少有一个点也属于 {@code query} 区间，该方法返回 {@code true}。
      *
-     * @param query The interval being checked for intersection with the current interval.
-     * @return {@code true}, if the two intervals intersect or {@code false} otherwise.
+     * @param query 正在检查是否与当前区间相交的区间。
+     * @return 如果两个区间相交则返回 {@code true}，否则返回 {@code false}。
      */
     public boolean intersects(Interval<T, S> query) {
         if (query == null) {
@@ -421,17 +409,17 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * This method checks, if this current interval is entirely to the right of a point. More formally,
-     * the method will return {@code true}, if for every point {@code x} from the current interval the inequality
-     * {@code x} &gt; {@code point} holds. If the parameter {@code inclusive} is set to {@code false}, this
-     * method will return {@code true} also if the start point of the interval is equal to the reference
-     * {@code point}.
+     * 该方法检查当前区间是否完全位于某个点的右侧。更正式地说，
+     * 如果当前区间中的每个点 {@code x} 都满足不等式
+     * {@code x} &gt; {@code point}，则该方法返回 {@code true}。如果参数 {@code inclusive}
+     * 设为 {@code false}，那么当区间的起点等于参考点 {@code point} 时，
+     * 该方法同样返回 {@code true}。
      *
-     * @param point     The reference point
-     * @param inclusive {@code false} if the reference {@code point} is allowed to be the start point
-     *                  of the current interval.
-     * @return {@code true}, if the current interval is entirely to the right of the {@code other}
-     * interval, or {@code false} instead.
+     * @param point     参考点
+     * @param inclusive 如果允许参考点 {@code point} 作为当前区间的起点，
+     *                  则为 {@code false}。
+     * @return 如果当前区间完全位于 {@code other} 区间的右侧则返回 {@code true}，
+     * 否则返回 {@code false}。
      */
     public boolean isRightOf(T point, boolean inclusive) {
         if (point == null || start == null) {
@@ -445,31 +433,30 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * This method checks, if this current interval is entirely to the right of a point. More formally,
-     * the method will return true, if for every point {@code x} from the current interval the inequality
-     * {@code x} &gt; {@code point} holds. This formal definition implies in particular that if the start point
-     * of the current interval is equal to the reference {@code point} and the end point is open, the method
-     * will return {@code true}.
+     * 该方法检查当前区间是否完全位于某个点的右侧。更正式地说，
+     * 如果当前区间中的每个点 {@code x} 都满足不等式
+     * {@code x} &gt; {@code point}，则该方法返回 true。由这一形式定义可知，
+     * 当当前区间的起点等于参考点 {@code point} 且终点为开时，
+     * 该方法将返回 {@code true}。
      *
-     * @param point The reference point
-     * @return {@code true}, if the current interval is entirely to the right of the {@code other}
-     * interval, or {@code false} instead.
+     * @param point 参考点
+     * @return 如果当前区间完全位于 {@code other} 区间的右侧则返回 {@code true}，
+     * 否则返回 {@code false}。
      */
     public boolean isRightOf(T point) {
         return isRightOf(point, true);
     }
 
     /**
-     * This method checks, if this current interval is entirely to the right of another interval
-     * with no common points. More formally, the method will return true, if for every point {@code x}
-     * from the current interval and for every point {@code y} from the {@code other} interval the
-     * inequality {@code x} &gt; {@code y} holds. This formal definition implies in particular that if the start point
-     * of the current interval is equal to the end point of the {@code other} interval, the method
-     * will return {@code false} only if both points are inclusive and {@code true} in all other cases.
+     * 该方法检查当前区间是否完全位于另一个区间右侧且两者没有公共点。
+     * 更正式地说，如果当前区间中的每个点 {@code x} 与 {@code other} 区间中的
+     * 每个点 {@code y} 都满足不等式 {@code x} &gt; {@code y}，则该方法返回 true。
+     * 由这一形式定义可知，当当前区间的起点等于 {@code other} 区间的终点时，
+     * 仅当两点都包含时该方法才返回 {@code false}，其他情况下均返回 {@code true}。
      *
-     * @param other The reference interval
-     * @return {@code true}, if the current interval is entirely to the right of the {@code other}
-     * interval, or {@code false} instead.
+     * @param other 参考区间
+     * @return 如果当前区间完全位于 {@code other} 区间的右侧则返回 {@code true}，
+     * 否则返回 {@code false}。
      */
     public boolean isRightOf(Interval<T, S> other) {
         if (other == null || other.isEmpty()) {
@@ -479,17 +466,17 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * This method checks, if this current interval is entirely to the left of a point. More formally,
-     * the method will return {@code true}, if for every point {@code x} from the current interval the inequality
-     * {@code x} &lt; {@code point} holds. If the parameter {@code inclusive} is set to {@code false}, this
-     * method will return {@code true} also if the end point of the interval is equal to the reference
-     * {@code point}.
+     * 该方法检查当前区间是否完全位于某个点的左侧。更正式地说，
+     * 如果当前区间中的每个点 {@code x} 都满足不等式
+     * {@code x} &lt; {@code point}，则该方法返回 {@code true}。如果参数 {@code inclusive}
+     * 设为 {@code false}，那么当区间的终点等于参考点 {@code point} 时，
+     * 该方法同样返回 {@code true}。
      *
-     * @param point     The reference point
-     * @param inclusive {@code false} if the reference {@code point} is allowed to be the end point
-     *                  of the current interval.
-     * @return {@code true}, if the current interval is entirely to the left of the {@code other}
-     * interval, or {@code false} instead.
+     * @param point     参考点
+     * @param inclusive 如果允许参考点 {@code point} 作为当前区间的终点，
+     *                  则为 {@code false}。
+     * @return 如果当前区间完全位于 {@code other} 区间的左侧则返回 {@code true}，
+     * 否则返回 {@code false}。
      */
     public boolean isLeftOf(T point, boolean inclusive) {
         if (point == null || end == null) {
@@ -503,31 +490,30 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * This method checks, if this current interval is entirely to the left of a point. More formally,
-     * the method will return true, if for every point {@code x} from the current interval the inequality
-     * {@code x} &lt; {@code point} holds. This formal definition implies in particular that if the end point
-     * of the current interval is equal to the reference {@code point} and the end point is open, the method
-     * will return {@code true}.
+     * 该方法检查当前区间是否完全位于某个点的左侧。更正式地说，
+     * 如果当前区间中的每个点 {@code x} 都满足不等式
+     * {@code x} &lt; {@code point}，则该方法返回 true。由这一形式定义可知，
+     * 当当前区间的终点等于参考点 {@code point} 且终点为开时，
+     * 该方法将返回 {@code true}。
      *
-     * @param point The reference point
-     * @return {@code true}, if the current interval is entirely to the left of the {@code other}
-     * interval, or {@code false} instead.
+     * @param point 参考点
+     * @return 如果当前区间完全位于 {@code other} 区间的左侧则返回 {@code true}，
+     * 否则返回 {@code false}。
      */
     public boolean isLeftOf(T point) {
         return isLeftOf(point, true);
     }
 
     /**
-     * This method checks, if this current interval is entirely to the left of another interval
-     * with no common points. More formally, the method will return true, if for every point {@code x}
-     * from the current interval and for every point {@code y} from the {@code other} interval the
-     * inequality {@code x} &lt; {@code y} holds. This formal definition implies in particular that if the end point
-     * of the current interval is equal to the start point of the {@code other} interval, the method
-     * will return {@code false} only if both points are inclusive and {@code true} in all other cases.
+     * 该方法检查当前区间是否完全位于另一个区间左侧且两者没有公共点。
+     * 更正式地说，如果当前区间中的每个点 {@code x} 与 {@code other} 区间中的
+     * 每个点 {@code y} 都满足不等式 {@code x} &lt; {@code y}，则该方法返回 true。
+     * 由这一形式定义可知，当当前区间的终点等于 {@code other} 区间的起点时，
+     * 仅当两点都包含时该方法才返回 {@code false}，其他情况下均返回 {@code true}。
      *
-     * @param other The reference interval
-     * @return {@code true}, if the current interval is entirely to the left of the {@code other}
-     * interval, or {@code false} instead.
+     * @param other 参考区间
+     * @return 如果当前区间完全位于 {@code other} 区间的左侧则返回 {@code true}，
+     * 否则返回 {@code false}。
      */
     public boolean isLeftOf(Interval<T, S> other) {
         if (other == null || other.isEmpty()) {
@@ -537,9 +523,9 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * A {@link Comparator} that only considers the start points of the intervals. It can not and must
-     * not be used as a standalone {@link Comparator}. It only serves to create a more readable and
-     * modular code.
+     * 仅考虑区间起点的 {@link Comparator}。它不能也不得
+     * 作为独立的 {@link Comparator} 使用，只用于编写更可读、
+     * 更模块化的代码。
      */
     private int compareStarts(Interval<T, S> other) {
         if (start == null && other.start == null) {
@@ -562,9 +548,9 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * A {@link Comparator} that only considers the end points of the intervals. It can not and must
-     * not be used as a standalone {@link Comparator}. It only serves to create a more readable and
-     * modular code.
+     * 仅考虑区间终点的 {@link Comparator}。它不能也不得
+     * 作为独立的 {@link Comparator} 使用，只用于编写更可读、
+     * 更模块化的代码。
      */
     private int compareEnds(Interval<T, S> other) {
         if (end == null && other.end == null) {
@@ -587,22 +573,20 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * A comparator that can be used as a parameter for sorting functions. The start comparator sorts the intervals
-     * in <em>ascending</em> order by placing the intervals with a smaller start point before intervals with greater
-     * start points. This corresponds to a line sweep from left to right.
+     * 可作为排序函数参数使用的比较器。起点比较器以<em>升序</em>排序区间，即把起点
+     * 较小的区间排在起点较大的区间之前。这相当于从左到右的扫描线。
      * <p>
-     * Intervals with start point null (negative infinity) are considered smaller than all other intervals.
-     * If two intervals have the same start point, the closed start point is considered smaller than the open one.
-     * For example, [0, 2) is considered smaller than (0, 2).
+     * 起点为 null（负无穷）的区间被视为比其他所有区间都小。
+     * 如果两个区间起点相同，则把包含的起点视为小于不包含的起点。
+     * 例如 [0, 2) 被视为小于 (0, 2)。
      * </p>
      * <p>
-     * To ensure that this comparator can also be used in sets it considers the end points of the intervals, if the
-     * start points are the same. Otherwise the set will not be able to handle two different intervals, sharing
-     * the same starting point, and omit one of the intervals.
+     * 为确保该比较器也能用于集合，当起点相同时它会比较区间的终点。
+     * 否则集合将无法处理起点相同的两个不同区间，并会忽略其中一个区间。
      * </p>
      * <p>
-     * Since this is a static method of a generic class, it involves unchecked calls to class methods. It is left to
-     * ths user to ensure that she compares intervals from the same class, otherwise an exception might be thrown.
+     * 由于这是泛型类的静态方法，它会涉及对类方法的非受检调用。用户需自行
+     * 确保比较的是同一类的区间，否则可能抛出异常。
      * </p>
      */
     public static Comparator<Interval> sweepLeftToRight = (a, b) -> {
@@ -618,22 +602,20 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     };
 
     /**
-     * A comparator that can be used as a parameter for sorting functions. The end comparator sorts the intervals
-     * in <em>descending</em> order by placing the intervals with a greater end point before intervals with smaller
-     * end points. This corresponds to a line sweep from right to left.
+     * 可作为排序函数参数使用的比较器。终点比较器以<em>降序</em>排序区间，即把终点
+     * 较大的区间排在终点较小的区间之前。这相当于从右到左的扫描线。
      * <p>
-     * Intervals with end point null (positive infinity) are placed before all other intervals. If two intervals
-     * have the same end point, the closed end point is placed before the open one. For example,  [0, 10) is placed
-     * after (0, 10].
+     * 终点为 null（正无穷）的区间排在其他所有区间之前。如果两个区间
+     * 终点相同，则包含的终点排在不包含的终点之前。例如 [0, 10) 排在
+     * (0, 10] 之后。
      * </p>
      * <p>
-     * To ensure that this comparator can also be used in sets it considers the start points of the intervals, if the
-     * end points are the same. Otherwise the set will not be able to handle two different intervals, sharing
-     * the same end point, and omit one of the intervals.
+     * 为确保该比较器也能用于集合，当终点相同时它会比较区间的起点。
+     * 否则集合将无法处理终点相同的两个不同区间，并会忽略其中一个区间。
      * </p>
      * <p>
-     * Since this is a static method of a generic class, it involves unchecked calls to class methods. It is left to
-     * ths user to ensure that she compares intervals from the same class, otherwise an exception might be thrown.
+     * 由于这是泛型类的静态方法，它会涉及对类方法的非受检调用。用户需自行
+     * 确保比较的是同一类的区间，否则可能抛出异常。
      * </p>
      */
     public static Comparator<Interval> sweepRightToLeft = (a, b) -> {
@@ -649,33 +631,30 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     };
 
     /**
-     * A method that should be overwritten by subclasses of {@code Interval}, if they have properties
-     * that characterize the objects of the class and are used to identify them. It is used to create
-     * a total order between distinct objects, that would otherwise be considered equal, if only
-     * the start and end points were considered. If you don't have any such special properties, you
-     * may leave the default implementation of this method.
+     * 如果 {@code Interval} 的子类具有刻画该类对象并用于标识它们的属性，
+     * 就应覆盖此方法。它用于在不同对象之间建立全序，否则若只考虑
+     * 起点和终点，这些对象会被视为相等。如果你没有这类特殊属性，
+     * 可以保留该方法的默认实现。
      * <p>
-     * This method functions as a traditional {@link Comparator}, bit can not and should not be used
-     * on its own, nor should it be implemented as a full standalone comparator. Instead, it is always
-     * used in conjunction with one of the two base {@link Comparator}s in the {@code Interval} class -
-     * {@link #sweepLeftToRight} and {@link #sweepRightToLeft}. This method will only be executed if
-     * the main comparator returns 0, i.e. if it considers the intervals to be equal. At that moment,
-     * the start and end points would already have been compared to one another, which is why this method
-     * should <strong>disregard the start and end points</strong> completely and only consider the
-     * special properties defined in the particular subclass.
+     * 该方法的作用类似于传统的 {@link Comparator}，但不能也不应单独使用，
+     * 也不应把它实现为完整的独立比较器。它总是与 {@code Interval} 类中的
+     * 两个基础 {@link Comparator} 之一——{@link #sweepLeftToRight} 和
+     * {@link #sweepRightToLeft}——配合使用。只有当主比较器返回 0（即它认为
+     * 两个区间相等）时，该方法才会执行。此时起点和终点已经被比较过，
+     * 因此该方法应<strong>完全忽略起点和终点</strong>，只考虑
+     * 特定子类中定义的特殊属性。
      * </p>
      * <p>
-     * It is vital to overwrite this method, if you have any properties in your subclass, that identify
-     * the interval, such as for example user IDs, student IDs or room numbers. The two base comparators
-     * are used within the underlying {@link java.util.TreeSet}s, which may discard two distinct interval
-     * objects, that have the same start and end points.
+     * 如果子类中有任何用于标识区间的属性（例如用户 ID、学号或房间号），
+     * 覆盖此方法至关重要。两个基础比较器会在底层的 {@link java.util.TreeSet} 中使用，
+     * 而 TreeSet 可能会丢弃起点和终点相同的两个不同区间对象。
      * </p>
      *
-     * @param other The object that is being compared to this interval
+     * @param other 与此区间进行比较的对象
      * @return <ul>
-     * <li>-1, if this object is less than the {@code other},</li>
-     * <li>0, if the two objects are equal,</li>
-     * <li>1, if this object is greater than the {@code other}.</li>
+     * <li>-1，如果此对象小于 {@code other}，</li>
+     * <li>0，如果两个对象相等，</li>
+     * <li>1，如果此对象大于 {@code other}。</li>
      * </ul>
      */
     protected int compareSpecialization(Interval<T, S> other) {
@@ -731,28 +710,25 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
     }
 
     /**
-     * Used to create new intervals in an intuitive fashion by using the builder pattern.
-     * Since the implementation of the {@code Interval} class strives to avoid reflexion,
-     * despite being generic class, the {@code Builder} inner class is not static. Instead
-     * it is always tied to a particular object, so that it can build new objects from this
-     * specific runtime type.
+     * 用于通过建造者模式直观地创建新区间。
+     * 由于 {@code Interval} 类的实现力求避免反射，尽管它是泛型类，
+     * {@code Builder} 内部类也不是静态的。相反，它总是绑定到
+     * 特定对象，从而能基于该具体的运行时类型构建新对象。
      */
     public class Builder {
 
         private Interval<T, S> interval;
 
         /**
-         * {@code private} constructor, used only in the internals of the {@link Interval}
-         * class. You can create new instances of the class by using either an existing
-         * object:
+         * {@code private} 构造器，仅在 {@link Interval} 类内部使用。
+         * 你可以通过已有对象创建该类的新实例：
          * <pre>existingInterval.builder()</pre>
-         * or by instantiating an "everything" interval with the default constructor and
-         * calling its {@link Interval#builder(Object) builder} method:
+         * 也可以用默认构造器实例化一个“全集”区间，再调用它的
+         * {@link Interval#builder(Object) builder} 方法：
          * <pre>new IntegerInterval().builder()</pre>
          *
-         * @param ref   A reference object used only to determine the runtime type of the
-         *              new object. The reference interval doesn't influence the start and
-         *              end points of the new interval in any way.
+         * @param ref   仅用于确定新对象运行时类型的引用对象。引用区间
+         *              不会以任何方式影响新区间的起点和终点。
          * @param value
          */
         private Builder(Interval<T, S> ref, S value) {
@@ -760,12 +736,11 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
         }
 
         /**
-         * Sets the start point of the currently building interval to the given value.
-         * The interval will be open to the left. If this method is called more than
-         * once or in conjunction with the {@link #greaterEqual(Comparable)} method, only
-         * the last call in the subsequence will take effect.
+         * 将正在构建的区间的起点设为给定值。该区间左端为开。
+         * 如果多次调用此方法，或与 {@link #greaterEqual(Comparable)} 方法
+         * 一并调用，则只有后续调用中的最后一次生效。
          *
-         * @param start The value for the start point of the new interval.
+         * @param start 新区间起点的取值。
          */
         public Builder greater(T start) {
             interval.start = start;
@@ -774,12 +749,11 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
         }
 
         /**
-         * Sets the start point of the currently building interval to the given value.
-         * The interval will be closed to the left. If this method is called more than
-         * once or in conjunction with the {@link #greater(Comparable)} method, only
-         * the last call in the subsequence will take effect.
+         * 将正在构建的区间的起点设为给定值。该区间左端为闭。
+         * 如果多次调用此方法，或与 {@link #greater(Comparable)} 方法
+         * 一并调用，则只有后续调用中的最后一次生效。
          *
-         * @param start The value for the start point of the new interval.
+         * @param start 新区间起点的取值。
          */
         public Builder greaterEqual(T start) {
             interval.start = start;
@@ -788,12 +762,11 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
         }
 
         /**
-         * Sets the end point of the currently building interval to the given value.
-         * The interval will be open to the right. If this method is called more than
-         * once or in conjunction with the {@link #lessEqual(Comparable)} method, only
-         * the last call in the subsequence will take effect.
+         * 将正在构建的区间的终点设为给定值。该区间右端为开。
+         * 如果多次调用此方法，或与 {@link #lessEqual(Comparable)} 方法
+         * 一并调用，则只有后续调用中的最后一次生效。
          *
-         * @param end The value for the end point of the new interval.
+         * @param end 新区间终点的取值。
          */
         public Builder less(T end) {
             interval.end = end;
@@ -802,12 +775,11 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
         }
 
         /**
-         * Sets the end point of the currently building interval to the given value.
-         * The interval will be closed to the right. If this method is called more than
-         * once or in conjunction with the {@link #lessEqual(Comparable)} method, only
-         * the last call in the subsequence will take effect.
+         * 将正在构建的区间的终点设为给定值。该区间右端为闭。
+         * 如果多次调用此方法，或与 {@link #lessEqual(Comparable)} 方法
+         * 一并调用，则只有后续调用中的最后一次生效。
          *
-         * @param end The value for the end point of the new interval.
+         * @param end 新区间终点的取值。
          */
         public Builder lessEqual(T end) {
             interval.end = end;
@@ -816,9 +788,9 @@ public abstract class Interval<T extends Comparable<? super T>, S> {
         }
 
         /**
-         * Builds the new interval
+         * 构建新区间
          *
-         * @return The newly created interval.
+         * @return 新创建的区间。
          */
         public Interval<T, S> build() {
             return interval;

@@ -55,7 +55,7 @@ public class TagStream {
     }
 
     public static TagCompound readRoot(DataInput dataInput) throws IOException {
-        //read data from the root tag
+        // 从根标签读取数据
         TagBase tagBase = readTags(dataInput);
         if ((tagBase instanceof TagCompound)) {
             return (TagCompound) tagBase;
@@ -64,7 +64,7 @@ public class TagStream {
     }
 
     private static void writeRoot(TagCompound tagCompound, DataOutput dataOutput) throws IOException {
-        //write data to the root tag
+        // 将数据写入根标签
         dataOutput.writeByte(TagType.Compound.getTypeId());
         dataOutput.writeUTF("");
         tagCompound.write(dataOutput);

@@ -35,10 +35,10 @@ public class MyAttributeDefaults {
 
     public static AttributeSupplier getAttribute(EntityType<?> types) {
         AttributeSupplier supplier = defaultAttribute.get(types);
-        // The map only holds custom mypet_* types (filled at registration). For the underlying vanilla
-        // type, resolve the supplier from vanilla via DefaultAttributes instead of a hardcoded list,
-        // so new/renamed mobs are covered and we never build a null-supplier AttributeMap (which
-        // NPEs in AttributeMap.getInstance when equipment attribute modifiers are applied).
+        // 该 map 只保存自定义的 mypet_* 类型（在注册时填充）。对于底层的原版类型，
+        // 通过 DefaultAttributes 从原版解析 supplier，而不是使用硬编码列表，
+        // 这样新增或改名的生物都能被覆盖，且永远不会构造出 supplier 为 null 的 AttributeMap
+        // （这会在应用装备属性修饰符时让 AttributeMap.getInstance 抛出 NPE）。
         if (supplier == null && DefaultAttributes.hasSupplier(types)) {
         	supplier = DefaultAttributes.getSupplier((EntityType<? extends LivingEntity>) types);
         }

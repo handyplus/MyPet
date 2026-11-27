@@ -149,7 +149,7 @@ public class MeleeAttack implements AIGoal {
 				this.ticksUntilNextHitLeft = ticksUntilNextHit;
 				if (this.petEntity instanceof MyPetEquipment) {
 					if (((MyPetEquipment) this.petEntity).getEquipment(EquipmentSlot.MainHand) != null) {
-						// 26.3 requires the swing animation; DEFAULT is what the old no-arg call used
+						// 26.3 要求传入挥击动画；DEFAULT 就是旧版无参调用所使用的值
 					this.petEntity.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT); // -> swingItem()
 					}
 				}

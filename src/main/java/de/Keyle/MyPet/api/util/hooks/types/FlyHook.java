@@ -24,14 +24,14 @@ import de.Keyle.MyPet.api.util.hooks.PluginHook;
 import org.bukkit.Location;
 
 /**
- * This interface defines that the hook checks if a player can fly his pet at a certain location
+ * 该接口定义：钩子用于检查玩家能否在指定位置飞行其宠物
  */
 public interface FlyHook extends PluginHook {
     /**
-     * Returns if a players can fly their pets at a certain location
+     * 返回玩家能否在指定位置飞行其宠物
      *
-     * @param location checked location
-     * @return if pets can be ridden
+     * @param location 要检查的位置
+     * @return 宠物是否可被骑乘
      */
     boolean canFly(Location location);
 }

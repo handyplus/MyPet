@@ -26,18 +26,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation to add name information to the {@link PluginHook} class
+ * 为 {@link PluginHook} 类添加名称信息的注解
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface PluginHookName {
     /**
-     * @return the name of the plugin
+     * @return 插件名称
      */
     String value();
 
     /**
-     * @return the classpath of the plugin when multiple plugins use the same name
+     * @return 当多个插件使用相同名称时，该插件的类路径
      */
     String classPath() default "";
 }

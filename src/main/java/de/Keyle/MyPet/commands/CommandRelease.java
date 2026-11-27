@@ -92,10 +92,9 @@ public class CommandRelease implements CommandTabCompleter {
                         try {
                             normalEntity = (LivingEntity) myPet.getLocation().get().getWorld().spawnEntity(myPet.getLocation().get(), EntityType.valueOf(myPet.getPetType().getBukkitName()));
                         } catch (RuntimeException e) {
-                            // The server refused to spawn the mob, e.g. a hostile mob in Peaceful
-                            // difficulty. The remove event has already fired, so finish releasing the
-                            // Pet instead of stopping halfway (MYPET-DXR). It just doesn't come back
-                            // as a wild mob.
+                            // 服务器拒绝生成该生物，例如在和平难度下生成敌对生物。
+                            // 移除事件已经触发，因此要完成释放宠物，而不是中途停下（MYPET-DXR）。
+                            // 只是它不会以野生生物的形式回来。
                         }
 
                         if (normalEntity != null) {
@@ -127,7 +126,7 @@ public class CommandRelease implements CommandTabCompleter {
 
                     return true;
                 } else {
-                    // Build hover text with pet stats
+                    // 构建包含宠物属性的悬浮文本
                     TextComponent hoverText = new TextComponent("");
                     TextComponent petTitle = new TextComponent(myPet.getPetName());
                     petTitle.setColor(net.md_5.bungee.api.ChatColor.WHITE);

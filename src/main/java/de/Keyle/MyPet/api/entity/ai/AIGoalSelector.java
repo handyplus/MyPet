@@ -116,7 +116,7 @@ public class AIGoalSelector {
             }
         }
 
-        // add goals
+        // 添加目标
         ListIterator iterator = AIGoalList.listIterator();
         while (iterator.hasNext()) {
             AIGoal goal = (AIGoal) iterator.next();
@@ -128,7 +128,7 @@ public class AIGoalSelector {
             }
         }
 
-        // remove goals
+        // 移除目标
         iterator = activeAIGoalList.listIterator();
         while (iterator.hasNext()) {
             AIGoal goal = (AIGoal) iterator.next();
@@ -138,7 +138,7 @@ public class AIGoalSelector {
             }
         }
 
-        // tick goals
+        // 更新目标（tick）
         iterator = activeAIGoalList.listIterator();
         while (iterator.hasNext()) {
             AIGoal goal = (AIGoal) iterator.next();

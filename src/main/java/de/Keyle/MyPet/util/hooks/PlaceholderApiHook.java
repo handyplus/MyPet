@@ -327,8 +327,8 @@ public class PlaceholderApiHook implements PluginHook {
             }
 
             /**
-             * This is the method called when a placeholder with our identifier is found and needs a value
-             * We specify the value identifier in this method
+             * 该方法会在找到带有我们标识符的占位符、且需要其值时被调用
+             * 我们在此方法中指定值对应的标识符
              */
             @Override
             @SuppressWarnings("unchecked")

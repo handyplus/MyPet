@@ -53,7 +53,7 @@ public class EntityMyParrot extends EntityMyFlyingPet {
 	}
 
 	/**
-	 * Returns the sound that is played when the MyPet dies
+	 * 返回 MyPet 死亡时播放的声音
 	 */
 	@Override
 	protected String getMyPetDeathSound() {
@@ -61,7 +61,7 @@ public class EntityMyParrot extends EntityMyFlyingPet {
 	}
 
 	/**
-	 * Returns the sound that is played when the MyPet get hurt
+	 * 返回 MyPet 受伤时播放的声音
 	 */
 	@Override
 	protected String getHurtSound() {

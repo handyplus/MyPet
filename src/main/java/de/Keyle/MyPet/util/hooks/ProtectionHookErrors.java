@@ -27,9 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 /**
- * Damage checks in protection hooks fail closed: when the other plugin throws, the pet is not
- * allowed to hurt the target. The error is logged once per hook as a warning, so server owners can see why
- * Pets stop doing damage without a broken hook spamming the log.
+ * 保护类 hook 中的伤害检查在出错时按“失败即拒绝”处理：当被挂钩的插件抛出异常时，
+ * 不允许宠物伤害目标。每个 hook 只以警告形式记录一次错误，这样服主能看到宠物为何
+ * 停止造成伤害，同时避免出问题的 hook 刷屏日志。
  */
 final class ProtectionHookErrors {
 

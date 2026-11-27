@@ -30,10 +30,9 @@ import org.bukkit.entity.Cat.Type;
 public interface MyCat extends MyPet, MyPetBaby {
 
     /**
-     * Stable cat type mapping that won't change across Minecraft versions.
-     * Bukkit's Cat.Type enum ordering has changed in some still-supported versions,
-     * so we maintain our own stable ordinal mapping for persistence until versions
-     * using integer IDs are dropped.
+     * 稳定的猫类型映射，不会随 Minecraft 版本变化而改变。
+     * Bukkit 的 Cat.Type 枚举顺序在一些仍受支持的版本中发生了变化，
+     * 因此在放弃使用整数 ID 的版本之前，我们维护自己的稳定序号映射用于持久化。
      */
     enum OwnCatType {
         TABBY(Type.TABBY),
@@ -60,10 +59,10 @@ public interface MyCat extends MyPet, MyPetBaby {
     }
 
     /**
-     * Returns a stable ordinal for the given cat type that won't change across Minecraft versions.
+     * 返回给定猫类型的稳定序号，不会随 Minecraft 版本变化而改变。
      *
-     * @param type the Bukkit Cat.Type to convert
-     * @return a stable ordinal value (0-10) that can be safely persisted
+     * @param type 要转换的 Bukkit Cat.Type
+     * @return 可安全持久化的稳定序号值（0-10）
      */
     static int getOwnTypeOrdinal(Type type) {
         if (type == null) return 0;
@@ -72,7 +71,7 @@ public interface MyCat extends MyPet, MyPetBaby {
                 return ownType.ordinal();
             }
         }
-        return 0; // fallback to TABBY
+        return 0; // 回退为 TABBY
     }
 
     Type getCatType();

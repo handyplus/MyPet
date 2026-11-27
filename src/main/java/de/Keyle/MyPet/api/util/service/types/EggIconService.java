@@ -29,46 +29,46 @@ import org.bukkit.Material;
 @ServiceName("EggIconService")
 public class EggIconService implements ServiceContainer {
     /**
-     * API implementation for choosing an icon Material for a Pet type.
+     * 用于为宠物类型选择图标 Material 的 API 实现。
      * <p>
-     * NMS-specific subclasses may override this to fix egg identification.
+     * NMS 专用的子类可以重写该方法来修正刷怪蛋识别。
      */
     public void updateIcon(MyPetType type, IconMenuItem icon) {
-        // Clear any previous glow
+        // 清除之前的光效
         icon.setGlowing(false);
 
-        // Try to resolve a Material like "PIGLIN_BRUTE_SPAWN_EGG" from enum name
+        // 尝试根据枚举名解析出类似 "PIGLIN_BRUTE_SPAWN_EGG" 的 Material
         String upperSnake = toUpperSnake(type.name());
         String matName = upperSnake + "_SPAWN_EGG";
 
         Material material = Material.matchMaterial(matName);
 
-        // Known exceptions or entities without official spawn eggs
+        // 已知的例外情况或没有官方刷怪蛋的实体
         if (material == null) {
             switch (type) {
                 case EnderDragon:
-                    material = Material.DRAGON_EGG; // block egg
+                    material = Material.DRAGON_EGG; // 方块蛋
                     break;
                 case Snowman:
-                    material = Material.PUMPKIN; // snow golem has no egg
+                    material = Material.PUMPKIN; // 雪傀儡没有刷怪蛋
                     break;
                 case Giant:
-                    material = Material.ZOMBIE_SPAWN_EGG; // no official egg
+                    material = Material.ZOMBIE_SPAWN_EGG; // 没有官方刷怪蛋
                     break;
                 case Illusioner:
-                    material = Material.SQUID_SPAWN_EGG; // No official egg
+                    material = Material.SQUID_SPAWN_EGG; // 没有官方刷怪蛋
                     icon.setGlowing(true);
                     break;
                 case IronGolem:
-                    material = Material.SKELETON_SPAWN_EGG; // Required for 1.19.2 and below
+                    material = Material.SKELETON_SPAWN_EGG; // 1.19.2 及以下版本需要
                     icon.setGlowing(true);
                     break;
                 case Wither:
-                    material = Material.ENDERMITE_SPAWN_EGG; // Required for 1.19.2 and below
+                    material = Material.ENDERMITE_SPAWN_EGG; // 1.19.2 及以下版本需要
                     icon.setGlowing(true);
                     break;
                 default:
-                    // Show barrier to point out issue
+                    // 显示屏障方块以指出问题
                     material = Material.BARRIER;
                     icon.setGlowing(true);
                     break;
@@ -79,7 +79,7 @@ public class EggIconService implements ServiceContainer {
     }
 
     /**
-     * Helper: convert PascalCase enum names (e.g., PiglinBrute) to UPPER_SNAKE (PIGLIN_BRUTE)
+     * 辅助方法：把 PascalCase 的枚举名（例如 PiglinBrute）转换为 UPPER_SNAKE（PIGLIN_BRUTE）
      */
     protected static String toUpperSnake(String in) {
         return in.replaceAll("([a-z])([A-Z])", "$1_$2").toUpperCase();

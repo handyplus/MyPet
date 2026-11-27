@@ -63,7 +63,7 @@ public class EntityMyVex extends EntityMyFlyingPet {
 	}
 
 	/**
-	 * Returns the sound that is played when the MyPet dies
+	 * 返回 MyPet 死亡时播放的声音
 	 */
 	@Override
 	protected String getMyPetDeathSound() {
@@ -71,7 +71,7 @@ public class EntityMyVex extends EntityMyFlyingPet {
 	}
 
 	/**
-	 * Returns the sound that is played when the MyPet get hurt
+	 * 返回 MyPet 受伤时播放的声音
 	 */
 	@Override
 	protected String getHurtSound() {
@@ -79,7 +79,7 @@ public class EntityMyVex extends EntityMyFlyingPet {
 	}
 
 	/**
-	 * Returns the default sound of the MyPet
+	 * 返回 MyPet 的默认声音
 	 */
 	@Override
 	protected String getLivingSound() {
@@ -87,10 +87,10 @@ public class EntityMyVex extends EntityMyFlyingPet {
 	}
 
 	/**
-	 * Is called when player rightclicks this MyPet
-	 * return:
-	 * true: there was a reaction on rightclick
-	 * false: no reaction on rightclick
+	 * 当玩家右键点击此 MyPet 时调用
+	 * 返回：
+	 * true：右键产生了反应
+	 * false：右键没有产生反应
 	 */
 	@Override
 	public InteractionResult handlePlayerInteraction(Player entityhuman, InteractionHand enumhand, ItemStack itemStack) {
@@ -117,7 +117,7 @@ public class EntityMyVex extends EntityMyFlyingPet {
 						try {
 							itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 						} catch (Error e) {
-							// TODO REMOVE
+							// TODO 移除
 						}
 					}
 				}

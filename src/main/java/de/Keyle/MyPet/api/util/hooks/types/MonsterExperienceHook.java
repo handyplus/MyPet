@@ -25,7 +25,7 @@ import de.Keyle.MyPet.api.util.hooks.PluginHook;
 import org.bukkit.entity.Entity;
 
 /**
- * This interface defines that the hook handles custom exp values from mobs of other plugins
+ * 此接口表示该 Hook 负责处理来自其他插件生物的自定义经验值
  */
 public interface MonsterExperienceHook extends PluginHook {
 

@@ -26,111 +26,111 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Utility class for centralized error logging.
- * Logs errors and stack traces to the plugin console.
+ * 用于集中记录错误日志的工具类。
+ * 将错误和堆栈跟踪记录到插件控制台。
  */
 public class ErrorUtil {
 
     private ErrorUtil() {
-        // Utility class - prevent instantiation
+        // 工具类 —— 禁止实例化
     }
 
     /**
-     * Reports an error with SEVERE level.
-     * Logs the message and full stack trace to the console.
+     * 以 SEVERE 级别报告错误。
+     * 将消息和完整堆栈跟踪记录到控制台。
      *
-     * @param e the exception to report
+     * @param e 要报告的异常
      */
     public static void report(Throwable e) {
         report(e.getMessage(), e);
     }
 
     /**
-     * Reports an error with SEVERE level and custom message.
-     * Logs the message and full stack trace to the console.
+     * 以 SEVERE 级别和自定义消息报告错误。
+     * 将消息和完整堆栈跟踪记录到控制台。
      *
-     * @param message custom error message
-     * @param e the exception to report
+     * @param message 自定义错误消息
+     * @param e 要报告的异常
      */
     public static void report(String message, Throwable e) {
         reportSevere(message, e);
     }
 
     /**
-     * Reports a warning-level error.
-     * Logs the message and full stack trace to the console.
+     * 报告警告级别的错误。
+     * 将消息和完整堆栈跟踪记录到控制台。
      *
-     * @param e the exception to report
+     * @param e 要报告的异常
      */
     public static void reportWarning(Throwable e) {
         reportWarning(e.getMessage(), e);
     }
 
     /**
-     * Reports a warning-level error with custom message.
-     * Logs the message and full stack trace to the console.
+     * 以自定义消息报告警告级别的错误。
+     * 将消息和完整堆栈跟踪记录到控制台。
      *
-     * @param message custom warning message
-     * @param e the exception to report
+     * @param message 自定义警告消息
+     * @param e 要报告的异常
      */
     public static void reportWarning(String message, Throwable e) {
         logError(Level.WARNING, message, e);
     }
 
     /**
-     * Reports an error-level error.
-     * Logs the message and full stack trace to the console.
+     * 报告错误级别的错误。
+     * 将消息和完整堆栈跟踪记录到控制台。
      *
-     * @param e the exception to report
+     * @param e 要报告的异常
      */
     public static void reportError(Throwable e) {
         reportError(e.getMessage(), e);
     }
 
     /**
-     * Reports an error-level error with custom message.
-     * Logs the message and full stack trace to the console.
+     * 以自定义消息报告错误级别的错误。
+     * 将消息和完整堆栈跟踪记录到控制台。
      *
-     * @param message custom error message
-     * @param e the exception to report
+     * @param message 自定义错误消息
+     * @param e 要报告的异常
      */
     public static void reportError(String message, Throwable e) {
         logError(Level.SEVERE, message, e);
     }
 
     /**
-     * Reports a severe-level error.
-     * Logs the message and full stack trace to the console.
+     * 报告严重级别的错误。
+     * 将消息和完整堆栈跟踪记录到控制台。
      *
-     * @param e the exception to report
+     * @param e 要报告的异常
      */
     public static void reportSevere(Throwable e) {
         reportSevere(e.getMessage(), e);
     }
 
     /**
-     * Reports a severe-level error with custom message.
-     * Logs the message and full stack trace to the console.
+     * 以自定义消息报告严重级别的错误。
+     * 将消息和完整堆栈跟踪记录到控制台。
      *
-     * @param message custom error message
-     * @param e the exception to report
+     * @param message 自定义错误消息
+     * @param e 要报告的异常
      */
     public static void reportSevere(String message, Throwable e) {
         logError(Level.SEVERE, message, e);
     }
 
     /**
-     * Logs an error and its stack trace to the console.
+     * 将错误及其堆栈跟踪记录到控制台。
      *
-     * @param level logging level
-     * @param message error message
-     * @param e the exception
+     * @param level 日志级别
+     * @param message 错误消息
+     * @param e 异常
      */
     private static void logError(Level level, String message, Throwable e) {
         Logger logger = MyPetApi.getLogger();
 
         logger.log(level, "✘ MyPet has encountered an error!");
-        // Log to console with full stack trace
+        // 连同完整堆栈跟踪一起输出到控制台
         if (message != null && !message.isEmpty()) {
             logger.log(level, message, e);
         } else {

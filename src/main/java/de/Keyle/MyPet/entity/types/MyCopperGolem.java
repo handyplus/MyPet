@@ -69,7 +69,7 @@ public class MyCopperGolem extends MyPet implements de.Keyle.MyPet.api.entity.ty
         if (info.containsKey("Poppy")) {
             TagCompound poppyCompound = info.getAs("Poppy", TagCompound.class);
             try {
-                // through setPoppy, so a stack saved before the poppy dupe was fixed becomes one poppy
+                // 通过 setPoppy 处理，因此在虞美人复制漏洞修复前保存的整堆物品会变成单个虞美人
                 setPoppy(MyPetApi.getPlatformHelper().compundToItemStack(poppyCompound));
             } catch (Exception e) {
                 poppy = null;
@@ -126,8 +126,8 @@ public class MyCopperGolem extends MyPet implements de.Keyle.MyPet.api.entity.ty
 
     @Override
     public void setPoppy(ItemStack item) {
-        // Store a single poppy. The interaction takes one poppy from the player's stack, so
-        // keeping the whole stack would hand all of it back when the poppy is sheared off.
+        // 只存储单个虞美人。交互时会从玩家的物品堆中取走一个虞美人，
+        // 若保留整堆，则在剪下虞美人时会全部归还。
         if (item != null) {
             item = item.clone();
             item.setAmount(1);

@@ -91,7 +91,7 @@ public class EntityMyIronGolem extends EntityMyPet {
 	@Override
 	protected void defineSynchedData(SynchedEntityData.Builder builder) {
 		super.defineSynchedData(builder);
-		builder.define(UNUSED_WATCHER, (byte) 0); // N/A
+		builder.define(UNUSED_WATCHER, (byte) 0); // 未使用
 	}
 
 	@Override
@@ -134,7 +134,7 @@ public class EntityMyIronGolem extends EntityMyPet {
 					try {
 						itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 					} catch (Error e) {
-						// TODO REMOVE
+						// TODO 移除
 					}
 				}
 

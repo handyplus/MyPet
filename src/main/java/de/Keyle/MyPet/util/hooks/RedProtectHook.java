@@ -33,7 +33,7 @@ public class RedProtectHook implements PlayerVersusPlayerHook {
     public boolean canHurt(Player attacker, Player defender) {
         try {
             Region region = RedProtect.get().getAPI().getRegion(defender.getLocation());
-            // outside every region RedProtect has nothing to say about PvP
+            // 在所有区域之外时，RedProtect 不对 PvP 做任何限制
             return region == null || region.canPVP(attacker, defender);
         } catch (Throwable t) {
             return ProtectionHookErrors.failClosed(RedProtectHook.class, t);

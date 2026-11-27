@@ -91,7 +91,7 @@ public abstract class MyPet implements de.Keyle.MyPet.api.entity.MyPet, NBTStora
     public TagCompound getInfo() {
         TagCompound tag = writeExtendedInfo();
 
-        // TODO replace with proper storage
+        // TODO 替换为合适的存储方式
         storage.put("level", new TagInt(getExperience().getLevel()));
         tag.put("storage", storage);
 
@@ -102,7 +102,7 @@ public abstract class MyPet implements de.Keyle.MyPet.api.entity.MyPet, NBTStora
     public void setInfo(TagCompound info) {
         readExtendedInfo(info);
 
-        // TODO replace with proper storage
+        // TODO 替换为合适的存储方式
         if (info.containsKey("storage")) {
             TagCompound storage = info.getAs("storage", TagCompound.class).clone();
             for (String key : storage.getCompoundData().keySet()) {
@@ -225,7 +225,7 @@ public abstract class MyPet implements de.Keyle.MyPet.api.entity.MyPet, NBTStora
     }
 
     public double getSaturation() {
-        //TODO remove when interaction is fixed
+        //TODO 交互修复后移除
         switch (getPetType()) {
             case Giant:
             case Ghast:
@@ -239,7 +239,7 @@ public abstract class MyPet implements de.Keyle.MyPet.api.entity.MyPet, NBTStora
     }
 
     public void setSaturation(double value) {
-        //TODO remove when interaction is fixed
+        //TODO 交互修复后移除
         switch (getPetType()) {
             case Giant:
             case Ghast:
@@ -255,7 +255,7 @@ public abstract class MyPet implements de.Keyle.MyPet.api.entity.MyPet, NBTStora
     }
 
     public void decreaseSaturation(double value) {
-        //TODO remove when interaction is fixed
+        //TODO 交互修复后移除
         switch (getPetType()) {
             case Giant:
             case Ghast:
@@ -520,7 +520,7 @@ public abstract class MyPet implements de.Keyle.MyPet.api.entity.MyPet, NBTStora
                 Location origin = loc.clone();
                 boolean positionFound = false;
 
-                // If an explicit spawn location was provided (e.g., from capturing), try to use it directly first
+                // 如果提供了明确的生成位置（例如来自捕捉），先尝试直接使用它
                 if (spawnLocation != null) {
                     minecraftEntity.setLocation(loc);
                     if (MyPetApi.getPlatformHelper().canSpawn(loc, minecraftEntity)) {
@@ -528,7 +528,7 @@ public abstract class MyPet implements de.Keyle.MyPet.api.entity.MyPet, NBTStora
                     }
                 }
 
-                // If the exact location doesn't work, search for a nearby valid position
+                // 如果精确位置不可用，则搜索附近的有效位置
                 if (!positionFound) {
                     loc.subtract(1, 0, 1);
                     for (double x = 0; x <= 2; x += 0.5) {
@@ -674,7 +674,7 @@ public abstract class MyPet implements de.Keyle.MyPet.api.entity.MyPet, NBTStora
                     }
                 }
 
-                // The pathfinder is null while the entity is still being set up or after it was removed.
+                // 实体仍在初始化或已被移除后，pathfinder 为 null。
                 AIGoalSelector pathfinder = bukkitEntity.getHandle().getPathfinder();
                 if (pathfinder != null) {
                     if (pathfinder.hasGoal("RandomStroll")) {
@@ -811,7 +811,7 @@ public abstract class MyPet implements de.Keyle.MyPet.api.entity.MyPet, NBTStora
         Inventory bukkitInventory = getSkills().get(BackpackImpl.class).getInventory().getBukkitInventory();
         if (bukkitInventory == null)
             return;
-        //Check Inventory for food first, then get that food
+        // 先检查背包中的食物，然后获取该食物
         List<ConfigItem> foodList = MyPetApi.getMyPetInfo().getFood(getPetType());
         for (ConfigItem foodItem : foodList) {
             if (bukkitInventory.contains(foodItem.getItem().getType())) {

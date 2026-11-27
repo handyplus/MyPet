@@ -118,7 +118,7 @@ public class EntityMyLlama extends EntityMyPet {
 					try {
 						itemStack.hurtAndBreak(1, entityhuman, getSlotForHand(enumhand));
 					} catch (Error e) {
-						// TODO REMOVE
+						// TODO 移除
 					}
 				}
 
@@ -142,7 +142,7 @@ public class EntityMyLlama extends EntityMyPet {
 		super.defineSynchedData(builder);
 		builder.define(AGE_WATCHER, false);
 		builder.define(AGE_LOCKED_WATCHER, false);
-		builder.define(SADDLE_CHEST_WATCHER, (byte) 0);    // saddle & chest
+		builder.define(SADDLE_CHEST_WATCHER, (byte) 0);    // 马鞍和箱子
 		builder.define(CHEST_WATCHER, false);
 		builder.define(STRENGTH_WATCHER, 0);
 		//builder.define(COLOR_WATCHER, 0);

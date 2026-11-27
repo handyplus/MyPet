@@ -47,17 +47,17 @@ public abstract class OrbitAnimation extends ParticleAnimation {
     public void tick(int frame, Location location) {
         Location loc = location.clone();
 
-        //double xangle = Math.toRadians(i++); // note that here we do have to convert to radians.
-        //double xAxisCos = Math.cos(xangle); // getting the cos value for the pitch.
-        //double xAxisSin = Math.sin(xangle); // getting the sin value for the pitch.
+        //double xangle = Math.toRadians(i++); // 注意这里必须转换为弧度。
+        //double xAxisCos = Math.cos(xangle); // 获取俯仰角（pitch）的 cos 值。
+        //double xAxisSin = Math.sin(xangle); // 获取俯仰角（pitch）的 sin 值。
 
-        //double yangle = Math.toRadians(i++); // note that here we do have to convert to radians.
-        //double yAxisCos = Math.cos(-yangle); // getting the cos value for the yaw.
-        //double yAxisSin = Math.sin(-yangle); // getting the sin value for the yaw.
+        //double yangle = Math.toRadians(i++); // 注意这里必须转换为弧度。
+        //double yAxisCos = Math.cos(-yangle); // 获取偏航角（yaw）的 cos 值。
+        //double yAxisSin = Math.sin(-yangle); // 获取偏航角（yaw）的 sin 值。
 
-        double zangle = Math.toRadians(rotationAngle++); // note that here we do have to convert to radians.
-        double zAxisCos = Math.cos(zangle); // getting the cos value for the roll.
-        double zAxisSin = Math.sin(zangle); // getting the sin value for the roll.
+        double zangle = Math.toRadians(rotationAngle++); // 注意这里必须转换为弧度。
+        double zAxisCos = Math.cos(zangle); // 获取翻滚角（roll）的 cos 值。
+        double zAxisSin = Math.sin(zangle); // 获取翻滚角（roll）的 sin 值。
 
         Location rotLoc = new Location(loc.getWorld(), radius * Math.cos(frame * stepAngle), 0, radius * Math.sin(frame * stepAngle));
 
