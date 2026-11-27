@@ -23,9 +23,9 @@ package de.Keyle.MyPet.api.util.inventory.meta;
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import de.keyle.knbt.TagCompound;
-import de.keyle.knbt.TagList;
-import de.keyle.knbt.TagString;
+import de.Keyle.MyPet.util.nbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagList;
+import de.Keyle.MyPet.util.nbt.TagString;
 
 public class SkullMeta implements IconMeta {
     String name = null;

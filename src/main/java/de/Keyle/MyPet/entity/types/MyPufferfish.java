@@ -23,8 +23,8 @@ package de.Keyle.MyPet.entity.types;
 import de.Keyle.MyPet.api.entity.MyPetType;
 import de.Keyle.MyPet.api.player.MyPetPlayer;
 import de.Keyle.MyPet.entity.MyPet;
-import de.keyle.knbt.TagCompound;
-import de.keyle.knbt.TagInt;
+import de.Keyle.MyPet.util.nbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagInt;
 import org.bukkit.ChatColor;
 
 public class MyPufferfish extends MyPet implements de.Keyle.MyPet.api.entity.types.MyPufferfish {

@@ -29,7 +29,7 @@ import de.Keyle.MyPet.api.player.MyPetPlayer;
 import de.Keyle.MyPet.api.skill.skilltree.Skill;
 import de.Keyle.MyPet.api.skill.skilltree.Skilltree;
 import de.Keyle.MyPet.api.util.NBTStorage;
-import de.keyle.knbt.*;
+import de.Keyle.MyPet.util.nbt.*;
 
 import java.util.Collection;
 import java.util.UUID;

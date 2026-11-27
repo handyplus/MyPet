@@ -23,9 +23,9 @@ package de.Keyle.MyPet.entity.types;
 import de.Keyle.MyPet.api.entity.MyPetType;
 import de.Keyle.MyPet.api.player.MyPetPlayer;
 import de.Keyle.MyPet.entity.MyPet;
-import de.keyle.knbt.TagByte;
-import de.keyle.knbt.TagCompound;
-import de.keyle.knbt.TagString;
+import de.Keyle.MyPet.util.nbt.TagByte;
+import de.Keyle.MyPet.util.nbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagString;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
 

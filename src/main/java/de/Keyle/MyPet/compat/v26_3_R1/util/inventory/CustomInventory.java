@@ -22,9 +22,9 @@ package de.Keyle.MyPet.compat.v26_3_R1.util.inventory;
 
 import de.Keyle.MyPet.MyPetApi;
 import de.Keyle.MyPet.api.util.Compat;
-import de.keyle.knbt.TagByte;
-import de.keyle.knbt.TagCompound;
-import de.keyle.knbt.TagList;
+import de.Keyle.MyPet.util.nbt.TagByte;
+import de.Keyle.MyPet.util.nbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagList;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;

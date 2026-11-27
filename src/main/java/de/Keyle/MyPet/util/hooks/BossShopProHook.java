@@ -36,9 +36,9 @@ import de.Keyle.MyPet.api.util.hooks.PluginHookName;
 import de.Keyle.MyPet.api.util.locale.Translation;
 import de.Keyle.MyPet.commands.admin.CommandOptionCreate;
 import de.Keyle.MyPet.util.shop.ShopMyPet;
-import de.keyle.knbt.TagCompound;
-import org.black_ixx.bossshop.core.BSBuy;
-import org.black_ixx.bossshop.core.rewards.BSRewardType;
+import de.Keyle.MyPet.util.nbt.TagCompound;
+import de.Keyle.MyPet.lib.bossshop.core.BSBuy;
+import de.Keyle.MyPet.lib.bossshop.core.rewards.BSRewardType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 

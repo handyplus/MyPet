@@ -23,9 +23,9 @@ package de.Keyle.MyPet.services;
 import de.Keyle.MyPet.api.entity.MyPetType;
 import de.Keyle.MyPet.api.entity.StoredMyPet;
 import de.Keyle.MyPet.api.util.service.Load;
-import de.keyle.knbt.TagByte;
-import de.keyle.knbt.TagCompound;
-import de.keyle.knbt.TagInt;
+import de.Keyle.MyPet.util.nbt.TagByte;
+import de.Keyle.MyPet.util.nbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagInt;
 
 @Load(Load.State.AfterHooks)
 public class RepositoryMyPetConverterService extends de.Keyle.MyPet.api.util.service.types.RepositoryMyPetConverterService {

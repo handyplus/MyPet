@@ -22,10 +22,10 @@ package de.Keyle.MyPet.api.util.inventory;
 
 import de.Keyle.MyPet.MyPetApi;
 import de.Keyle.MyPet.api.Util;
-import de.keyle.knbt.TagByte;
-import de.keyle.knbt.TagCompound;
-import de.keyle.knbt.TagList;
-import de.keyle.knbt.TagString;
+import de.Keyle.MyPet.util.nbt.TagByte;
+import de.Keyle.MyPet.util.nbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagList;
+import de.Keyle.MyPet.util.nbt.TagString;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

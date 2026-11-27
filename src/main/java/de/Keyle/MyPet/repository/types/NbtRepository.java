@@ -33,9 +33,9 @@ import de.Keyle.MyPet.api.util.configuration.ConfigurationNBT;
 import de.Keyle.MyPet.api.util.service.types.RepositoryMyPetConverterService;
 import de.Keyle.MyPet.entity.InactiveMyPet;
 import de.Keyle.MyPet.util.player.MyPetPlayerImpl;
-import de.keyle.knbt.TagCompound;
-import de.keyle.knbt.TagList;
-import de.keyle.knbt.TagString;
+import de.Keyle.MyPet.util.nbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagList;
+import de.Keyle.MyPet.util.nbt.TagString;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 

@@ -33,7 +33,7 @@ import de.Keyle.MyPet.api.util.locale.Translation;
 import de.Keyle.MyPet.api.util.service.types.EggIconService;
 import de.Keyle.MyPet.commands.admin.CommandOptionCreate;
 import de.Keyle.MyPet.util.translation.PetDefaultNameResolver;
-import de.keyle.knbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagCompound;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

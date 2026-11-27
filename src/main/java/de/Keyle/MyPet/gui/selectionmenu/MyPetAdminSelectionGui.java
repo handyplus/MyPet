@@ -47,8 +47,8 @@ import de.Keyle.MyPet.api.util.EnumSelector;
 import de.Keyle.MyPet.api.util.locale.Translation;
 import de.Keyle.MyPet.api.util.service.types.EggIconService;
 import de.Keyle.MyPet.util.translation.PetDefaultNameResolver;
-import de.keyle.knbt.TagCompound;
-import de.keyle.knbt.TagInt;
+import de.Keyle.MyPet.util.nbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagInt;
 
 public class MyPetAdminSelectionGui {
     MyPetPlayer petOwner;

@@ -23,7 +23,7 @@ package de.Keyle.MyPet.api.util.service.types;
 import de.Keyle.MyPet.api.entity.MyPet;
 import de.Keyle.MyPet.api.util.service.ServiceContainer;
 import de.Keyle.MyPet.api.util.service.ServiceName;
-import de.keyle.knbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagCompound;
 import org.bukkit.entity.LivingEntity;
 
 import java.util.Random;

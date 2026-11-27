@@ -21,9 +21,9 @@
 package de.Keyle.MyPet.api.util.configuration;
 
 import de.Keyle.MyPet.MyPetApi;
-import de.keyle.knbt.TagBase;
-import de.keyle.knbt.TagCompound;
-import de.keyle.knbt.TagStream;
+import de.Keyle.MyPet.util.nbt.TagBase;
+import de.Keyle.MyPet.util.nbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagStream;
 
 import java.io.*;
 import java.nio.file.Files;

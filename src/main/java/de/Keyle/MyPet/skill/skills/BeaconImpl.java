@@ -32,7 +32,7 @@ import de.Keyle.MyPet.api.skill.skills.Beacon;
 import de.Keyle.MyPet.api.util.EnumSelector;
 import de.Keyle.MyPet.api.util.inventory.meta.SkullMeta;
 import de.Keyle.MyPet.api.util.locale.Translation;
-import de.keyle.knbt.*;
+import de.Keyle.MyPet.util.nbt.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;

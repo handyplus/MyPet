@@ -25,8 +25,8 @@ import de.Keyle.MyPet.api.WorldGroup;
 import de.Keyle.MyPet.api.entity.MyPet;
 import de.Keyle.MyPet.api.util.NBTStorage;
 import de.Keyle.MyPet.api.util.Scheduler;
-import de.keyle.knbt.TagBase;
-import de.keyle.knbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagBase;
+import de.Keyle.MyPet.util.nbt.TagCompound;
 import org.bukkit.entity.Player;
 
 import java.util.Optional;

@@ -23,10 +23,10 @@ package de.Keyle.MyPet.util.hooks;
 import de.Keyle.MyPet.MyPetApi;
 import de.Keyle.MyPet.api.util.hooks.PluginHookName;
 import de.Keyle.MyPet.api.util.hooks.types.PlayerVersusPlayerHook;
-import net.brcdev.gangs.GangsPlugin;
-import net.brcdev.gangs.GangsPlusApi;
-import net.brcdev.gangs.config.Settings;
-import net.brcdev.gangs.gang.Gang;
+import de.Keyle.MyPet.lib.gangs.GangsPlugin;
+import de.Keyle.MyPet.lib.gangs.GangsPlusApi;
+import de.Keyle.MyPet.lib.gangs.config.Settings;
+import de.Keyle.MyPet.lib.gangs.gang.Gang;
 import org.bukkit.entity.Player;
 
 import java.util.Objects;

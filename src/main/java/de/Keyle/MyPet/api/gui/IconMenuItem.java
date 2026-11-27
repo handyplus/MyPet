@@ -21,8 +21,8 @@
 package de.Keyle.MyPet.api.gui;
 
 import de.Keyle.MyPet.api.util.inventory.meta.IconMeta;
-import de.keyle.knbt.TagBase;
-import de.keyle.knbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagBase;
+import de.Keyle.MyPet.util.nbt.TagCompound;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;

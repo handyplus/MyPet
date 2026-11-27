@@ -47,7 +47,7 @@ import de.Keyle.MyPet.skill.skills.RangedImpl;
 import de.Keyle.MyPet.util.hooks.VaultHook;
 import de.Keyle.MyPet.util.hooks.WorldGuardHook;
 import de.Keyle.MyPet.util.translation.PetDefaultNameResolver;
-import de.keyle.knbt.*;
+import de.Keyle.MyPet.util.nbt.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

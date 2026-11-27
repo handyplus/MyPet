@@ -20,7 +20,7 @@
 
 package de.Keyle.MyPet.api.util.inventory;
 
-import de.keyle.knbt.*;
+import de.Keyle.MyPet.util.nbt.*;
 
 import java.util.Map;
 

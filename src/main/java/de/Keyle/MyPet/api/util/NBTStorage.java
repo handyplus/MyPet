@@ -20,7 +20,7 @@
 
 package de.Keyle.MyPet.api.util;
 
-import de.keyle.knbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagCompound;
 
 public interface NBTStorage {
     TagCompound save();

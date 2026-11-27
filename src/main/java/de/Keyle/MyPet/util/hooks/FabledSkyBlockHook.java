@@ -20,11 +20,11 @@
 
 package de.Keyle.MyPet.util.hooks;
 
-import com.songoda.skyblock.SkyBlock;
-import com.songoda.skyblock.api.SkyBlockAPI;
-import com.songoda.skyblock.config.FileManager;
-import com.songoda.skyblock.island.IslandManager;
-import com.songoda.skyblock.island.IslandRole;
+import de.Keyle.MyPet.lib.skyblock.SkyBlock;
+import de.Keyle.MyPet.lib.skyblock.api.SkyBlockAPI;
+import de.Keyle.MyPet.lib.skyblock.config.FileManager;
+import de.Keyle.MyPet.lib.skyblock.island.IslandManager;
+import de.Keyle.MyPet.lib.skyblock.island.IslandRole;
 import de.Keyle.MyPet.api.util.hooks.PluginHookName;
 import de.Keyle.MyPet.api.util.hooks.types.PlayerVersusEntityHook;
 import de.Keyle.MyPet.api.util.hooks.types.PlayerVersusPlayerHook;

@@ -29,7 +29,7 @@ import de.Keyle.MyPet.api.player.Permissions;
 import de.Keyle.MyPet.api.skill.UpgradeComputer;
 import de.Keyle.MyPet.api.skill.skills.Behavior;
 import de.Keyle.MyPet.api.util.locale.Translation;
-import de.keyle.knbt.*;
+import de.Keyle.MyPet.util.nbt.*;
 import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.jetbrains.annotations.NotNull;

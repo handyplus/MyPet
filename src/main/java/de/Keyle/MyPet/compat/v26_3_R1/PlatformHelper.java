@@ -29,7 +29,7 @@ import de.Keyle.MyPet.api.util.ReflectionUtil;
 import de.Keyle.MyPet.compat.v26_3_R1.entity.EntityMyAquaticPet;
 import de.Keyle.MyPet.compat.v26_3_R1.util.VillagerNbtIO;
 import de.Keyle.MyPet.compat.v26_3_R1.util.inventory.ItemStackNBTConverter;
-import de.keyle.knbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagCompound;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.commands.arguments.ParticleArgument;

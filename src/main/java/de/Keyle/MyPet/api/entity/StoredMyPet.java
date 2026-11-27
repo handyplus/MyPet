@@ -22,7 +22,7 @@ package de.Keyle.MyPet.api.entity;
 
 import de.Keyle.MyPet.api.player.MyPetPlayer;
 import de.Keyle.MyPet.api.skill.skilltree.Skilltree;
-import de.keyle.knbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagCompound;
 
 import java.util.UUID;
 

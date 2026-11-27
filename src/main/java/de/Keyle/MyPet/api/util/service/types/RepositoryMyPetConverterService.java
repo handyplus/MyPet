@@ -24,10 +24,10 @@ import de.Keyle.MyPet.MyPetApi;
 import de.Keyle.MyPet.api.entity.StoredMyPet;
 import de.Keyle.MyPet.api.util.service.ServiceContainer;
 import de.Keyle.MyPet.api.util.service.ServiceName;
-import de.keyle.knbt.TagCompound;
-import de.keyle.knbt.TagInt;
-import de.keyle.knbt.TagShort;
-import de.keyle.knbt.TagString;
+import de.Keyle.MyPet.util.nbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagInt;
+import de.Keyle.MyPet.util.nbt.TagShort;
+import de.Keyle.MyPet.util.nbt.TagString;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

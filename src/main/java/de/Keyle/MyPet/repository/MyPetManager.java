@@ -31,7 +31,7 @@ import de.Keyle.MyPet.api.skill.skilltree.Skill;
 import de.Keyle.MyPet.api.util.NBTStorage;
 import de.Keyle.MyPet.entity.InactiveMyPet;
 import de.Keyle.MyPet.entity.MyPetClass;
-import de.keyle.knbt.TagCompound;
+import de.Keyle.MyPet.util.nbt.TagCompound;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 
