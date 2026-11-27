@@ -19,6 +19,7 @@
 .DS_Store
 
 # Maven
-target/
+# root build output only; source packages named "target" (entity/ai/target) must stay tracked
+/target/
 .flattened-pom.xml
 dependency-reduced-pom.xml
