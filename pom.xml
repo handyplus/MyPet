@@ -37,12 +37,6 @@
             <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
             <snapshots><enabled>true</enabled></snapshots>
         </repository>
-        <repository>
-            <id>mypet-local-libraries</id>
-            <url>file://${project.basedir}/lib/repository</url>
-            <releases><enabled>true</enabled></releases>
-            <snapshots><enabled>true</enabled></snapshots>
-        </repository>
         <!-- Keep these repository IDs for cached third-party artifacts. -->
         <repository>
             <id>userderezzed-releases</id>
