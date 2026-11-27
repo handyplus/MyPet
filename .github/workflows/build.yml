@@ -20,6 +20,10 @@ jobs:
           java-version: '25'
           cache: maven
 
+      # 私库凭据：把仓库里的 settings.xml 以 base64 存进 MAVEN_SETTINGS_BASE64 密钥
+      - name: Decode and set up Maven settings
+        run: echo "${{ secrets.MAVEN_SETTINGS_BASE64 }}" | base64 --decode > $HOME/.m2/settings.xml
+
       - name: Build
         run: mvn -B -ntp clean package
 
