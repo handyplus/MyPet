@@ -42,6 +42,6 @@ public class WildFlag implements LeashFlag {
 
     @Override
     public String getMissingMessage(Player player, LivingEntity entity, double damage, Settings settings) {
-        return Translation.getString("Message.Command.CaptureHelper.Wild", player);
+        return Translation.getString("Message.Command.CaptureHelper.Requirement.Wild", player);
     }
 }

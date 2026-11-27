@@ -83,7 +83,7 @@ public abstract class PlatformHelper {
     public String getPlayerLanguage(Player player) {
         String locale = player.getLocale();
         if (locale.isEmpty()) {
-            return "en_us";
+            return "zh_cn";
         }
         return locale;
     }
@@ -93,7 +93,7 @@ public abstract class PlatformHelper {
     public abstract void applyTagToEntity(TagCompound tag, Entity entity);
 
     public String getCommandSenderLanguage(CommandSender sender) {
-        String lang = "en";
+        String lang = "zh";
         if (sender instanceof Player) {
             lang = getPlayerLanguage((Player) sender);
         }

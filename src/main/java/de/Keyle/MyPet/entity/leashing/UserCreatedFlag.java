@@ -40,6 +40,6 @@ public class UserCreatedFlag implements LeashFlag {
 
     @Override
     public String getMissingMessage(Player player, LivingEntity entity, double damage, Settings settings) {
-        return Translation.getString("Message.Command.CaptureHelper.UserCreated", player);
+        return Translation.getString("Message.Command.CaptureHelper.Requirement.PlayerCreated", player);
     }
 }

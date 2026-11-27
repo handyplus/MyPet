@@ -45,7 +45,7 @@ public class CommandList implements CommandTabCompleter {
         if (sender instanceof Player) {
             lang = MyPetApi.getPlatformHelper().getPlayerLanguage((Player) sender);
         } else {
-            lang = "en";
+            lang = Translation.DEFAULT_LANGUAGE;
         }
 
         final Player petOwner;

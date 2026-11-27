@@ -35,6 +35,12 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class Translation {
+    /**
+     * Locale every other language falls back to when a key is missing.
+     * Only Chinese translations are shipped with this build.
+     */
+    public static final String DEFAULT_LANGUAGE = "zh";
+
     private static Translation instance = null;
 
     private Map<String, Language> languages = new HashMap<>();
@@ -62,7 +68,7 @@ public class Translation {
             return getString(key, (Player) sender);
         }
 
-        return getString(key, "en");
+        return getString(key, DEFAULT_LANGUAGE);
     }
 
     public static String getString(String key, MyPetPlayer player) {
@@ -103,8 +109,8 @@ public class Translation {
             translatedPhrase = language.translate(key);
         }
         if (translatedPhrase.equals(key)) {
-            if (!languageCode.equals("en")) {
-                return getText(key, "en");
+            if (!languageCode.equals(DEFAULT_LANGUAGE)) {
+                return getText(key, DEFAULT_LANGUAGE);
             }
             return Colorizer.setColors(translatedPhrase);
         }
